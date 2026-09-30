@@ -12,7 +12,7 @@
 
 **Architecture:** Vite + React + TS SPA. Nội dung nằm trong `content/`, được nạp bằng `import.meta.glob` và kiểm tra bằng zod. Nếu có lỗi, `loadContent` ném `ContentError` liệt kê từng file và từng trường. `src/core/` chỉ chứa hàm thuần: nhận content, attempts, reviews và `now`, trả về kết quả, không đụng storage hay UI.
 
-**Tech Stack:** Vite 6, React 19, TypeScript 5 (strict), zod 3.24+, Vitest 3.
+**Tech Stack:** Vite 8, React 19, TypeScript 5 (strict), zod 3.24+, Vitest 5 (bản mới nhất khi cài).
 
 **Spec:** `docs/superpowers/specs/2026-09-30-rn-interview-prep-design.md`
 
@@ -108,10 +108,10 @@ dist
 - [ ] **Step 4: Cài dependency**
 
 ```bash
-cd ~/Downloads/rn-interview-prep && npm install react@^19 react-dom@^19 zod@^3.24 && npm install -D vite@^6 @vitejs/plugin-react@^4 vitest@^3 typescript@^5 @types/react@^19 @types/react-dom@^19
+cd ~/Downloads/rn-interview-prep && npm install react react-dom zod@^3.24 && npm install -D vite @vitejs/plugin-react vitest typescript @types/react @types/react-dom
 ```
 
-Ghim vite 6 / vitest 3 vì máy local đang dùng Node 18.20; vite 7 cần Node từ 20.19 trở lên.
+Cần Node 22.12+ (Vitest 5 yêu cầu; Vite 8 cần 20.19+). File `.node-version` ghim 22 cho cả máy local lẫn Cloudflare Pages.
 
 - [ ] **Step 5: Viết `tsconfig.json`**
 

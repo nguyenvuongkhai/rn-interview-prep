@@ -5,5 +5,8 @@
   { "id": "architecture", "title": { "vi": "Kiến trúc React Native", "en": "React Native architecture" }, "parent": null, "weight": 3, "group": "architecture" },
   { "id": "architecture/new-arch", "title": { "vi": "Kiến trúc mới: JSI, Fabric, TurboModules", "en": "New Architecture: JSI, Fabric, TurboModules" }, "parent": "architecture", "weight": 3, "group": "architecture" },
   { "id": "performance", "title": { "vi": "Hiệu năng", "en": "Performance" }, "parent": null, "weight": 3, "group": "performance" },
-  { "id": "performance/lists", "title": { "vi": "FlatList và danh sách dài", "en": "FlatList and long lists" }, "parent": "performance", "weight": 3, "group": "performance" }
+  { "id": "performance/lists", "title": { "vi": "FlatList và danh sách dài", "en": "FlatList and long lists" }, "parent": "performance", "weight": 3, "group": "performance" },
+  { "id": "performance/js-thread", "title": { "vi": "JS thread và tần suất sự kiện", "en": "The JS thread and event frequency" }, "parent": "performance", "weight": 2, "group": "performance" },
+  { "id": "state", "title": { "vi": "State và dữ liệu", "en": "State and data" }, "parent": null, "weight": 3, "group": "state" },
+  { "id": "state/async", "title": { "vi": "Bất đồng bộ và race condition", "en": "Async work and race conditions" }, "parent": "state", "weight": 3, "group": "state" }
 ]

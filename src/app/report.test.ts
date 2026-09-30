@@ -8,6 +8,7 @@ const content: Content = {
   topics: [topic('render'), topic('render/memo', 'render')],
   items: [mcq('q1'), mcq('q2'), mcq('q3'), mcq('q4')],
   lessons: [],
+  challenges: {},
 };
 
 describe('buildReport', () => {

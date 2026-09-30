@@ -7,6 +7,7 @@ export type AppDb = Dexie & {
   attempts: Table<Attempt, string>;
   reviews: Table<ReviewState, string>;
   settings: Table<{ key: string; value: unknown }, string>;
+  drafts: Table<{ challengeId: string; code: string; updatedAt: number }, string>;
 };
 
 export function createDb(name = 'rn-interview-prep'): AppDb {
@@ -17,6 +18,7 @@ export function createDb(name = 'rn-interview-prep'): AppDb {
     reviews: 'itemId',
     settings: 'key',
   });
+  db.version(2).stores({ drafts: 'challengeId' });
   return db;
 }
 
@@ -35,6 +37,10 @@ export function createDexieRepo(db: AppDb): Repo {
     getReview: (itemId) => db.reviews.get(itemId),
     putReview: async (review) => {
       await db.reviews.put(review);
+    },
+    getDraft: async (challengeId) => (await db.drafts.get(challengeId))?.code,
+    putDraft: async (challengeId, code) => {
+      await db.drafts.put({ challengeId, code, updatedAt: Date.now() });
     },
     getSetting: async <T>(key: string) => (await db.settings.get(key))?.value as T | undefined,
     setSetting: async (key, value) => {

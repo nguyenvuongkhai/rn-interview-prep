@@ -43,4 +43,12 @@ describe.each<[string, () => Repo]>([
     await repo.setSetting('lang', 'en');
     expect(await repo.getSetting<string>('lang')).toBe('en');
   });
+
+  it('keeps one code draft per challenge', async () => {
+    const repo = make();
+    expect(await repo.getDraft('deb')).toBeUndefined();
+    await repo.putDraft('deb', 'a');
+    await repo.putDraft('deb', 'b');
+    expect(await repo.getDraft('deb')).toBe('b');
+  });
 });

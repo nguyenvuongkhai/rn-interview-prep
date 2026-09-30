@@ -20,8 +20,11 @@ describe('toResponse', () => {
     expect(toResponse(q, { ...EMPTY_DRAFT, revealed: true })).toEqual({ type: 'open', hitKeyPoints: [] });
   });
 
-  it('challenge has no draft response yet', () => {
-    expect(toResponse(challenge('c'), { ...EMPTY_DRAFT, revealed: true, selected: [0] })).toBeNull();
+  it('challenge needs a full test run', () => {
+    const c = challenge('c');
+    expect(toResponse(c, EMPTY_DRAFT)).toBeNull();
+    const tests = [{ name: 't', category: 'basic', pass: true, hidden: false }];
+    expect(toResponse(c, { ...EMPTY_DRAFT, tests, usedHints: 1 })).toEqual({ type: 'challenge', tests, usedHints: 1 });
   });
 });
 

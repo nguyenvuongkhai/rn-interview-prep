@@ -27,6 +27,8 @@ export interface Repo {
   listReviews(): Promise<ReviewState[]>;
   getReview(itemId: string): Promise<ReviewState | undefined>;
   putReview(review: ReviewState): Promise<void>;
+  getDraft(challengeId: string): Promise<string | undefined>;
+  putDraft(challengeId: string, code: string): Promise<void>;
   getSetting<T>(key: string): Promise<T | undefined>;
   setSetting(key: string, value: unknown): Promise<void>;
 }
@@ -36,6 +38,7 @@ export function createMemoryRepo(): Repo {
   const attempts: Attempt[] = [];
   const reviews = new Map<string, ReviewState>();
   const settings = new Map<string, unknown>();
+  const drafts = new Map<string, string>();
   return {
     async getSession(id) {
       return sessions.get(id);
@@ -60,6 +63,12 @@ export function createMemoryRepo(): Repo {
     },
     async putReview(review) {
       reviews.set(review.itemId, review);
+    },
+    async getDraft(challengeId) {
+      return drafts.get(challengeId);
+    },
+    async putDraft(challengeId, code) {
+      drafts.set(challengeId, code);
     },
     async getSetting<T>(key: string) {
       return settings.get(key) as T | undefined;

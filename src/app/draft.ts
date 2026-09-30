@@ -1,6 +1,6 @@
 import type { Response } from '../core/grading';
 import type { Item } from '../core/schema';
-import type { Confidence } from '../core/types';
+import type { Confidence, TestResult } from '../core/types';
 
 /** What the Test screen holds while the user answers one question. */
 export interface Draft {
@@ -10,9 +10,14 @@ export interface Draft {
   hits: number[];
   revealed: boolean;
   confidence: Confidence | null;
+  /** the last full run (hidden tests included); null until the user runs them */
+  tests: TestResult[] | null;
+  usedHints: number;
 }
 
-export const EMPTY_DRAFT: Draft = { selected: [], line: null, cause: null, hits: [], revealed: false, confidence: null };
+export const EMPTY_DRAFT: Draft = {
+  selected: [], line: null, cause: null, hits: [], revealed: false, confidence: null, tests: null, usedHints: 0,
+};
 
 /** The gradable response, or null while the draft is incomplete. */
 export function toResponse(item: Item, d: Draft): Response | null {
@@ -24,7 +29,7 @@ export function toResponse(item: Item, d: Draft): Response | null {
     case 'open':
       return d.revealed ? { type: 'open', hitKeyPoints: d.hits } : null;
     case 'challenge':
-      return null;
+      return d.tests ? { type: 'challenge', tests: d.tests, usedHints: d.usedHints } : null;
   }
 }
 

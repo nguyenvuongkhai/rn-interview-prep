@@ -9,6 +9,7 @@ const content: Content = {
   topics: [topic('render'), topic('render/memo', 'render')],
   items: [...Array.from({ length: 12 }, (_, i) => mcq(`q${i}`)), open('o1'), challenge('ch1')],
   lessons: [],
+  challenges: {},
 };
 
 function setup() {
@@ -32,9 +33,15 @@ describe('session service', () => {
     expect(first.itemIds.length).toBeGreaterThan(0);
   });
 
-  it('leaves challenges out until the runner exists', async () => {
+  it('includes challenges in the plan', async () => {
     const { service } = setup();
-    expect((await service.start(45, NOW)).itemIds).not.toContain('ch1');
+    expect((await service.start(45, NOW)).itemIds).toContain('ch1');
+  });
+
+  it('keeps challenge code drafts', async () => {
+    const { service } = setup();
+    await service.saveDraft('ch1', 'export {}');
+    expect(await service.loadDraft('ch1')).toBe('export {}');
   });
 
   it('overview reports the daily session once it exists', async () => {

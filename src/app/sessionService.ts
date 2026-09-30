@@ -43,8 +43,6 @@ export function localDate(now: number): string {
 
 export function createSessionService(repo: Repo, content: Content) {
   const byId = new Map(content.items.map((i) => [i.id, i]));
-  // Challenges need the code runner, which arrives in P3.
-  const quizItems = content.items.filter((i) => i.type !== 'challenge');
 
   async function history(now: number): Promise<History> {
     const [attempts, reviews] = await Promise.all([repo.listAttempts(), repo.listReviews()]);
@@ -60,7 +58,7 @@ export function createSessionService(repo: Repo, content: Content) {
   }
 
   function plan(duration: Duration, seed: string, now: number, h: History): SessionPlan {
-    return buildSession({ duration, date: seed, now, items: quizItems, attempts: h.attempts, reviews: h.reviews, mastery: h.mastery });
+    return buildSession({ duration, date: seed, now, items: content.items, attempts: h.attempts, reviews: h.reviews, mastery: h.mastery });
   }
 
   return {
@@ -101,6 +99,8 @@ export function createSessionService(repo: Repo, content: Content) {
     },
 
     listAttempts: () => repo.listAttempts(),
+    loadDraft: (challengeId: string) => repo.getDraft(challengeId),
+    saveDraft: (challengeId: string, code: string) => repo.putDraft(challengeId, code),
 
     async answer(input: AnswerInput): Promise<Attempt> {
       const { sessionId, itemId, response, confidence, timeSpent, lang, now } = input;

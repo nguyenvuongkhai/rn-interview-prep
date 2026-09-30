@@ -1,0 +1,13 @@
+{
+  "id": "debounce",
+  "type": "challenge",
+  "topics": ["performance/js-thread"],
+  "kind": "core",
+  "difficulty": 1,
+  "estSeconds": 300,
+  "title": { "vi": "Tự viết debounce", "en": "Write debounce" },
+  "hints": [
+    { "vi": "Giữ id của timer ở ngoài hàm trả về. Mỗi lần gọi thì `clearTimeout` timer cũ rồi đặt timer mới.", "en": "Keep the timer id outside the returned function. On each call, `clearTimeout` the old timer and set a new one." },
+    { "vi": "`cancel` chỉ cần xoá timer đang chờ và quên id của nó.", "en": "`cancel` only needs to clear the pending timer and forget its id." }
+  ]
+}

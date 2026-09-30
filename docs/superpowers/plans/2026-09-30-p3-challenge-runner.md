@@ -1151,6 +1151,7 @@ test('starts the next item as soon as a slot frees up', async () => {
     started.push(n);
     gates.push(() => resolve(n));
   }));
+  run.catch(() => {});
   await tick();
   expect(started).toEqual([1, 2]);
   gates[0]();

@@ -1,0 +1,13 @@
+{
+  "id": "map-limit",
+  "type": "challenge",
+  "topics": ["state/async"],
+  "kind": "core",
+  "difficulty": 2,
+  "estSeconds": 600,
+  "title": { "vi": "Giới hạn số request chạy cùng lúc", "en": "Limit concurrent requests" },
+  "hints": [
+    { "vi": "Tạo đúng `limit` worker. Mỗi worker lấy index kế tiếp từ một biến đếm dùng chung cho tới khi hết phần tử.", "en": "Start exactly `limit` workers. Each takes the next index from a shared counter until the items run out." },
+    { "vi": "Ghi kết quả vào `results[i]` theo index gốc, rồi `await Promise.all` các worker.", "en": "Write each result to `results[i]` by its original index, then `await Promise.all` the workers." }
+  ]
+}

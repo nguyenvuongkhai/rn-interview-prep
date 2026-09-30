@@ -7,6 +7,7 @@ import {
   type Item,
   type Lesson,
   type LessonMeta,
+  type Localized,
   type Topic,
 } from '../core/schema';
 import type { Lang } from '../core/types';
@@ -19,6 +20,8 @@ export interface RawContent {
   questionFiles: Record<string, unknown>;
   /** path → parsed meta.json */
   challengeFiles: Record<string, unknown>;
+  /** path → raw text of every other file in a challenge folder */
+  challengeTexts: Record<string, string>;
   /** path → raw markdown */
   lessonFiles: Record<string, string>;
 }
@@ -27,6 +30,14 @@ export interface Content {
   topics: Topic[];
   items: Item[];
   lessons: Lesson[];
+  challenges: Record<string, ChallengeFiles>;
+}
+
+export interface ChallengeFiles {
+  prompt: Localized;
+  starter: string;
+  tests: string;
+  solution: string;
 }
 
 export class ContentError extends Error {
@@ -54,9 +65,28 @@ export function loadContent(raw: RawContent): Content {
 
   const items: Item[] = [];
   for (const [path, value] of byPath(raw.questionFiles)) items.push(...(parse(questionFile, value, path) ?? []));
+  const challenges: Record<string, ChallengeFiles> = {};
   for (const [path, value] of byPath(raw.challengeFiles)) {
     const meta = parse(challengeMeta, value, path);
-    if (meta) items.push(meta);
+    if (!meta) continue;
+    items.push(meta);
+    const folder = /\/challenges\/([^/]+)\/meta\.json$/.exec(path)?.[1];
+    if (folder !== meta.id) {
+      issues.push(`${path}: id "${meta.id}" must match its folder "${folder ?? '?'}"`);
+      continue;
+    }
+    const dir = path.slice(0, -'meta.json'.length);
+    const file = (name: string) => {
+      const text = raw.challengeTexts[dir + name];
+      if (text === undefined) issues.push(`challenge "${meta.id}": missing ${name}`);
+      return text ?? '';
+    };
+    challenges[meta.id] = {
+      prompt: { vi: file('prompt.vi.md'), en: file('prompt.en.md') },
+      starter: file('starter.ts'),
+      tests: file('tests.ts'),
+      solution: file('solution.ts'),
+    };
   }
 
   type Draft = { meta: LessonMeta; body: string; path: string };
@@ -97,5 +127,5 @@ export function loadContent(raw: RawContent): Content {
 
   issues.push(...checkIntegrity(topics, items, lessons));
   if (issues.length > 0) throw new ContentError(issues);
-  return { topics, items, lessons };
+  return { topics, items, lessons, challenges };
 }

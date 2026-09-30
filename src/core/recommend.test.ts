@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { masteryByTopic } from './mastery';
 import { diagnose, topGaps } from './recommend';
 import { NOW, attempt, challenge, indexById, mcq, open, spotBug, topic } from './testFixtures';
-import type { TestResult } from './types';
+import { DAY_MS, type TestResult } from './types';
 
 const topics = [topic('render', null, 3), topic('render/memo', 'render', 3), topic('render/effects', 'render', 1)];
 const times = <T>(n: number, f: (i: number) => T) => Array.from({ length: n }, (_, i) => f(i));
@@ -56,6 +56,15 @@ describe('diagnose', () => {
     const items = [mcq('c1', { topics: ['render'] }), spotBug('p1', { topics: ['render'] })];
     const attempts = [...times(3, () => attempt('c1')), ...times(2, () => attempt('p1', { score: 0 }))];
     expect(diagnose(topics, attempts, indexById(items), NOW)).toEqual([]);
+  });
+
+  it('ignores misconceptions older than 30 days', () => {
+    const items = [mcq('m1'), mcq('m2')];
+    const attempts = [
+      attempt('m1', { score: 0, misconceptionIds: ['stale'], at: NOW - 31 * DAY_MS }),
+      attempt('m2', { score: 0, misconceptionIds: ['stale'] }),
+    ];
+    expect(diagnose(topics, attempts, indexById(items), NOW).some((d) => d.code === 'misconception')).toBe(false);
   });
 });
 

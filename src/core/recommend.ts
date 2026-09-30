@@ -1,5 +1,5 @@
 import type { Item, LessonMeta, Topic } from './schema';
-import type { Attempt } from './types';
+import { DAY_MS, type Attempt } from './types';
 import { attemptsForTopic, masteryOf, type Mastery } from './mastery';
 import { PASS_SCORE } from './scheduler';
 import { leafTopics } from './topics';
@@ -22,6 +22,7 @@ export const RULES = {
   minExplain: 1,
   minCorrect: 3,
   minRepeat: 2,
+  windowDays: 30,
 } as const;
 
 const isCore = (i: Item) => i.kind === 'core';
@@ -68,7 +69,9 @@ export function diagnose(topics: Topic[], attempts: Attempt[], itemsById: Map<st
 
   const categoryFailures = new Map<string, number>();
   const misconceptions = new Map<string, number>();
+  const since = now - RULES.windowDays * DAY_MS;
   for (const a of attempts) {
+    if (a.at < since) continue;
     // each counts once per attempt
     countBy(new Set((a.testResults ?? []).filter((r) => !r.pass).map((r) => r.category)), categoryFailures);
     countBy(new Set(a.misconceptionIds), misconceptions);

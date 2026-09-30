@@ -1,0 +1,43 @@
+import type { Item, Lesson, Topic } from '../core/schema';
+
+/** Cross-file checks the per-file schemas cannot see. Returns human-readable issues. */
+export function checkIntegrity(topics: Topic[], items: Item[], lessons: Lesson[]): string[] {
+  const issues: string[] = [];
+  const topicIds = new Set<string>();
+  for (const t of topics) {
+    if (topicIds.has(t.id)) issues.push(`duplicate topic "${t.id}"`);
+    topicIds.add(t.id);
+  }
+
+  const parentOf = new Map(topics.map((t) => [t.id, t.parent]));
+  for (const t of topics) {
+    if (t.parent !== null && !topicIds.has(t.parent)) {
+      issues.push(`topic "${t.id}": unknown parent "${t.parent}"`);
+      continue;
+    }
+    let cursor: string | null = t.parent;
+    for (let steps = 0; cursor !== null; steps++) {
+      if (steps > topics.length || cursor === t.id) {
+        issues.push(`topic "${t.id}": parent chain has a cycle`);
+        break;
+      }
+      cursor = parentOf.get(cursor) ?? null;
+    }
+  }
+
+  const seen = new Set<string>();
+  for (const id of [...items.map((i) => i.id), ...lessons.map((l) => l.id)]) {
+    if (seen.has(id)) issues.push(`duplicate id "${id}"`);
+    seen.add(id);
+  }
+
+  const lessonIds = new Set(lessons.map((l) => l.id));
+  for (const item of items) {
+    for (const t of item.topics) if (!topicIds.has(t)) issues.push(`item "${item.id}": unknown topic "${t}"`);
+    for (const l of item.lessons) if (!lessonIds.has(l)) issues.push(`item "${item.id}": unknown lesson "${l}"`);
+  }
+  for (const lesson of lessons) {
+    if (!topicIds.has(lesson.topic)) issues.push(`lesson "${lesson.id}": unknown topic "${lesson.topic}"`);
+  }
+  return issues;
+}

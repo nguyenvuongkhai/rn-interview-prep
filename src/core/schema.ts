@@ -1,0 +1,112 @@
+import { z } from 'zod';
+
+export const localized = z.object({ vi: z.string().min(1), en: z.string().min(1) });
+export const kind = z.enum(['core', 'advanced', 'pitfall', 'hard-issue']);
+const oneToThree = z.union([z.literal(1), z.literal(2), z.literal(3)]);
+export const difficulty = oneToThree;
+
+const id = z.string().regex(/^[a-z0-9][a-z0-9-]*$/, 'id must be kebab-case');
+const topicId = z
+  .string()
+  .regex(/^[a-z0-9-]+(\/[a-z0-9-]+)*$/, 'topic id must be kebab-case segments joined by /');
+
+export const misconception = z.object({ id, text: localized });
+export const option = z.object({ text: localized, misconception: misconception.optional() });
+
+const base = {
+  id,
+  topics: z.array(topicId).min(1).max(3),
+  kind,
+  difficulty,
+  estSeconds: z.number().int().positive(),
+  lessons: z.array(id).default([]),
+};
+
+const mcq = z.object({
+  ...base,
+  type: z.literal('mcq'),
+  prompt: localized,
+  options: z.array(option).min(2),
+  answer: z.array(z.number().int().nonnegative()).min(1),
+  multi: z.boolean(),
+  explanation: localized,
+});
+
+const spotBug = z.object({
+  ...base,
+  type: z.literal('spot-bug'),
+  prompt: localized,
+  code: z.string().min(1),
+  answerLine: z.number().int().positive(),
+  causeOptions: z.array(option).min(2),
+  answerCause: z.number().int().nonnegative(),
+  explanation: localized,
+});
+
+const open = z.object({
+  ...base,
+  type: z.literal('open'),
+  prompt: localized,
+  keyPoints: z.array(localized).min(2),
+  modelAnswer: localized,
+  followUps: z.array(localized).default([]),
+});
+
+export const challengeMeta = z.object({
+  ...base,
+  type: z.literal('challenge'),
+  title: localized,
+  hints: z.array(localized).default([]),
+});
+
+export const question = z.discriminatedUnion('type', [mcq, spotBug, open]).superRefine((q, ctx) => {
+  const fail = (path: (string | number)[], message: string) =>
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path, message });
+
+  if (q.type === 'mcq') {
+    if (q.answer.some((i) => i >= q.options.length)) fail(['answer'], 'answer index out of range');
+    if (new Set(q.answer).size !== q.answer.length) fail(['answer'], 'duplicate answer index');
+    if (!q.multi && q.answer.length !== 1) fail(['answer'], 'single-answer mcq must have exactly one answer');
+    q.answer.forEach((i) => {
+      if (q.options[i]?.misconception) fail(['options', i, 'misconception'], 'a correct option cannot carry a misconception');
+    });
+  }
+  if (q.type === 'spot-bug') {
+    if (q.answerLine > q.code.split('\n').length) fail(['answerLine'], 'answerLine is past the end of code');
+    if (q.answerCause >= q.causeOptions.length) fail(['answerCause'], 'answerCause index out of range');
+    if (q.causeOptions[q.answerCause]?.misconception) {
+      fail(['causeOptions', q.answerCause, 'misconception'], 'the correct cause cannot carry a misconception');
+    }
+  }
+});
+
+export const questionFile = z.array(question);
+
+export const topic = z.object({
+  id: topicId,
+  title: localized,
+  parent: topicId.nullable(),
+  weight: oneToThree,
+  group: z.string().min(1),
+});
+export const topicsFile = z.array(topic);
+
+export const lessonMeta = z.object({
+  id,
+  topic: topicId,
+  kind,
+  readMinutes: z.coerce.number().int().positive(),
+});
+
+export type Localized = z.infer<typeof localized>;
+export type Kind = z.infer<typeof kind>;
+export type Difficulty = z.infer<typeof difficulty>;
+export type Question = z.infer<typeof question>;
+export type Mcq = Extract<Question, { type: 'mcq' }>;
+export type SpotBug = Extract<Question, { type: 'spot-bug' }>;
+export type Open = Extract<Question, { type: 'open' }>;
+export type ChallengeMeta = z.infer<typeof challengeMeta>;
+export type Item = Question | ChallengeMeta;
+export type Topic = z.infer<typeof topic>;
+export type LessonMeta = z.infer<typeof lessonMeta>;
+export type Lesson = LessonMeta & { body: Localized };

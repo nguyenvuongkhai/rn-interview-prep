@@ -1699,12 +1699,12 @@ export function App() {
 cd ~/Downloads/rn-interview-prep && npm run check
 ```
 
-Kỳ vọng: `tsc` không lỗi, Vitest báo **154 test pass trên 23 file**. Trong đó 134 test của P3 và 20 test mới:
+Kỳ vọng: `tsc` không lỗi, Vitest báo **155 test pass trên 23 file**. Trong đó 134 test của P3 và 21 test mới (sau review thêm 1 test backup cho setting không hợp lệ):
 
 | File test | Test mới |
 |---|---|
 | repo | +4 (2 × memory, 2 × dexie) |
-| backup | 5 |
+| backup | 6 |
 | progress | 5 |
 | router | +1 |
 | sessionService | +3 |

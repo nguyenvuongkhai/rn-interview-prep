@@ -21,7 +21,14 @@ const session = z.object({
 });
 const review = z.object({ itemId: z.string(), box: z.number().int().min(0), dueAt: z.number() });
 const draft = z.object({ challengeId: z.string(), code: z.string(), updatedAt: z.number() });
-const setting = z.object({ key: z.string(), value: z.unknown() });
+// Settings the app reads at boot must hold values it understands, or a bad backup would break every load.
+const KNOWN_SETTINGS: Record<string, readonly unknown[]> = { lang: ['vi', 'en'], theme: ['dark', 'light', 'system'] };
+const setting = z
+  .object({ key: z.string(), value: z.unknown() })
+  .refine((s) => !(s.key in KNOWN_SETTINGS) || KNOWN_SETTINGS[s.key].includes(s.value), {
+    message: 'unsupported value for this setting',
+    path: ['value'],
+  });
 
 export const backupSchema = z.object({
   app: z.literal(BACKUP_APP),

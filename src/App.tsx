@@ -36,8 +36,8 @@ export function App() {
     };
     void openRepo()
       .then(async ({ repo, persistent }) => {
-        const [lang, theme] = await Promise.all([repo.getSetting<Lang>('lang'), repo.getSetting<unknown>('theme')]);
-        ready(repo, persistent, lang ?? 'vi', isThemePref(theme) ? theme : 'dark');
+        const [lang, theme] = await Promise.all([repo.getSetting<unknown>('lang'), repo.getSetting<unknown>('theme')]);
+        ready(repo, persistent, lang === 'en' ? 'en' : 'vi', isThemePref(theme) ? theme : 'dark');
       })
       .catch(() => ready(createMemoryRepo(), false, 'vi', 'dark'));
     return () => {
@@ -72,7 +72,7 @@ export function App() {
         {route.name === 'library' ? <LibraryScreen service={service} content={content} /> : null}
         {route.name === 'lesson' ? <LessonScreen key={route.lessonId} service={service} content={content} lessonId={route.lessonId} /> : null}
         {route.name === 'progress' ? <ProgressScreen service={service} content={content} /> : null}
-        {route.name === 'settings' ? <SettingsScreen service={service} /> : null}
+        {route.name === 'settings' ? <SettingsScreen service={service} persistent={boot.persistent} /> : null}
       </LangProvider>
     </ThemeProvider>
   );

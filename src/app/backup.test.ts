@@ -29,6 +29,11 @@ describe('backup', () => {
     expect(() => parseBackup(JSON.stringify(bad))).toThrow('attempts.0.score');
   });
 
+  it('rejects a setting value the app cannot use', () => {
+    const bad = toBackup({ ...snapshot, settings: [{ key: 'lang', value: 'fr' }] }, NOW);
+    expect(() => parseBackup(JSON.stringify(bad))).toThrow('settings.0.value');
+  });
+
   it('names the file after the local date', () => {
     expect(backupFileName(new Date(2026, 9, 1, 9).getTime())).toBe('rn-interview-prep-2026-10-01.json');
   });

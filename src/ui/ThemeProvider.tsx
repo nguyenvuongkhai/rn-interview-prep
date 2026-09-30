@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useLayoutEffect, useMemo, useState, type ReactNode } from 'react';
 import { resolveTheme, type Theme, type ThemePref } from './theme';
 
 interface ThemeValue {
@@ -24,7 +24,8 @@ export function ThemeProvider({ initial, onChange, children }: { initial: ThemeP
 
   const theme = resolveTheme(pref, prefersDark);
 
-  useEffect(() => {
+  // before paint, so a light choice does not flash dark
+  useLayoutEffect(() => {
     document.documentElement.dataset.theme = theme;
     document.querySelector('meta[name="theme-color"]')?.setAttribute('content', THEME_COLOR[theme]);
   }, [theme]);

@@ -13,12 +13,14 @@ import { useTheme } from '../ui/ThemeProvider';
 
 const LANGS: Lang[] = ['vi', 'en'];
 
-export function SettingsScreen({ service }: { service: SessionService }) {
+export function SettingsScreen({ service, persistent }: { service: SessionService; persistent: boolean }) {
   const { lang, setLang, t } = useLang();
   const { pref, setPref } = useTheme();
   const [pending, setPending] = useState<Snapshot>();
   const [message, setMessage] = useState<{ ok: boolean; text: string }>();
   const [busy, setBusy] = useState(false);
+  // the safety copy is its own click, so the browser treats it as a user download and it finishes before any reload
+  const [savedCurrent, setSavedCurrent] = useState(false);
 
   async function downloadBackup() {
     const backup = await service.exportBackup(Date.now());
@@ -42,17 +44,27 @@ export function SettingsScreen({ service }: { service: SessionService }) {
     setMessage(undefined);
     try {
       setPending(parseBackup(await file.text()));
+      setSavedCurrent(false);
     } catch (e) {
       setPending(undefined);
       setMessage({ ok: false, text: t('importFailed', { reason: e instanceof Error ? e.message : String(e) }) });
     }
   }
 
-  async function confirmImport() {
-    if (!pending) return;
-    setBusy(true);
+  async function saveCurrent() {
+    setMessage(undefined);
     try {
       await downloadBackup();
+      setSavedCurrent(true);
+    } catch {
+      setMessage({ ok: false, text: t('saveFailed') });
+    }
+  }
+
+  async function confirmImport() {
+    if (!pending || !savedCurrent) return;
+    setBusy(true);
+    try {
       await service.importBackup(pending);
       // restart so language, theme and every screen read the restored data
       window.location.hash = href({ name: 'today' });
@@ -97,13 +109,24 @@ export function SettingsScreen({ service }: { service: SessionService }) {
         </div>
         <label className="stack" style={{ gap: 'var(--space-2)' }} htmlFor="backup-file">
           <span className="muted">{t('importLabel')}</span>
-          <input id="backup-file" type="file" accept="application/json,.json" className="file-input" onChange={(e) => void onFile(e)} />
+          <input
+            id="backup-file"
+            type="file"
+            accept="application/json,.json"
+            className="file-input"
+            disabled={!persistent}
+            onChange={(e) => void onFile(e)}
+          />
         </label>
+        {!persistent ? <p className="muted">{t('importNeedsStorage')}</p> : null}
         {pending ? (
           <div className="panel stack" style={{ gap: 'var(--space-3)' }}>
             <p style={{ margin: 0 }}>{t('importConfirm', { s: pending.sessions.length, a: pending.attempts.length })}</p>
             <div className="row">
-              <Button variant="primary" disabled={busy} onClick={() => void confirmImport()}>{t('importRun')}</Button>
+              <Button disabled={busy || savedCurrent} onClick={() => void saveCurrent()}>
+                {savedCurrent ? t('currentSaved') : t('saveCurrentFirst')}
+              </Button>
+              <Button variant="primary" disabled={busy || !savedCurrent} onClick={() => void confirmImport()}>{t('importRun')}</Button>
               <Button disabled={busy} onClick={() => setPending(undefined)}>{t('cancel')}</Button>
             </div>
           </div>

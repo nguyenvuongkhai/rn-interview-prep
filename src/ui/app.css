@@ -173,12 +173,12 @@ details summary { cursor: pointer; }
 .topics { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--space-3); }
 .progress { display: grid; grid-template-columns: minmax(0, 360px) minmax(0, 1fr); gap: var(--space-5); align-items: start; }
 .week-chart { display: flex; align-items: flex-end; gap: 10px; height: 96px; }
-.week-bar { flex: 1 1 0; border-radius: var(--radius-sm) var(--radius-sm) 0 0; background: var(--line); }
+.week-bar { flex: 1 1 0; border-radius: var(--radius-sm) var(--radius-sm) 0 0; background: var(--ink-muted); }
 .week-bar.current { background: var(--accent-ink); }
-.week-bar.empty { background: var(--mastery-none); }
+.week-bar.empty { background: transparent; border: 1px dashed var(--ink-muted); }
 .legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: 12px; color: var(--ink-muted); }
 .legend span { display: inline-flex; align-items: center; gap: 6px; }
-.swatch { width: 12px; height: 12px; border-radius: 2px; }
+.swatch { width: 12px; height: 12px; border-radius: 2px; border: 1px solid var(--ink-muted); }
 .map-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--space-2); }
 .cell { display: flex; flex-direction: column; justify-content: space-between; gap: var(--space-1); min-height: 64px; padding: 8px 10px; border-radius: var(--radius-sm); font-size: 13px; line-height: 17px; }
 .cell-none { background: var(--mastery-none); border: 1px solid var(--line); color: var(--ink); }

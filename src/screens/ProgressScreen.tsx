@@ -66,7 +66,11 @@ export function ProgressScreen({ service, content }: { service: SessionService; 
 
           <div className="card stack">
             <span className="label">{t('weeklyTitle', { n: weeks.length })}</span>
-            <div className="week-chart">
+            <div
+              className="week-chart"
+              role="img"
+              aria-label={t('weeklyChart', { list: weeks.map((w) => (w.mean === null ? '–' : formatScore(w.mean))).join(', ') })}
+            >
               {weeks.map((w, i) => (
                 <div
                   key={w.start}

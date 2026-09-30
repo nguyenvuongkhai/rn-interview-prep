@@ -14,6 +14,7 @@ export function LibraryScreen({ service, content }: { service: SessionService; c
   const [mastery, setMastery] = useState<Map<string, Mastery>>(() => new Map());
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false);
 
   useEffect(() => {
     let live = true;
@@ -21,7 +22,9 @@ export function LibraryScreen({ service, content }: { service: SessionService; c
       (stats) => {
         if (live) setMastery(stats.mastery);
       },
-      () => undefined,
+      () => {
+        if (live) setLoadFailed(true);
+      },
     );
     return () => {
       live = false;
@@ -44,6 +47,7 @@ export function LibraryScreen({ service, content }: { service: SessionService; c
     <main className="page stack" style={{ gap: 'var(--space-5)' }}>
       <h1 className="display">{t('libraryTitle')}</h1>
       {failed ? <p role="alert" className="muted down">{t('saveFailed')}</p> : null}
+      {loadFailed ? <p role="alert" className="muted down">{t('loadFailed')}</p> : null}
       {topicGroups(content.topics, mastery).map((group) => (
         <section key={group.root.id} className="stack">
           <h2 className="title">{pick(group.root.title)}</h2>

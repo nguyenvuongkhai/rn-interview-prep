@@ -37,3 +37,12 @@ export function Segments({ states }: { states: SegmentState[] }) {
     </div>
   );
 }
+
+export function Stat({ value, label }: { value: string; label: string }) {
+  return (
+    <div className="stack" style={{ gap: 0 }}>
+      <span className="stat">{value}</span>
+      <span className="muted">{label}</span>
+    </div>
+  );
+}

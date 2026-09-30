@@ -6,17 +6,8 @@ import type { Content } from '../content/load';
 import type { Diagnosis, PlanStep } from '../core/recommend';
 import { useLang } from '../i18n/LangProvider';
 import { NotFound } from '../ui/Chrome';
-import { Button, Rich } from '../ui/components';
+import { Button, Rich, Stat } from '../ui/components';
 import { formatClock, formatScore } from '../ui/format';
-
-function Stat({ value, label }: { value: string; label: string }) {
-  return (
-    <div className="stack" style={{ gap: 0 }}>
-      <span className="stat">{value}</span>
-      <span className="muted">{label}</span>
-    </div>
-  );
-}
 
 function Delta({ before, after }: { before: number | null; after: number | null }) {
   if (after === null) return null;
@@ -125,7 +116,8 @@ export function ResultScreen({ service, content, sessionId }: { service: Session
                 <ol className="steps">
                   {g.plan.map((s) => (
                     <li key={s.kind}>
-                      {stepText(s)} <span className="num muted">{s.minutes}'</span>
+                      {s.kind === 'read' ? <a href={href({ name: 'lesson', lessonId: s.lessonId })}>{stepText(s)}</a> : stepText(s)}{' '}
+                      <span className="num muted">{s.minutes}'</span>
                     </li>
                   ))}
                 </ol>

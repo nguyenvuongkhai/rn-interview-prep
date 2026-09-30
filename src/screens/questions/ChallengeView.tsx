@@ -8,6 +8,7 @@ import type { Include, RunOutput } from '../../runner/execute';
 import { runInWorker } from '../../runner/runInWorker';
 import { Button, Rich } from '../../ui/components';
 import { Markdown } from '../../ui/Markdown';
+import { useTheme } from '../../ui/ThemeProvider';
 
 const CodeEditor = lazy(() => import('../../ui/CodeEditor'));
 const SAVE_DELAY_MS = 500;
@@ -24,6 +25,7 @@ export function ChallengeView({ item, files, prompt, service, text, usedHints, o
   onFullRun: (tests: TestResult[] | null) => void;
 }) {
   const { t } = useLang();
+  const { theme } = useTheme();
   const [code, setCode] = useState<string>();
   const [running, setRunning] = useState<Include | null>(null);
   const [output, setOutput] = useState<{ include: Include; result: RunOutput }>();
@@ -128,7 +130,7 @@ export function ChallengeView({ item, files, prompt, service, text, usedHints, o
             <p className="muted">{t('editorLoading')}</p>
           ) : (
             <Suspense fallback={<p className="muted">{t('editorLoading')}</p>}>
-              <CodeEditor value={code} onChange={edit} />
+              <CodeEditor value={code} onChange={edit} dark={theme === 'dark'} />
             </Suspense>
           )}
         </div>

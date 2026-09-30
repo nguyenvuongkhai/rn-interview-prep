@@ -11,15 +11,25 @@ const definePine: BeforeMount = (monaco) => {
       'editorLineNumber.foreground': '#95a39d',
     },
   });
+  monaco.editor.defineTheme('pine-light', {
+    base: 'vs',
+    inherit: true,
+    rules: [],
+    colors: {
+      'editor.background': '#ffffff',
+      'editor.lineHighlightBackground': '#e3e8e5',
+      'editorLineNumber.foreground': '#56615c',
+    },
+  });
 };
 
-export default function CodeEditor({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+export default function CodeEditor({ value, onChange, dark }: { value: string; onChange: (value: string) => void; dark: boolean }) {
   return (
     <Editor
       height="420px"
       path="solution.ts"
       defaultLanguage="typescript"
-      theme="pine"
+      theme={dark ? 'pine' : 'pine-light'}
       value={value}
       beforeMount={definePine}
       onChange={(next) => onChange(next ?? '')}

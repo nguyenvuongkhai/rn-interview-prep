@@ -1951,14 +1951,14 @@ export function TestScreen({ service, content, sessionId }: { service: SessionSe
 cd ~/Downloads/rn-interview-prep && npm run check
 ```
 
-Kỳ vọng: `tsc` không lỗi, Vitest báo **132 test pass trên 20 file**. Trong đó 101 test của P2 và 31 test mới:
+Kỳ vọng: `tsc` không lỗi, Vitest báo **134 test pass trên 20 file**. Trong đó 101 test của P2 và 33 test mới (sau review thêm 1 test markdown và 1 test execute):
 
 | File test | Test mới |
 |---|---|
 | harness | 12 |
-| execute | 6 |
+| execute | 7 |
 | timeouts | 1 |
-| markdown | 4 |
+| markdown | 5 |
 | load | +3 |
 | content | +2 |
 | repo | +2 |

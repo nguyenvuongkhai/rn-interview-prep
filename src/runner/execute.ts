@@ -24,6 +24,8 @@ export interface RunEvents {
 }
 
 export const MAX_LOG_LINES = 200;
+export const MAX_LOG_LINE_LENGTH = 2000;
+export const HIDDEN_LOG_NOTE = 'Output from hidden tests is not shown.';
 
 /** Strips types and turns ES modules into CommonJS so evaluate() can wire `./solution` to the user's code. */
 export function compile(ts: string): string {
@@ -43,12 +45,22 @@ function evaluate(js: string, modules: Record<string, unknown>, scope: Record<st
 }
 
 export async function execute(input: RunInput, events: RunEvents = {}): Promise<RunOutput> {
+  const harness = createHarness();
   const logs: string[] = [];
-  const log = (...args: unknown[]) => {
-    if (logs.length >= MAX_LOG_LINES) return;
-    const line = args.map((a) => (typeof a === 'string' ? a : describeValue(a))).join(' ');
+  let hiddenOutput = false;
+  const push = (line: string) => {
     logs.push(line);
     events.onLog?.(line);
+  };
+  const log = (...args: unknown[]) => {
+    // hidden tests only report pass/fail and category; their inputs must not show up in the console
+    if (harness.current()?.hidden) {
+      hiddenOutput = true;
+      return;
+    }
+    if (logs.length >= MAX_LOG_LINES) return;
+    const line = args.map((a) => (typeof a === 'string' ? a : describeValue(a))).join(' ');
+    push(line.length > MAX_LOG_LINE_LENGTH ? `${line.slice(0, MAX_LOG_LINE_LENGTH)}…` : line);
   };
   const fakeConsole = { log, info: log, warn: log, error: log, debug: log };
 
@@ -61,7 +73,6 @@ export async function execute(input: RunInput, events: RunEvents = {}): Promise<
     return { results: [], logs, error: `Syntax error: ${errorMessage(e)}` };
   }
 
-  const harness = createHarness();
   try {
     const solution = evaluate(solutionJs, {}, { console: fakeConsole });
     evaluate(testsJs, { './solution': solution }, { console: fakeConsole, test: harness.test, expect: harness.expect, clock: harness.clock });
@@ -73,5 +84,6 @@ export async function execute(input: RunInput, events: RunEvents = {}): Promise<
   const include = (t: PlannedTest) => input.include === 'all' || !t.hidden;
   events.onPlan?.(harness.planned(include));
   const results = await harness.run(include, events.onResult);
+  if (hiddenOutput) push(HIDDEN_LOG_NOTE);
   return { results, logs };
 }

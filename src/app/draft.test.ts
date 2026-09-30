@@ -23,6 +23,7 @@ describe('toResponse', () => {
   it('challenge needs a full test run', () => {
     const c = challenge('c');
     expect(toResponse(c, EMPTY_DRAFT)).toBeNull();
+    expect(toResponse(c, { ...EMPTY_DRAFT, tests: [] })).toBeNull();
     const tests = [{ name: 't', category: 'basic', pass: true, hidden: false }];
     expect(toResponse(c, { ...EMPTY_DRAFT, tests, usedHints: 1 })).toEqual({ type: 'challenge', tests, usedHints: 1 });
   });

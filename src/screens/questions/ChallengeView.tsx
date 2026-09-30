@@ -28,6 +28,20 @@ export function ChallengeView({ item, files, prompt, service, text, usedHints, o
   const [running, setRunning] = useState<Include | null>(null);
   const [output, setOutput] = useState<{ include: Include; result: RunOutput }>();
   const loaded = useRef(false);
+  // bumped on every edit; a run whose version is stale by the time it ends cannot count as the full run
+  const version = useRef(0);
+  const holdsFullRun = useRef(false);
+  const pendingSave = useRef<string | undefined>(undefined);
+  const runAbort = useRef<AbortController | undefined>(undefined);
+
+  // On unmount (submit, exit): stop a run in flight and keep the last unsaved edit.
+  useEffect(
+    () => () => {
+      runAbort.current?.abort();
+      if (pendingSave.current !== undefined) service.saveDraft(item.id, pendingSave.current).catch(() => undefined);
+    },
+    [service, item.id],
+  );
 
   useEffect(() => {
     let live = true;
@@ -51,7 +65,9 @@ export function ChallengeView({ item, files, prompt, service, text, usedHints, o
       loaded.current = true;
       return;
     }
+    pendingSave.current = code;
     const id = window.setTimeout(() => {
+      pendingSave.current = undefined;
       service.saveDraft(item.id, code).catch(() => undefined);
     }, SAVE_DELAY_MS);
     return () => window.clearTimeout(id);
@@ -59,19 +75,29 @@ export function ChallengeView({ item, files, prompt, service, text, usedHints, o
 
   function edit(next: string) {
     setCode(next);
-    if (output?.include === 'all') {
-      setOutput(undefined);
+    version.current++;
+    if (holdsFullRun.current) {
+      holdsFullRun.current = false;
       onFullRun(null);
     }
+    if (output?.include === 'all') setOutput(undefined);
   }
 
   async function runTests(include: Include) {
     if (code === undefined || running) return;
+    const startedAt = version.current;
+    const abort = new AbortController();
+    runAbort.current = abort;
     setRunning(include);
-    const result = await runInWorker({ solution: code, tests: files.tests, include });
+    const result = await runInWorker({ solution: code, tests: files.tests, include }, abort.signal);
+    if (abort.signal.aborted) return;
     setRunning(null);
     setOutput({ include, result });
-    if (include === 'all') onFullRun(result.results);
+    if (include !== 'all' || startedAt !== version.current) return;
+    // a run that could not start (syntax error, load-time throw) is not a gradable submission
+    const tests = result.error && result.results.length === 0 ? null : result.results;
+    holdsFullRun.current = tests !== null;
+    onFullRun(tests);
   }
 
   const visible = output?.result.results.filter((r) => !r.hidden) ?? [];

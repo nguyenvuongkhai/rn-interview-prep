@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { execute } from './execute';
+import { HIDDEN_LOG_NOTE, execute } from './execute';
 
 const solution = `export function add(a: number, b: number): number {
   console.log('adding', a, b);
@@ -27,6 +27,11 @@ describe('execute', () => {
   it('captures console output', async () => {
     const out = await execute({ solution, tests, include: 'visible' });
     expect(out.logs[0]).toBe('adding 1 2');
+  });
+
+  it('keeps console output from hidden tests out of the logs', async () => {
+    const out = await execute({ solution, tests, include: 'all' });
+    expect(out.logs).toEqual(['adding 1 2', 'adding 1 1', HIDDEN_LOG_NOTE]);
   });
 
   it('reports the planned tests before running them', async () => {

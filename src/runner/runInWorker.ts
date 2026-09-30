@@ -5,7 +5,7 @@ import type { WorkerMessage } from './messages';
 import { RUN_TIMEOUT_MS, finishTimedOut } from './timeouts';
 
 /** Runs in a throwaway module worker so a hung or hostile solution cannot freeze the page. */
-export function runInWorker(input: RunInput): Promise<RunOutput> {
+export function runInWorker(input: RunInput, signal?: AbortSignal): Promise<RunOutput> {
   return new Promise((resolve) => {
     const worker = new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' });
     const planned: PlannedTest[] = [];
@@ -27,7 +27,15 @@ export function runInWorker(input: RunInput): Promise<RunOutput> {
       else if (m.type === 'log') logs.push(m.line);
       else end(m.output);
     };
-    worker.onerror = (event) => end({ results: [], logs, error: event.message || 'The test runner failed to start' });
+    worker.onerror = (event) => {
+      if (planned.length > 0) {
+        event.preventDefault();
+        logs.push(`Uncaught: ${event.message}`);
+        return;
+      }
+      end({ results: [], logs, error: event.message || 'The test runner failed to start' });
+    };
+    signal?.addEventListener('abort', () => end({ results, logs, error: 'Cancelled' }), { once: true });
     worker.postMessage(input);
   });
 }

@@ -29,7 +29,7 @@ export function toResponse(item: Item, d: Draft): Response | null {
     case 'open':
       return d.revealed ? { type: 'open', hitKeyPoints: d.hits } : null;
     case 'challenge':
-      return d.tests ? { type: 'challenge', tests: d.tests, usedHints: d.usedHints } : null;
+      return d.tests && d.tests.length > 0 ? { type: 'challenge', tests: d.tests, usedHints: d.usedHints } : null;
   }
 }
 

@@ -4,7 +4,7 @@ export type Block =
   | { kind: 'list'; items: string[] }
   | { kind: 'paragraph'; text: string };
 
-const FENCE = /^```(\w*)\s*$/;
+const FENCE = /^```(\w*).*$/;
 const FENCE_END = /^```\s*$/;
 const HEADING = /^(#{1,3})\s+(.*)$/;
 const BULLET = /^[-*]\s+/;
@@ -42,7 +42,8 @@ export function parseMarkdown(source: string): Block[] {
       blocks.push({ kind: 'list', items });
       continue;
     }
-    const paragraph: string[] = [];
+    // the first line always goes in, so a line that only looks like a block start cannot stall the loop
+    const paragraph: string[] = [lines[i++].trim()];
     while (i < lines.length && lines[i].trim() && !BLOCK_START.test(lines[i])) paragraph.push(lines[i++].trim());
     blocks.push({ kind: 'paragraph', text: paragraph.join(' ') });
   }

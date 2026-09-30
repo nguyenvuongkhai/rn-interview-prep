@@ -200,6 +200,7 @@ export function createClock(scope: typeof globalThis): Clock {
 export function createHarness(scope: typeof globalThis = globalThis) {
   const tests: (PlannedTest & { fn: () => unknown })[] = [];
   const clock = createClock(scope);
+  let active: PlannedTest | undefined;
   const realSetTimeout = scope.setTimeout.bind(scope) as unknown as TimerFn;
   const realClearTimeout = scope.clearTimeout.bind(scope) as unknown as ClearFn;
 
@@ -217,6 +218,8 @@ export function createHarness(scope: typeof globalThis = globalThis) {
     test(name: string, fn: () => unknown, options: TestOptions = {}): void {
       tests.push({ name, fn, category: options.category ?? 'basic', hidden: options.hidden ?? false });
     },
+    /** the test running right now, so callers can tell hidden output apart */
+    current: (): PlannedTest | undefined => active,
     planned(include: (t: PlannedTest) => boolean): PlannedTest[] {
       return tests.filter(include).map(({ name, category, hidden }) => ({ name, category, hidden }));
     },
@@ -225,12 +228,14 @@ export function createHarness(scope: typeof globalThis = globalThis) {
       for (const t of tests.filter(include)) {
         const base = { name: t.name, category: t.category, hidden: t.hidden };
         let result: TestResult;
+        active = base;
         try {
           await withTimeout(Promise.resolve().then(t.fn));
           result = { ...base, pass: true };
         } catch (e) {
           result = { ...base, pass: false, error: errorMessage(e) };
         } finally {
+          active = undefined;
           clock.uninstall();
         }
         results.push(result);

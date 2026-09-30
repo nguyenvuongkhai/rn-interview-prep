@@ -24,6 +24,10 @@ describe('parseMarkdown', () => {
     ]);
   });
 
+  it('accepts a fence with extra text after the language', () => {
+    expect(parseMarkdown('```c++ title\nx\n```')).toEqual([{ kind: 'code', lang: 'c', text: 'x' }]);
+  });
+
   it('runs an unclosed fence to the end', () => {
     expect(parseMarkdown('```\nx')).toEqual([{ kind: 'code', lang: '', text: 'x' }]);
   });

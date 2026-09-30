@@ -72,6 +72,7 @@ export function ResultScreen({ service, content, sessionId }: { service: Session
     return t('stepChallenge', { title: ch?.type === 'challenge' ? pick(ch.title) : s.itemId });
   };
   const misconceptions = report.diagnoses.flatMap((d) => (d.code === 'misconception' ? [d] : []));
+  const categories = report.diagnoses.flatMap((d) => (d.code === 'challenge-category' ? [d] : []));
 
   async function practise(itemIds: string[]) {
     setBusy(true);
@@ -154,6 +155,14 @@ export function ResultScreen({ service, content, sessionId }: { service: Session
             })}
           </div>
         ) : null}
+        {categories.length > 0 ? (
+          <div className="callout stack" style={{ gap: 'var(--space-2)' }}>
+            <span className="label">{t('categoryTitle')}</span>
+            {categories.map((c) => (
+              <span key={c.category} className="num">{t('categoryLine', { category: c.category, n: c.failures })}</span>
+            ))}
+          </div>
+        ) : null}
         <div className="panel stack" style={{ gap: 'var(--space-2)' }}>
           <span className="label">{t('wrongTitle')}</span>
           {report.wrong.length === 0 ? <span className="muted">{t('noneWrong')}</span> : null}
@@ -164,6 +173,12 @@ export function ResultScreen({ service, content, sessionId }: { service: Session
               </summary>
               {'explanation' in item ? <p className="muted"><Rich text={pick(item.explanation)} /></p> : null}
               {item.type === 'open' ? <p className="muted"><Rich text={pick(item.modelAnswer)} /></p> : null}
+              {item.type === 'challenge' && content.challenges[item.id] ? (
+                <>
+                  <span className="label">{t('solutionTitle')}</span>
+                  <pre className="md-code">{content.challenges[item.id].solution}</pre>
+                </>
+              ) : null}
             </details>
           ))}
         </div>

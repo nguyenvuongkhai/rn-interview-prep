@@ -45,6 +45,7 @@ export function TodayScreen({ service, content }: { service: SessionService; con
   });
   const quick = planItems.filter((i) => i.type === 'mcq' || i.type === 'spot-bug').length;
   const opens = planItems.filter((i) => i.type === 'open').length;
+  const challenges = planItems.filter((i) => i.type === 'challenge').length;
   const minutes = Math.round(planItems.reduce((s, i) => s + i.estSeconds, 0) / 60);
   const topicTitle = (id: string) => {
     const topic = content.topics.find((x) => x.id === id);
@@ -104,6 +105,10 @@ export function TodayScreen({ service, content }: { service: SessionService; con
             <div className="stack" style={{ gap: 2 }}>
               <span className="count">{opens}</span>
               <span className="muted">{t('countOpen')}</span>
+            </div>
+            <div className="stack" style={{ gap: 2 }}>
+              <span className="count">{challenges}</span>
+              <span className="muted">{t('countChallenge')}</span>
             </div>
           </div>
         </div>

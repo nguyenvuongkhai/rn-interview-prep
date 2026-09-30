@@ -12,6 +12,7 @@ import { NotFound } from '../ui/Chrome';
 import { Button, Chip, Rich, Segments, type SegmentState } from '../ui/components';
 import { formatClock, otherLang } from '../ui/format';
 import { useNow } from '../ui/useNow';
+import { ChallengeView } from './questions/ChallengeView';
 import { McqView } from './questions/McqView';
 import { OpenView } from './questions/OpenView';
 import { SpotBugView } from './questions/SpotBugView';
@@ -133,11 +134,12 @@ export function TestScreen({ service, content, sessionId }: { service: SessionSe
   }
 
   const ready = toResponse(item, draft) !== null && draft.confidence !== null;
+  const files = item.type === 'challenge' ? content.challenges[item.id] : undefined;
 
   return (
     <>
       {header}
-      <main className="question">
+      <main className={item.type === 'challenge' ? 'question wide' : 'question'}>
         <div className="row" style={{ gap: 'var(--space-2)' }}>
           <Chip><span className="label">{t(`kind_${item.kind}` as UiKey)}</span></Chip>
           <Chip><span className="label">{t(`diff_${item.difficulty}` as UiKey)}</span></Chip>
@@ -146,7 +148,9 @@ export function TestScreen({ service, content, sessionId }: { service: SessionSe
           <Button className="btn-small" onClick={() => setAlt(!alt)}>{t(alt ? 'showOwn' : 'showOther')}</Button>
         </div>
 
-        {item.type !== 'challenge' ? <h2 ref={titleRef} tabIndex={-1} className="title"><Rich text={text(item.prompt)} /></h2> : null}
+        <h2 ref={titleRef} tabIndex={-1} className="title">
+          <Rich text={item.type === 'challenge' ? text(item.title) : text(item.prompt)} />
+        </h2>
 
         {item.type === 'mcq' ? (
           <>
@@ -167,6 +171,23 @@ export function TestScreen({ service, content, sessionId }: { service: SessionSe
             onHits={(hits) => setDraft({ ...draft, hits })}
             text={text}
           />
+        ) : null}
+        {item.type === 'challenge' ? (
+          files ? (
+            <ChallengeView
+              key={item.id}
+              item={item}
+              files={files}
+              prompt={files.prompt[textLang]}
+              service={service}
+              text={text}
+              usedHints={draft.usedHints}
+              onHint={() => setDraft((d) => ({ ...d, usedHints: d.usedHints + 1 }))}
+              onFullRun={(tests) => setDraft((d) => ({ ...d, tests }))}
+            />
+          ) : (
+            <p role="alert" className="muted down">{t('challengeMissing')}</p>
+          )
         ) : null}
 
         <div className="confidence">

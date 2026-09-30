@@ -16,19 +16,19 @@
       { "text": { "vi": "Cha truyền một object literal mới làm prop ở mỗi lần render", "en": "The parent passes a new object literal as a prop on every render" } },
       { "text": { "vi": "Cha truyền một arrow function inline làm prop", "en": "The parent passes an inline arrow function as a prop" } },
       {
-        "text": { "vi": "`React.memo` chỉ có tác dụng với class component", "en": "`React.memo` only works on class components" },
-        "misconception": { "id": "memo-class-only", "text": { "vi": "Nghĩ rằng React.memo dành cho class component. Thực tế nó dành cho function component; class dùng PureComponent.", "en": "Believing React.memo is for class components. It is for function components; classes use PureComponent." } }
+        "text": { "vi": "Cha truyền setter của `useState` làm prop", "en": "The parent passes a `useState` setter as a prop" },
+        "misconception": { "id": "setter-unstable", "text": { "vi": "Nghĩ rằng setter của useState đổi tham chiếu giữa các lần render. React giữ setter ổn định, nên nó không làm memo mất tác dụng.", "en": "Believing a useState setter changes identity between renders. React keeps the setter stable, so it never defeats memo." } }
       },
-      { "text": { "vi": "Component con dùng `useContext` và giá trị context thay đổi", "en": "The child calls `useContext` and the context value changes" } },
+      { "text": { "vi": "Cha là provider của một context mà con đọc, và tạo object `value` mới mỗi lần render", "en": "The parent provides a context the child reads, with a new `value` object each render" } },
       {
-        "text": { "vi": "`React.memo` so sánh sâu (deep equal) các prop nên luôn thấy chúng khác nhau", "en": "`React.memo` deep-compares props, so it always sees them as different" },
+        "text": { "vi": "`React.memo` mặc định so sánh sâu (deep equal) các prop nên luôn thấy chúng khác nhau", "en": "`React.memo` deep-compares props by default, so it always sees them as different" },
         "misconception": { "id": "memo-deep-compare", "text": { "vi": "Nghĩ rằng React.memo so sánh sâu. Mặc định nó so sánh nông (shallow) từng prop bằng Object.is.", "en": "Believing React.memo compares deeply. By default it shallow-compares each prop with Object.is." } }
       }
     ],
     "answer": [0, 1, 3],
     "explanation": {
-      "vi": "`React.memo` so sánh nông từng prop bằng `Object.is`. Object literal và arrow function inline là tham chiếu mới ở mỗi lần render nên luôn bị xem là khác. Ngoài ra, `memo` không chặn được re-render do context mà component tự đăng ký qua `useContext`.",
-      "en": "`React.memo` shallow-compares each prop with `Object.is`. Object literals and inline arrow functions are new references on every render, so they always compare as different. `memo` also cannot block re-renders caused by a context the component subscribes to with `useContext`."
+      "vi": "`React.memo` so sánh nông từng prop bằng `Object.is`. Object literal và arrow function inline là tham chiếu mới ở mỗi lần render nên luôn bị xem là khác. Setter của `useState` thì luôn ổn định, nên không gây re-render. `memo` cũng không chặn được re-render do context: nếu cha truyền một object mới làm `value`, mọi component con đọc context đó bằng `useContext` đều re-render theo.",
+      "en": "`React.memo` shallow-compares each prop with `Object.is`. Object literals and inline arrow functions are new references on every render, so they always compare as different. A `useState` setter is always stable, so it does not cause a re-render. `memo` also cannot block context updates: if the parent passes a new object as the `value`, every child that reads that context with `useContext` re-renders."
     }
   },
   {
@@ -38,7 +38,7 @@
     "kind": "core",
     "difficulty": 1,
     "estSeconds": 45,
-    "lessons": ["render-memo-pitfalls"],
+    "lessons": ["render-memo-pitfalls", "render-memo-core"],
     "multi": false,
     "prompt": {
       "vi": "`useCallback(fn, [a])` thực sự làm gì?",
@@ -47,15 +47,15 @@
     "options": [
       { "text": { "vi": "Trả về cùng một tham chiếu hàm giữa các lần render, miễn là `a` không đổi", "en": "Returns the same function reference across renders as long as `a` is unchanged" } },
       {
-        "text": { "vi": "Ngăn component hiện tại re-render", "en": "Prevents the current component from re-rendering" },
+        "text": { "vi": "Ngăn component hiện tại re-render khi `a` không đổi", "en": "Prevents the current component from re-rendering while `a` is unchanged" },
         "misconception": { "id": "usecallback-prevents-rerender", "text": { "vi": "Nghĩ rằng useCallback ngăn được re-render. Nó chỉ giữ ổn định tham chiếu của hàm.", "en": "Believing useCallback prevents re-renders. It only keeps the function reference stable." } }
       },
       {
-        "text": { "vi": "Tự động memo component con nhận hàm đó", "en": "Automatically memoizes the child that receives the function" },
+        "text": { "vi": "Tự động memo component con nhận hàm đó làm prop", "en": "Automatically memoizes the child component that receives the function" },
         "misconception": { "id": "usecallback-memoizes-child", "text": { "vi": "Nghĩ rằng useCallback tự memo component con. Component con vẫn phải được bọc React.memo thì tham chiếu ổn định mới có tác dụng.", "en": "Believing useCallback memoizes the child. The child must still be wrapped in React.memo for a stable reference to matter." } }
       },
       {
-        "text": { "vi": "Gọi `fn` một lần rồi cache giá trị trả về", "en": "Calls `fn` once and caches its return value" },
+        "text": { "vi": "Gọi `fn` một lần rồi cache giá trị trả về cho tới khi `a` đổi", "en": "Calls `fn` once and caches its return value until `a` changes" },
         "misconception": { "id": "usecallback-is-usememo", "text": { "vi": "Nhầm useCallback với useMemo. useMemo cache giá trị trả về, còn useCallback cache chính hàm.", "en": "Confusing useCallback with useMemo. useMemo caches a return value; useCallback caches the function itself." } }
       }
     ],
@@ -77,24 +77,27 @@
       "vi": "Mỗi lần chọn một dòng, toàn bộ các `Row` đều re-render dù đã bọc `React.memo`. Dòng nào gây ra lỗi, và vì sao?",
       "en": "Every time a row is selected, every `Row` re-renders even though it is wrapped in `React.memo`. Which line causes it, and why?"
     },
-    "code": "const Row = React.memo(({ item, onPress }) => (\n  <Pressable onPress={() => onPress(item.id)}>\n    <Text>{item.title}</Text>\n  </Pressable>\n));\n\nfunction List({ data }) {\n  const [selected, setSelected] = useState(null);\n  return (\n    <FlatList\n      data={data}\n      extraData={selected}\n      renderItem={({ item }) => <Row item={item} onPress={(id) => setSelected(id)} />}\n    />\n  );\n}",
-    "answerLine": 13,
+    "code": "type Item = { id: string; title: string };\ntype RowProps = { item: Item; onPress: (id: string) => void };\n\nconst Row = React.memo(({ item, onPress }: RowProps) => (\n  <Pressable onPress={() => onPress(item.id)}>\n    <Text>{item.title}</Text>\n  </Pressable>\n));\n\nfunction List({ data }: { data: Item[] }) {\n  const [selected, setSelected] = useState<string | null>(null);\n  return (\n    <FlatList\n      data={data}\n      extraData={selected}\n      renderItem={({ item }) => <Row item={item} onPress={(id) => setSelected(id)} />}\n    />\n  );\n}",
+    "answerLine": 16,
     "causeOptions": [
-      { "text": { "vi": "Arrow function inline tạo tham chiếu mới ở mỗi lần render, nên `React.memo` của `Row` luôn thấy prop `onPress` thay đổi", "en": "The inline arrow function is a new reference on every render, so `Row`'s `React.memo` always sees `onPress` as changed" } },
+      { "text": { "vi": "Arrow function inline là `onPress` mới mỗi lần render, nên `Row` luôn thấy prop đổi", "en": "The inline arrow is a new `onPress` each render, so `Row`'s shallow compare fails" } },
       {
-        "text": { "vi": "`extraData` khiến FlatList không bao giờ re-render", "en": "`extraData` stops FlatList from ever re-rendering" },
+        "text": { "vi": "`extraData` khiến FlatList không bao giờ re-render các row", "en": "`extraData` stops FlatList from ever re-rendering its rows" },
         "misconception": { "id": "extradata-blocks-render", "text": { "vi": "Hiểu ngược vai trò của extraData. Nó báo cho FlatList biết cần render lại khi giá trị đó đổi, chứ không chặn render.", "en": "Getting extraData backwards. It tells FlatList to re-render when that value changes; it does not block rendering." } }
       },
       {
-        "text": { "vi": "`React.memo` không dùng được cho component bên trong FlatList", "en": "`React.memo` does not work for components inside FlatList" },
-        "misconception": { "id": "memo-not-in-flatlist", "text": { "vi": "Nghĩ rằng memo không có tác dụng trong FlatList. Thực tế, bọc memo cho item là cách tối ưu phổ biến nhất.", "en": "Believing memo has no effect inside FlatList. Memoizing items is in fact the most common list optimisation." } }
+        "text": { "vi": "`React.memo` không có tác dụng với component được render bên trong FlatList", "en": "`React.memo` does not work for components rendered inside a FlatList" },
+        "misconception": { "id": "memo-not-in-flatlist", "text": { "vi": "Nghĩ rằng memo không có tác dụng trong FlatList. Thực tế, bọc memo cho item là một cách tối ưu danh sách phổ biến.", "en": "Believing memo has no effect inside FlatList. Memoizing items is in fact a standard list optimisation." } }
       },
-      { "text": { "vi": "`useState(null)` phải được khai báo kiểu", "en": "`useState(null)` must be given a type" } }
+      {
+        "text": { "vi": "`extraData` buộc mọi row trong danh sách re-render, bỏ qua memo của `Row`", "en": "`extraData` forces every row to re-render, bypassing `Row`'s memo" },
+        "misconception": { "id": "extradata-bypasses-memo", "text": { "vi": "Nghĩ rằng extraData bỏ qua memo của item. Nó khiến FlatList gọi lại renderItem, nhưng row đã memo vẫn bỏ qua khi prop giữ nguyên tham chiếu.", "en": "Believing extraData bypasses item memoization. It makes FlatList call renderItem again, but a memoized row still skips when its props keep the same references." } }
+      }
     ],
     "answerCause": 0,
     "explanation": {
-      "vi": "Ở dòng 13, `(id) => setSelected(id)` là một hàm mới ở mỗi lần `List` render. Có thể truyền thẳng `setSelected` (tham chiếu luôn ổn định), hoặc bọc hàm bằng `useCallback`. Tốt hơn nữa là chỉ truyền cho `Row` một prop `isSelected` kiểu boolean.",
-      "en": "On line 13, `(id) => setSelected(id)` is a new function on every `List` render. Pass `setSelected` directly (its reference is always stable) or wrap the function in `useCallback`. Better still, pass `Row` only an `isSelected` boolean."
+      "vi": "Ở dòng 16, `(id) => setSelected(id)` là một hàm mới ở mỗi lần `List` render. Hãy truyền thẳng `setSelected` (tham chiếu luôn ổn định), hoặc bọc hàm bằng `useCallback`. Khi `Row` cần hiển thị trạng thái chọn, hãy truyền thêm một prop `isSelected` kiểu boolean thay vì cả `selected`, để chỉ những dòng đổi trạng thái mới render lại.",
+      "en": "On line 16, `(id) => setSelected(id)` is a new function on every `List` render. Pass `setSelected` directly (its reference is always stable) or wrap the function in `useCallback`. When `Row` needs to show the selection, also pass it an `isSelected` boolean rather than the whole `selected` value, so only the rows whose selection changed re-render."
     }
   },
   {
@@ -106,23 +109,286 @@
     "estSeconds": 300,
     "lessons": ["render-memo-pitfalls"],
     "prompt": {
-      "vi": "Một màn hình có danh sách 500 item bị giật mỗi khi chọn một item. Profiler cho thấy mọi Row đều re-render. Bạn sẽ điều tra và sửa như thế nào?",
-      "en": "A screen with a 500-item list stutters whenever an item is selected. The profiler shows every Row re-rendering. How would you investigate and fix it?"
+      "vi": "Một danh sách chat 500 item bị giật khi chọn một tin nhắn. `Row` đã bọc `React.memo` và callback đã ổn định, nhưng Profiler cho thấy mọi `Row` re-render vì prop `item` thay đổi. `data` là `messages.map((m) => ({ ...m, isSelected: m.id === selectedId }))`. Bạn điều tra và sửa thế nào?",
+      "en": "A 500-item chat list stutters when a message is selected. `Row` is wrapped in `React.memo` and its callbacks are stable, yet the profiler shows every `Row` re-rendering because its `item` prop changed. `data` is `messages.map((m) => ({ ...m, isSelected: m.id === selectedId }))`. How do you investigate and fix it?"
     },
     "keyPoints": [
-      { "vi": "Dùng React DevTools Profiler (bật \"record why each component rendered\") để xác định prop nào thay đổi", "en": "Use the React DevTools Profiler (\"record why each component rendered\") to find which prop changes" },
-      { "vi": "Giữ ổn định tham chiếu của callback và object truyền xuống (useCallback, useMemo, hoặc truyền thẳng setter)", "en": "Stabilise callback and object references passed down (useCallback, useMemo, or pass the setter directly)" },
-      { "vi": "Bọc Row bằng React.memo và đảm bảo keyExtractor trả về key ổn định", "en": "Wrap Row in React.memo and make sure keyExtractor returns stable keys" },
-      { "vi": "Chỉ truyền dữ liệu mà Row cần (ví dụ boolean isSelected) thay vì cả state selected", "en": "Pass Row only what it needs (e.g. an isSelected boolean) instead of the whole selected state" },
-      { "vi": "Dùng extraData đúng cách để FlatList biết khi nào cần render lại", "en": "Use extraData correctly so FlatList knows when to re-render" }
+      { "vi": "Mảng dẫn xuất tạo lại tham chiếu của mọi item: `map` kèm spread chạy lại mỗi khi `selectedId` đổi, nên cả 500 `item` đều trượt phép so sánh `Object.is`", "en": "A derived array recreates every item's identity: the `map` with spread reruns whenever `selectedId` changes, so all 500 `item` props fail the `Object.is` check" },
+      { "vi": "Giữ `data` là `messages` và truyền `isSelected={item.id === selectedId}` thành một prop primitive riêng cho `Row`", "en": "Keep `data` as `messages` and pass `isSelected={item.id === selectedId}` to `Row` as a separate primitive prop" },
+      { "vi": "Đặt `extraData={selectedId}` để FlatList render lại các cell khi lựa chọn đổi, kể cả khi `data` và `renderItem` giữ nguyên tham chiếu", "en": "Set `extraData={selectedId}` so FlatList re-renders its cells when the selection changes, even if `data` and `renderItem` keep their identity" },
+      { "vi": "Nếu cần trường dẫn xuất, tính bằng `useMemo` chỉ theo `messages`, không bao giờ theo `selectedId`, để object item giữ nguyên qua các lần chọn", "en": "If you need derived fields, compute them with `useMemo` from `messages` only, never from `selectedId`, so item objects keep their identity across selections" },
+      { "vi": "Xác nhận bằng React DevTools Profiler (bật ghi lý do render) rằng mỗi lần chọn chỉ còn 2 `Row` render lại", "en": "Confirm with the React DevTools Profiler (recording why each component rendered) that each selection now re-renders only two `Row`s" }
     ],
     "modelAnswer": {
-      "vi": "Đầu tiên, mình đo bằng React DevTools Profiler, bật tuỳ chọn ghi lại lý do render, để biết Row re-render vì prop nào. Thường nguyên nhân là callback hoặc object được tạo mới trong renderItem. Mình sẽ bọc Row bằng React.memo, giữ ổn định callback (truyền thẳng setter hoặc dùng useCallback), và chỉ truyền cho Row một boolean isSelected. Như vậy khi chọn item, chỉ 2 dòng thay đổi (dòng cũ và dòng mới) là render lại. Cuối cùng, mình kiểm tra keyExtractor ổn định, đặt extraData là id đang được chọn, rồi đo lại để xác nhận.",
-      "en": "First I would measure with the React DevTools Profiler, recording why each component rendered, to see which prop makes Row re-render. Usually it is a callback or object created inside renderItem. I would wrap Row in React.memo, stabilise the callback (pass the setter directly or use useCallback), and give Row only an isSelected boolean, so selecting an item re-renders just the two rows that changed. Finally I would check that keyExtractor is stable, set extraData to the selected id, and profile again to confirm."
+      "vi": "Profiler đã chỉ ra thủ phạm là prop `item`. Phép `map` chạy lại mỗi lần chọn và spread từng tin nhắn thành object mới, nên cả 500 item đều trượt phép so sánh nông của `Row`, dù thật ra chỉ có 2 dòng thay đổi. Mình sẽ truyền thẳng `messages` vào `data` để mỗi item giữ nguyên tham chiếu, và tách lựa chọn thành một prop primitive riêng: `isSelected={item.id === selectedId}`. Khi đó chỉ dòng vừa bỏ chọn và dòng mới chọn nhận prop khác. Mình đặt `extraData={selectedId}` để FlatList biết cần render lại khi `renderItem` ổn định. Nếu cần trường dẫn xuất, mình tính bằng `useMemo` chỉ từ `messages`. Cuối cùng mình profile lại để xác nhận mỗi lần bấm chỉ còn 2 dòng render.",
+      "en": "The profiler already names the culprit: the `item` prop. The `map` reruns on every selection and spreads each message into a new object, so all 500 items fail `Row`'s shallow comparison even though only two actually changed. I would pass `messages` straight to `data`, so each item keeps its identity, and move the selection into its own primitive prop: `isSelected={item.id === selectedId}`. Then only the previously selected row and the new one get a different prop. I would set `extraData={selectedId}` so FlatList knows to re-render when `renderItem` is stable. If I need derived fields, I compute them with `useMemo` from `messages` alone. Finally I profile again to confirm that each tap renders two rows."
     },
     "followUps": [
-      { "vi": "Nếu đã làm hết những việc trên mà vẫn giật thì bạn kiểm tra tiếp những gì?", "en": "If it still stutters after all of that, what do you check next?" },
+      { "vi": "Nếu `messages` đến từ một selector của store luôn trả về object mới thì sao?", "en": "What if `messages` comes from a store selector that returns new objects?" },
       { "vi": "Khi nào nên dùng FlashList thay cho FlatList?", "en": "When would you switch from FlatList to FlashList?" }
+    ]
+  },
+  {
+    "id": "render-memo-005",
+    "type": "mcq",
+    "topics": ["render/memo"],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": ["render-memo-core"],
+    "multi": false,
+    "prompt": {
+      "vi": "Bạn viết `React.memo(Chart, arePropsEqual)`. Khi `arePropsEqual(prevProps, nextProps)` trả về `true`, điều đó có nghĩa là gì?",
+      "en": "You write `React.memo(Chart, arePropsEqual)`. What does it mean when `arePropsEqual(prevProps, nextProps)` returns `true`?"
+    },
+    "options": [
+      {
+        "text": { "vi": "`Chart` cần re-render, giống như khi `shouldComponentUpdate` trả về `true`", "en": "`Chart` should re-render, the same as `shouldComponentUpdate` returning `true`" },
+        "misconception": { "id": "arepropsequal-inverted", "text": { "vi": "Hiểu ngược giá trị trả về. arePropsEqual trả true nghĩa là prop bằng nhau và React có thể bỏ qua render, ngược với shouldComponentUpdate.", "en": "Reading the return value backwards. True from arePropsEqual means the props are equal and React can skip the render, the opposite of shouldComponentUpdate." } }
+      },
+      { "text": { "vi": "Prop được xem là bằng nhau, nên React có thể bỏ qua lần render này và dùng lại kết quả trước của `Chart`", "en": "The props count as equal, so React can skip this render and reuse `Chart`'s previous result" } },
+      {
+        "text": { "vi": "Prop được xem là bằng nhau, nên `Chart` cũng không re-render khi state của chính nó thay đổi", "en": "The props count as equal, so `Chart` also stops re-rendering when its own state changes" },
+        "misconception": { "id": "memo-covers-state", "text": { "vi": "Nghĩ rằng memo chặn cả re-render do state. Hàm so sánh chỉ xét prop; state của chính component hoặc context mà nó đọc thay đổi thì component vẫn re-render.", "en": "Believing memo also blocks state-driven renders. The comparison only looks at props; a change to the component's own state or to a context it reads still re-renders it." } }
+      },
+      {
+        "text": { "vi": "React gọi hàm này cả ở lần render đầu, và không mount `Chart` nếu nó trả về `true`", "en": "React calls it on the first render too, and does not mount `Chart` if it returns `true`" },
+        "misconception": { "id": "arepropsequal-on-mount", "text": { "vi": "Nghĩ rằng hàm so sánh chạy lúc mount. React chỉ gọi nó khi cha re-render; lúc mount chưa có prop cũ để so.", "en": "Believing the comparison runs on mount. React calls it only when the parent re-renders; on mount there are no previous props to compare." } }
+      }
+    ],
+    "answer": [1],
+    "explanation": {
+      "vi": "`arePropsEqual` trả `true` khi prop cũ và prop mới được xem là bằng nhau, lúc đó React có thể bỏ qua render. Đây là tối ưu hiệu năng chứ không phải cam kết, React vẫn có thể render. Bẫy chính là viết hàm so sánh bỏ qua các prop callback: `Chart` giữ lại callback cũ và đọc state cũ. Hãy so sánh mọi prop, và tránh so sánh sâu vì nó có thể tốn hơn chính lần render.",
+      "en": "`arePropsEqual` returns `true` when the old and new props count as equal, and then React can skip the render. It is a performance hint, not a promise, so React may still render. The main trap is a comparator that ignores callback props: `Chart` keeps an old callback that reads old state. Compare every prop, and avoid deep comparison, which can cost more than the render itself."
+    }
+  },
+  {
+    "id": "render-memo-006",
+    "type": "mcq",
+    "topics": ["render/memo"],
+    "kind": "core",
+    "difficulty": 2,
+    "estSeconds": 75,
+    "lessons": ["render-memo-core"],
+    "multi": false,
+    "prompt": {
+      "vi": "Nhận định nào về `const sorted = useMemo(() => sortBy(items, key), [items, key]);` là đúng?",
+      "en": "Which statement about `const sorted = useMemo(() => sortBy(items, key), [items, key]);` is correct?"
+    },
+    "options": [
+      {
+        "text": { "vi": "`sortBy` chạy tối đa một lần cho mỗi cặp `items`/`key` khác nhau, vì React lưu mọi kết quả trước đó", "en": "`sortBy` runs at most once per distinct `items`/`key` pair, because React keeps every earlier result" },
+        "misconception": { "id": "usememo-caches-history", "text": { "vi": "Nghĩ rằng useMemo lưu lịch sử kết quả. Nó chỉ nhớ deps và kết quả của lần gần nhất; deps đổi qua lại thì vẫn phải tính lại.", "en": "Believing useMemo keeps a history of results. It only remembers the latest deps and result; switching deps back and forth recomputes." } }
+      },
+      {
+        "text": { "vi": "Nếu cha truyền một mảng mới có cùng nội dung, cache vẫn trúng vì deps được so sánh theo giá trị", "en": "If the parent passes a new array with the same contents, the cache still hits because deps are compared by value" },
+        "misconception": { "id": "deps-compared-by-value", "text": { "vi": "Nghĩ rằng mảng deps được so sánh theo giá trị. React so sánh từng dep bằng Object.is, nên một mảng hoặc object mới luôn được xem là khác.", "en": "Believing dependency arrays compare by value. React compares each dep with Object.is, so a new array or object always counts as changed." } }
+      },
+      { "text": { "vi": "React có thể bỏ cache và gọi lại `sortBy`, nên code phải vẫn đúng khi giá trị bị tính lại", "en": "React may discard the cache and call `sortBy` again, so the code must stay correct if the value is recomputed" } },
+      {
+        "text": { "vi": "Đây là chỗ phù hợp để mở một subscription, vì hàm chỉ chạy khi deps thay đổi", "en": "It is a good place to open a subscription, since the function only runs when deps change" },
+        "misconception": { "id": "side-effects-in-usememo", "text": { "vi": "Dùng useMemo cho side effect. Hàm trong useMemo phải thuần: Strict Mode gọi nó hai lần khi dev và React có thể bỏ cache. Side effect thuộc về useEffect.", "en": "Using useMemo for side effects. The function must be pure: Strict Mode calls it twice in development and React may drop the cache. Side effects belong in useEffect." } }
+      }
+    ],
+    "answer": [2],
+    "explanation": {
+      "vi": "`useMemo` là gợi ý hiệu năng, không phải cam kết về ngữ nghĩa. React có thể bỏ cache, ví dụ khi component suspend ở lần mount đầu, và Strict Mode gọi hàm tính hai lần khi dev. Nó chỉ đáng dùng khi phép tính tốn kém đo được, hoặc khi tham chiếu của kết quả đi vào một component `React.memo` hay mảng deps của hook khác. Bẫy chính: nếu `items` là mảng mới ở mỗi lần render, cache không bao giờ trúng và `useMemo` chỉ tốn thêm chi phí.",
+      "en": "`useMemo` is a performance hint, not a semantic guarantee. React may drop the cache, for example when the component suspends on its first mount, and Strict Mode calls the calculation twice in development. It is worth using only when the calculation is measurably expensive, or when the result's identity feeds a `React.memo` component or another hook's deps. The main trap: if `items` is a new array on every render, the cache never hits and `useMemo` only adds cost."
+    }
+  },
+  {
+    "id": "render-memo-007",
+    "type": "mcq",
+    "topics": ["render/memo"],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 75,
+    "lessons": ["render-memo-core"],
+    "multi": false,
+    "prompt": {
+      "vi": "Team bật React Compiler (`babel-plugin-react-compiler`) cho một app RN. Nhận định nào chính xác?",
+      "en": "Your team enables React Compiler (`babel-plugin-react-compiler`) in an RN app. Which statement is accurate?"
+    },
+    "options": [
+      {
+        "text": { "vi": "Nó là một phần của runtime React 19 và tự bật khi bạn nâng lên React 19", "en": "It is part of the React 19 runtime and switches on by itself when you upgrade to React 19" },
+        "misconception": { "id": "compiler-is-runtime", "text": { "vi": "Nghĩ rằng React Compiler là tính năng runtime. Nó là công cụ chạy lúc build (một Babel plugin) và bạn phải bật trong cấu hình build.", "en": "Believing React Compiler is a runtime feature. It is a build-time tool (a Babel plugin) that you enable in your build config." } }
+      },
+      {
+        "text": { "vi": "Nó chỉ tối ưu những component bạn đã bọc sẵn `React.memo`", "en": "It only optimises components you have already wrapped in `React.memo`" },
+        "misconception": { "id": "compiler-needs-memo-wrap", "text": { "vi": "Nghĩ rằng compiler dựa vào React.memo có sẵn. Nó tự phân tích component và hook rồi tự thêm memoization, không cần bọc tay.", "en": "Believing the compiler relies on existing React.memo wrappers. It analyses components and hooks and inserts memoization itself, with no manual wrapping." } }
+      },
+      {
+        "text": { "vi": "Bạn phải xoá hết `useMemo` và `useCallback` trước, nếu không build sẽ lỗi", "en": "You must delete every `useMemo` and `useCallback` first, or the build fails" },
+        "misconception": { "id": "compiler-requires-removing-memos", "text": { "vi": "Nghĩ rằng phải gỡ memo thủ công trước khi dùng compiler. Memo thủ công vẫn chạy bình thường; tài liệu của React khuyên giữ nguyên và chỉ gỡ sau khi đã kiểm thử kỹ.", "en": "Believing manual memoization must be removed first. Manual memos keep working; the React docs advise leaving them in place and removing them only after careful testing." } }
+      },
+      { "text": { "vi": "Nó memo lúc build cho code theo Rules of React, và bỏ qua chỗ phát hiện vi phạm", "en": "It memoizes at build time where code follows the Rules of React, and bails out on detected violations" } }
+    ],
+    "answer": [3],
+    "explanation": {
+      "vi": "React Compiler là một Babel plugin chạy lúc build. Nó tự memo giá trị, callback và JSX trong component và hook, nên code mới thường không cần viết tay `useMemo` hay `useCallback`. Khi phát hiện code vi phạm Rules of React, ví dụ sửa prop hay đọc `ref.current` trong lúc render, nó bỏ qua component đó thay vì tối ưu sai. Nó không phát hiện được mọi vi phạm, nên hãy giữ bật các rule ESLint của React Hooks. React Compiler 1.0 đã stable và hỗ trợ cả React 17 và 18 qua package `react-compiler-runtime`. Bẫy chính là nghĩ compiler thay được profiling: nó không làm phép tính rẻ hơn khi input thật sự thay đổi, và không thay được virtualisation cho danh sách dài.",
+      "en": "React Compiler is a Babel plugin that runs at build time. It memoizes values, callbacks and JSX inside components and hooks, so new code rarely needs hand-written `useMemo` or `useCallback`. When it detects a Rules of React violation, such as mutating props or reading `ref.current` during render, it skips that component instead of optimising it wrongly. It cannot detect every violation, so keep the React Hooks ESLint rules on. React Compiler 1.0 is stable and also supports React 17 and 18 through the `react-compiler-runtime` package. The main trap is thinking the compiler replaces profiling: it cannot make work cheaper when the inputs really change, and it does not replace virtualisation for long lists."
+    }
+  },
+  {
+    "id": "render-memo-008",
+    "type": "mcq",
+    "topics": ["render/memo"],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": ["render-memo-core", "render-memo-pitfalls"],
+    "multi": true,
+    "prompt": {
+      "vi": "`AuthProvider` render `<AuthContext.Provider value={{ user, signOut }}>{children}</AuthContext.Provider>` và còn giữ vài state không liên quan tới auth. Profiler cho thấy mọi component gọi `useContext(AuthContext)` đều re-render mỗi khi `AuthProvider` render, kể cả khi `user` không đổi. Những thay đổi nào giảm được các lần re-render thừa này? (chọn tất cả đáp án đúng)",
+      "en": "`AuthProvider` renders `<AuthContext.Provider value={{ user, signOut }}>{children}</AuthContext.Provider>` and also holds some state unrelated to auth. The profiler shows every component that calls `useContext(AuthContext)` re-rendering whenever `AuthProvider` renders, even when `user` has not changed. Which changes reduce these unnecessary re-renders? (select all that apply)"
+    },
+    "options": [
+      {
+        "text": { "vi": "Bọc mọi component consumer bằng `React.memo`", "en": "Wrap every consumer component in `React.memo`" },
+        "misconception": { "id": "memo-blocks-context", "text": { "vi": "Nghĩ rằng React.memo chặn được re-render do context. Component đọc context bằng useContext luôn re-render khi value đổi, dù có bọc memo hay không.", "en": "Believing React.memo shields a component from context changes. A component that reads a context with useContext re-renders whenever the value changes, memoized or not." } }
+      },
+      { "text": { "vi": "Bọc `signOut` bằng `useCallback`, và bọc value bằng `useMemo` với deps `[user, signOut]`", "en": "Wrap `signOut` in `useCallback`, and the value in `useMemo` with deps `[user, signOut]`" } },
+      {
+        "text": { "vi": "Trong consumer, viết `const { user } = useContext(AuthContext)` để chỉ đăng ký theo `user`", "en": "In consumers, write `const { user } = useContext(AuthContext)` to subscribe to `user` only" },
+        "misconception": { "id": "context-no-selector", "text": { "vi": "Nghĩ rằng destructuring hoạt động như selector. useContext đăng ký theo toàn bộ value; React không có selector cho context, nên value mới làm mọi consumer re-render.", "en": "Believing destructuring acts as a selector. useContext subscribes to the whole value; React has no built-in context selector, so a new value re-renders every consumer." } }
+      },
+      { "text": { "vi": "Tách thành `UserContext` (`user`) và `AuthActionsContext` (`signOut` giữ ổn định bằng `useCallback`), để không value nào đổi theo state không liên quan", "en": "Split it into `UserContext` (`user`) and `AuthActionsContext` (`signOut` kept stable with `useCallback`), so neither value changes with unrelated state" } },
+      {
+        "text": { "vi": "Nâng lên React 19 (RN 0.78 trở lên) và viết `<AuthContext value={...}>`, vì cú pháp provider mới so sánh nông từng field của value", "en": "Upgrade to React 19 (RN 0.78 and later) and write `<AuthContext value={...}>`, because the new provider syntax shallow-compares each field of the value" },
+        "misconception": { "id": "react19-context-shallow", "text": { "vi": "Nghĩ rằng cú pháp provider mới của React 19 đổi cách so sánh. React 19 cho phép render <Context> thay cho <Context.Provider>, nhưng value vẫn được so sánh bằng Object.is.", "en": "Believing React 19's provider syntax changes the comparison. React 19 lets you render <Context> instead of <Context.Provider>, but the value is still compared with Object.is." } }
+      }
+    ],
+    "answer": [1, 3],
+    "explanation": {
+      "vi": "React so sánh value mới của provider với value cũ bằng `Object.is`. Object literal `{ user, signOut }` là tham chiếu mới ở mỗi lần render, nên mọi consumer đều re-render. Memo value (và `signOut`) giúp value chỉ đổi khi `user` đổi. Tách context cũng giải quyết được: `user` là state nên chỉ đổi khi user thật sự đổi, còn `signOut` luôn ổn định, và thêm nữa component chỉ gọi `signOut` không re-render khi `user` đổi. Bẫy chính: `React.memo` và destructuring đều không chặn được cập nhật context.",
+      "en": "React compares the provider's new value with the old one using `Object.is`. The object literal `{ user, signOut }` is a new reference on every render, so every consumer re-renders. Memoizing the value (and `signOut`) means it changes only when `user` does. Splitting the context also works: `user` is state, so it changes only when the user really changes, and `signOut` stays stable; as a bonus, components that only call `signOut` no longer re-render when `user` changes. The main trap: neither `React.memo` nor destructuring stops a context update."
+    }
+  },
+  {
+    "id": "render-memo-009",
+    "type": "spot-bug",
+    "topics": ["render/memo"],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 105,
+    "lessons": ["render-memo-pitfalls", "render-memo-core"],
+    "prompt": {
+      "vi": "Người dùng gõ tin nhắn rồi bấm Send nhưng không có gì được gửi. `onSend` từ component cha luôn ổn định, và `SendButton` đã bọc `React.memo`. Dòng nào gây lỗi, và vì sao?",
+      "en": "Users type a message and tap Send, but nothing is sent. `onSend` from the parent is stable, and `SendButton` is wrapped in `React.memo`. Which line causes it, and why?"
+    },
+    "code": "type Props = { roomId: string; onSend: (roomId: string, text: string) => void };\n\nfunction ChatInput({ roomId, onSend }: Props) {\n  const [text, setText] = useState('');\n\n  const handleSend = useCallback(() => {\n    if (!text.trim()) return;\n    onSend(roomId, text);\n    setText('');\n  }, [roomId, onSend]);\n\n  return (\n    <View>\n      <TextInput value={text} onChangeText={setText} />\n      <SendButton onPress={handleSend} />\n    </View>\n  );\n}",
+    "answerLine": 10,
+    "causeOptions": [
+      {
+        "text": { "vi": "State cập nhật bất đồng bộ, nên trong mọi handler `text` luôn chậm một ký tự", "en": "State updates are asynchronous, so `text` is always one keystroke behind in any handler" },
+        "misconception": { "id": "state-one-behind", "text": { "vi": "Nhầm cơ chế snapshot với stale closure. Closure của mỗi lần render thấy đúng state của lần render đó; lỗi chỉ xảy ra khi bạn giữ lại một closure cũ.", "en": "Confusing the per-render snapshot with a stale closure. Each render's closures see that render's state; the bug only appears when you keep an old closure around." } }
+      },
+      {
+        "text": { "vi": "`useCallback` không đọc được state; giá trị từ `useState` phải đi qua một ref", "en": "`useCallback` cannot read state; values from `useState` must go through a ref" },
+        "misconception": { "id": "usecallback-no-state", "text": { "vi": "Nghĩ rằng useCallback không đọc được state. Nó đọc được, miễn là state đó có trong mảng deps.", "en": "Believing useCallback cannot read state. It can, as long as that state is in the dependency array." } }
+      },
+      { "text": { "vi": "Deps thiếu `text`, nên `handleSend` giữ `text` của lần render đầu (`''`) và luôn return sớm", "en": "The deps omit `text`, so `handleSend` keeps the first render's `text` (`''`) and always returns early" } },
+      {
+        "text": { "vi": "`onChangeText` truyền vào một event object, nên `text` không bao giờ là string", "en": "`onChangeText` passes an event object, so `text` is never a string" },
+        "misconception": { "id": "onchangetext-event", "text": { "vi": "Nhầm onChangeText với onChange. onChangeText nhận thẳng chuỗi text; onChange mới nhận event.", "en": "Confusing onChangeText with onChange. onChangeText receives the text string; onChange receives the event." } }
+      }
+    ],
+    "answerCause": 2,
+    "explanation": {
+      "vi": "Ở dòng 10, mảng deps thiếu `text`. Vì `roomId` và `onSend` không đổi, `handleSend` chỉ được tạo một lần và giữ `text` của lần render đó là `''`, nên `!text.trim()` luôn đúng. Thêm `text` vào deps, rule `react-hooks/exhaustive-deps` sẽ báo đúng lỗi này. Callback sẽ đổi sau mỗi lần gõ, và điều đó chấp nhận được. Bỏ bớt deps để giữ tham chiếu ổn định là đổi một chút hiệu năng lấy một lỗi logic.",
+      "en": "On line 10, the deps array omits `text`. Because `roomId` and `onSend` never change, `handleSend` is created once and keeps that render's `text`, which is `''`, so `!text.trim()` is always true. Add `text` to the deps; the `react-hooks/exhaustive-deps` rule flags exactly this. The callback then changes on every keystroke, which is fine. Dropping deps to keep a reference stable trades a small performance win for a correctness bug."
+    }
+  },
+  {
+    "id": "render-memo-010",
+    "type": "spot-bug",
+    "topics": ["render/memo", "performance/lists"],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 135,
+    "lessons": ["render-memo-pitfalls"],
+    "prompt": {
+      "vi": "Bấm vào một todo thì không có gì thay đổi trên màn hình, dù log cho thấy `toggle` có chạy. Dòng nào gây lỗi, và vì sao?",
+      "en": "Tapping a todo changes nothing on screen, although logs show `toggle` runs. Which line causes it, and why?"
+    },
+    "code": "type Todo = { id: string; title: string; done: boolean };\ntype RowProps = { todo: Todo; onToggle: (id: string) => void };\n\nconst TodoRow = memo(({ todo, onToggle }: RowProps) => (\n  <Pressable onPress={() => onToggle(todo.id)}>\n    <Text>{todo.done ? '[x]' : '[ ]'} {todo.title}</Text>\n  </Pressable>\n));\n\nfunction TodoList({ initial }: { initial: Todo[] }) {\n  const [todos, setTodos] = useState(initial);\n  const toggle = useCallback((id: string) => {\n    setTodos((prev) => {\n      const todo = prev.find((t) => t.id === id)!;\n      todo.done = !todo.done;\n      return [...prev];\n    });\n  }, []);\n  return <FlatList data={todos} renderItem={({ item }) => <TodoRow todo={item} onToggle={toggle} />} />;\n}",
+    "answerLine": 15,
+    "causeOptions": [
+      {
+        "text": { "vi": "FlatList cần `extraData={todos}` mới biết mảng dữ liệu đã đổi", "en": "FlatList needs `extraData={todos}` to know that the data array changed" },
+        "misconception": { "id": "extradata-for-data", "text": { "vi": "Dùng extraData để báo dữ liệu đổi. extraData dành cho state nằm ngoài data mà renderItem đọc. Ở đây data đã là mảng mới, và extraData cũng không làm một row đã memo re-render khi prop của nó vẫn cùng tham chiếu.", "en": "Using extraData to signal data changes. extraData is for state outside data that renderItem reads. Here data is already a new array, and extraData cannot make a memoized row re-render when its own props keep the same references." } }
+      },
+      { "text": { "vi": "Updater sửa todo tại chỗ, nên `TodoRow` nhận cùng tham chiếu và bỏ qua render", "en": "The updater mutates the todo in place, so `TodoRow` sees the same reference" } },
+      {
+        "text": { "vi": "`useCallback` với deps `[]` khiến `toggle` đọc mảng `todos` cũ", "en": "`useCallback` with `[]` deps makes `toggle` read a stale `todos` array" },
+        "misconception": { "id": "updater-needs-deps", "text": { "vi": "Nghĩ rằng functional updater cần deps. Với setTodos(prev => ...), prev luôn là state mới nhất, nên deps rỗng ở đây là an toàn.", "en": "Believing a functional updater needs deps. With setTodos(prev => ...), prev is always the latest state, so empty deps are safe here." } }
+      },
+      {
+        "text": { "vi": "`renderItem` inline làm memo của mọi `TodoRow` trong danh sách mất tác dụng", "en": "The inline `renderItem` defeats the memo of every `TodoRow`" },
+        "misconception": { "id": "inline-renderitem-breaks-memo", "text": { "vi": "Nghĩ rằng renderItem inline phá memo của row. Hàm render mới chỉ khiến FlatList gọi lại nó; row vẫn nhận prop cùng tham chiếu nên vẫn được bỏ qua. Thứ phá memo là prop mới, như một callback inline truyền vào row.", "en": "Believing an inline renderItem defeats row memoization. A new render function only makes FlatList call it again; rows still receive the same prop references and still skip. What defeats memo is a new prop, such as an inline callback passed to the row." } }
+      }
+    ],
+    "answerCause": 1,
+    "explanation": {
+      "vi": "Dòng 15 sửa trực tiếp một object nằm trong state cũ. `[...prev]` tạo mảng mới nên FlatList có render lại, nhưng các phần tử bên trong vẫn là object cũ. `TodoRow` so sánh `todo` bằng `Object.is`, thấy cùng tham chiếu nên bỏ qua render. Sửa bằng cách tạo object mới cho item thay đổi: `prev.map((t) => (t.id === id ? { ...t, done: !t.done } : t))`. Nếu cây chạy trong StrictMode, khi dev React gọi updater hai lần, nên phép đảo tại chỗ còn tự huỷ nhau.",
+      "en": "Line 15 mutates an object that lives in the previous state. `[...prev]` creates a new array, so FlatList does re-render, but the elements inside are the same objects. `TodoRow` compares `todo` with `Object.is`, sees the same reference and skips the render. Fix it by creating a new object for the changed item: `prev.map((t) => (t.id === id ? { ...t, done: !t.done } : t))`. If the tree runs under StrictMode, React calls the updater twice in development, so the in-place flip even cancels itself out."
+    }
+  },
+  {
+    "id": "render-memo-011",
+    "type": "open",
+    "topics": ["render/memo"],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 270,
+    "lessons": ["render-memo-core"],
+    "prompt": {
+      "vi": "Một đồng nghiệp mở PR bọc mọi component bằng `React.memo` và mọi handler bằng `useCallback`, \"để tăng hiệu năng\". Team cũng đang cân nhắc bật React Compiler. Bạn review PR này thế nào, và đề xuất chính sách memoization ra sao?",
+      "en": "A teammate opens a PR that wraps every component in `React.memo` and every handler in `useCallback`, \"for performance\". The team is also considering React Compiler. How do you review it, and what memoization policy would you propose?"
+    },
+    "keyPoints": [
+      { "vi": "Memoization có chi phí (so sánh, bộ nhớ, deps phải giữ đúng), nên cần đo bằng React DevTools Profiler trước và sau khi thêm", "en": "Memoization has a cost (comparisons, memory, deps to keep correct), so measure with the React DevTools Profiler before and after" },
+      { "vi": "`React.memo` chỉ có lợi khi component render tốn kém và prop thật sự ổn định; `useCallback`/`useMemo` chỉ có ích khi có thứ so sánh kết quả: component con đã memo, mảng deps, hoặc phép tính tốn kém", "en": "`React.memo` pays off only when the component is expensive and its props are actually stable; `useCallback`/`useMemo` only help when something compares the result: a memoized child, a deps array, or an expensive calculation" },
+      { "vi": "Memo một component nhận `children` hoặc object inline là vô ích, vì JSX và object literal là tham chiếu mới ở mỗi lần render", "en": "Memoizing a component that receives `children` or inline objects is useless, because JSX and object literals are new references on every render" },
+      { "vi": "Ưu tiên sửa cấu trúc trước: đưa state xuống gần nơi dùng, truyền nội dung qua `children`, truyền giá trị primitive", "en": "Prefer structural fixes first: move state down to where it is used, pass content as `children`, pass primitive values" },
+      { "vi": "Bật React Compiler để tự memo lúc build, sửa các lỗi lint về Rules of React, giữ memo thủ công có sẵn, và chỉ thêm memo tay khi đo thấy cần", "en": "Enable React Compiler to memoize at build time, fix Rules of React lint errors, keep existing manual memos, and add manual memoization only where profiling shows a need" }
+    ],
+    "modelAnswer": {
+      "vi": "Mình không duyệt nó như một quy tắc chung. Memoization không miễn phí: mỗi lần render phải so sánh, cache chiếm bộ nhớ, và deps nào thiếu sẽ gây stale closure. `React.memo` chỉ có lợi khi component nặng và prop thật sự ổn định; `useCallback` hay `useMemo` chỉ có ích khi có thứ so sánh kết quả, như component con đã memo, deps của hook, hoặc phép tính nặng. Memo một component nhận `children` hay object inline thì vô ích. Mình sẽ xin số liệu Profiler, sửa cấu trúc trước, như đưa state xuống, rồi bật React Compiler để tự memo lúc build. Sau đó team giữ memo có sẵn, sửa lỗi lint, và chỉ memo tay ở chỗ đo thấy cần.",
+      "en": "I would not approve it as a blanket rule. Memoization is not free: each render pays for the comparisons, the cache holds memory, and a missing dep causes a stale closure. `React.memo` only pays off when a component is expensive and its props are actually stable; `useCallback` or `useMemo` only help when something compares the result, such as a memoized child, a hook's deps, or an expensive calculation. Memoizing a component that receives `children` or inline objects does nothing. I would ask for Profiler numbers, try structural fixes first, like moving state down, and then enable React Compiler to memoize at build time. After that we keep existing memos, fix its lint errors, and memoize by hand only where profiling shows a need."
+    },
+    "followUps": [
+      { "vi": "Khi đã bật React Compiler, trường hợp nào bạn vẫn viết `useMemo` bằng tay?", "en": "With React Compiler enabled, when would you still write `useMemo` by hand?" },
+      { "vi": "Vì sao truyền nội dung qua `children` giúp tránh re-render?", "en": "Why does passing content as `children` avoid re-renders?" }
+    ]
+  },
+  {
+    "id": "render-memo-012",
+    "type": "open",
+    "topics": ["render/memo", "render/effects"],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 330,
+    "lessons": ["render-memo-core"],
+    "prompt": {
+      "vi": "Team backend báo app mở một WebSocket subscription mới sau mỗi lần gõ phím trên màn hình tìm kiếm. Effect có dạng `useEffect(() => { const sub = socket.subscribe(options, onMessage); return () => sub.unsubscribe(); }, [options, onMessage]);`. `options` là `{ channel: channelId }`, cả `options` và `onMessage` đều được tạo trong thân component, và `onMessage` đọc `query` hiện tại. Bạn chẩn đoán và sửa thế nào mà không làm sai logic?",
+      "en": "The backend team reports that your app opens a new WebSocket subscription on every keystroke in the search screen. The effect looks like `useEffect(() => { const sub = socket.subscribe(options, onMessage); return () => sub.unsubscribe(); }, [options, onMessage]);`. `options` is `{ channel: channelId }`, both `options` and `onMessage` are created in the component body, and `onMessage` reads the current `query`. How do you diagnose and fix it without breaking correctness?"
+    },
+    "keyPoints": [
+      { "vi": "Deps được so sánh bằng `Object.is`; object và function tạo trong thân component là tham chiếu mới ở mỗi lần render, nên mỗi lần gõ effect chạy cleanup rồi subscribe lại", "en": "Deps are compared with `Object.is`; objects and functions created in the component body are new on every render, so each keystroke runs the cleanup and subscribes again" },
+      { "vi": "Xác nhận bằng log hoặc bộ đếm subscribe/unsubscribe; một chu kỳ mount, unmount, mount thêm khi dev trong Strict Mode là bình thường, không phải lỗi này", "en": "Confirm it by logging or counting subscribe/unsubscribe; one extra mount, unmount, mount cycle in development under Strict Mode is expected and is not this bug" },
+      { "vi": "Không xoá bớt deps hay tắt rule `react-hooks/exhaustive-deps`, vì như vậy chỉ đổi việc subscribe liên tục lấy stale closure", "en": "Do not remove deps or silence `react-hooks/exhaustive-deps`; that only trades resubscribing for stale closures" },
+      { "vi": "Tạo `options` bên trong effect và chỉ phụ thuộc vào primitive thật sự định nghĩa subscription, ở đây là `channelId`", "en": "Build `options` inside the effect and depend only on the primitive that really defines the subscription, here `channelId`" },
+      { "vi": "Với handler cần đọc `query` mới nhất mà không được subscribe lại, dùng `useEffectEvent` (từ React 19.2, cần kiểm tra bản RN đang dùng đi kèm React nào) và chỉ gọi nó bên trong effect, hoặc dùng một ref được cập nhật sau mỗi lần render", "en": "For a handler that must read the latest `query` without resubscribing, use `useEffectEvent` (React 19.2 and later; check which React version your RN release ships) and only call it inside the effect, or use a ref updated after each render" }
+    ],
+    "modelAnswer": {
+      "vi": "Mỗi lần gõ, state `query` đổi, component render lại, và `options` cùng `onMessage` là tham chiếu mới. React so sánh deps bằng `Object.is` nên effect chạy cleanup rồi subscribe lại mỗi lần. Mình xác nhận bằng cách log subscribe, nhớ rằng khi dev Strict Mode thêm một chu kỳ lúc mount. Sau đó mình sửa deps chứ không xoá deps. `options` được tạo bên trong effect, và effect chỉ phụ thuộc vào `channelId`. Handler cần `query` mới nhất nhưng không nên gây subscribe lại, nên mình bọc nó bằng `useEffectEvent` nếu app chạy React 19.2 trở lên, hoặc đọc qua một ref được cập nhật sau mỗi lần render. Trong effect, mình subscribe bằng `(msg) => onMessage(msg)`, vì Effect Event chỉ nên được gọi, không truyền đi nơi khác. Rule lint vẫn giữ nguyên.",
+      "en": "Every keystroke updates `query`, the component re-renders, and `options` and `onMessage` are new references. React compares deps with `Object.is`, so the effect cleans up and subscribes again each time. I would confirm it by logging subscribes, knowing that Strict Mode adds one extra cycle on mount in development. Then I would fix the deps rather than delete them. `options` moves inside the effect, which then depends only on `channelId`. The handler needs the latest `query` but should not trigger a resubscribe, so I would wrap it in `useEffectEvent` on React 19.2 or later, or read it through a ref updated after each render. Inside the effect I subscribe with `(msg) => onMessage(msg)`, because an Effect Event should only be called, not passed around. The lint rule stays on."
+    },
+    "followUps": [
+      { "vi": "Vì sao không nên gán `ref.current` ngay trong lúc render?", "en": "Why should you not assign `ref.current` during render?" },
+      { "vi": "Nếu `options` là prop do component cha tạo inline thì bạn xử lý thế nào?", "en": "What if `options` is a prop the parent creates inline?" }
     ]
   }
 ]

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const localized = z.object({ vi: z.string().min(1), en: z.string().min(1) });
+export const localized = z.strictObject({ vi: z.string().min(1), en: z.string().min(1) });
 export const kind = z.enum(['core', 'advanced', 'pitfall', 'hard-issue']);
 const oneToThree = z.union([z.literal(1), z.literal(2), z.literal(3)]);
 export const difficulty = oneToThree;
@@ -10,8 +10,8 @@ const topicId = z
   .string()
   .regex(/^[a-z0-9-]+(\/[a-z0-9-]+)*$/, 'topic id must be kebab-case segments joined by /');
 
-export const misconception = z.object({ id, text: localized });
-export const option = z.object({ text: localized, misconception: misconception.optional() });
+export const misconception = z.strictObject({ id, text: localized });
+export const option = z.strictObject({ text: localized, misconception: misconception.optional() });
 
 const base = {
   id,
@@ -22,7 +22,7 @@ const base = {
   lessons: z.array(id).default([]),
 };
 
-const mcq = z.object({
+const mcq = z.strictObject({
   ...base,
   type: z.literal('mcq'),
   prompt: localized,
@@ -32,7 +32,7 @@ const mcq = z.object({
   explanation: localized,
 });
 
-const spotBug = z.object({
+const spotBug = z.strictObject({
   ...base,
   type: z.literal('spot-bug'),
   prompt: localized,
@@ -43,7 +43,7 @@ const spotBug = z.object({
   explanation: localized,
 });
 
-const open = z.object({
+const open = z.strictObject({
   ...base,
   type: z.literal('open'),
   prompt: localized,
@@ -52,7 +52,7 @@ const open = z.object({
   followUps: z.array(localized).default([]),
 });
 
-export const challengeMeta = z.object({
+export const challengeMeta = z.strictObject({
   ...base,
   type: z.literal('challenge'),
   title: localized,
@@ -82,7 +82,7 @@ export const question = z.discriminatedUnion('type', [mcq, spotBug, open]).super
 
 export const questionFile = z.array(question);
 
-export const topic = z.object({
+export const topic = z.strictObject({
   id: topicId,
   title: localized,
   parent: topicId.nullable(),
@@ -91,7 +91,7 @@ export const topic = z.object({
 });
 export const topicsFile = z.array(topic);
 
-export const lessonMeta = z.object({
+export const lessonMeta = z.strictObject({
   id,
   topic: topicId,
   kind,

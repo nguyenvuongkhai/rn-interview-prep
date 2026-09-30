@@ -47,7 +47,7 @@ describe('execute', () => {
   });
 
   it('only lets tests import the solution', async () => {
-    const out = await execute({ solution, tests: `import fs from 'fs';\ntest('t', () => {});`, include: 'all' });
+    const out = await execute({ solution, tests: `import fs from 'fs';\ntest('t', () => { expect(typeof fs).toBe('object'); });`, include: 'all' });
     expect(out.error).toContain('Cannot import "fs"');
   });
 });

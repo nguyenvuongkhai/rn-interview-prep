@@ -1,5 +1,5 @@
 import { Rich } from './components';
-import { parseMarkdown } from './markdown';
+import { parseMarkdown } from './parseMarkdown';
 
 export function Markdown({ source }: { source: string }) {
   return (

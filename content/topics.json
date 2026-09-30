@@ -1,0 +1,9 @@
+[
+  { "id": "render", "title": { "vi": "Render & reconciliation", "en": "Rendering & reconciliation" }, "parent": null, "weight": 3, "group": "render" },
+  { "id": "render/memo", "title": { "vi": "memo, useCallback, useMemo", "en": "memo, useCallback, useMemo" }, "parent": "render", "weight": 3, "group": "render" },
+  { "id": "render/effects", "title": { "vi": "useEffect và vòng đời", "en": "useEffect and lifecycle" }, "parent": "render", "weight": 3, "group": "render" },
+  { "id": "architecture", "title": { "vi": "Kiến trúc React Native", "en": "React Native architecture" }, "parent": null, "weight": 3, "group": "architecture" },
+  { "id": "architecture/new-arch", "title": { "vi": "Kiến trúc mới: JSI, Fabric, TurboModules", "en": "New Architecture: JSI, Fabric, TurboModules" }, "parent": "architecture", "weight": 3, "group": "architecture" },
+  { "id": "performance", "title": { "vi": "Hiệu năng", "en": "Performance" }, "parent": null, "weight": 3, "group": "performance" },
+  { "id": "performance/lists", "title": { "vi": "FlatList và danh sách dài", "en": "FlatList and long lists" }, "parent": "performance", "weight": 3, "group": "performance" }
+]

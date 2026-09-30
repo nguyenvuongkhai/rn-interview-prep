@@ -1,0 +1,128 @@
+[
+  {
+    "id": "render-memo-001",
+    "type": "mcq",
+    "topics": ["render/memo"],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 75,
+    "lessons": ["render-memo-pitfalls"],
+    "multi": true,
+    "prompt": {
+      "vi": "Một component con được bọc `React.memo` nhưng vẫn re-render mỗi khi component cha render. Những nguyên nhân nào có thể gây ra điều này? (chọn tất cả đáp án đúng)",
+      "en": "A child component wrapped in `React.memo` still re-renders every time its parent renders. Which of these could cause it? (select all that apply)"
+    },
+    "options": [
+      { "text": { "vi": "Cha truyền một object literal mới làm prop ở mỗi lần render", "en": "The parent passes a new object literal as a prop on every render" } },
+      { "text": { "vi": "Cha truyền một arrow function inline làm prop", "en": "The parent passes an inline arrow function as a prop" } },
+      {
+        "text": { "vi": "`React.memo` chỉ có tác dụng với class component", "en": "`React.memo` only works on class components" },
+        "misconception": { "id": "memo-class-only", "text": { "vi": "Nghĩ rằng React.memo dành cho class component. Thực tế nó dành cho function component; class dùng PureComponent.", "en": "Believing React.memo is for class components. It is for function components; classes use PureComponent." } }
+      },
+      { "text": { "vi": "Component con dùng `useContext` và giá trị context thay đổi", "en": "The child calls `useContext` and the context value changes" } },
+      {
+        "text": { "vi": "`React.memo` so sánh sâu (deep equal) các prop nên luôn thấy chúng khác nhau", "en": "`React.memo` deep-compares props, so it always sees them as different" },
+        "misconception": { "id": "memo-deep-compare", "text": { "vi": "Nghĩ rằng React.memo so sánh sâu. Mặc định nó so sánh nông (shallow) từng prop bằng Object.is.", "en": "Believing React.memo compares deeply. By default it shallow-compares each prop with Object.is." } }
+      }
+    ],
+    "answer": [0, 1, 3],
+    "explanation": {
+      "vi": "`React.memo` so sánh nông từng prop bằng `Object.is`. Object literal và arrow function inline là tham chiếu mới ở mỗi lần render nên luôn bị xem là khác. Ngoài ra, `memo` không chặn được re-render do context mà component tự đăng ký qua `useContext`.",
+      "en": "`React.memo` shallow-compares each prop with `Object.is`. Object literals and inline arrow functions are new references on every render, so they always compare as different. `memo` also cannot block re-renders caused by a context the component subscribes to with `useContext`."
+    }
+  },
+  {
+    "id": "render-memo-002",
+    "type": "mcq",
+    "topics": ["render/memo"],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 45,
+    "lessons": ["render-memo-pitfalls"],
+    "multi": false,
+    "prompt": {
+      "vi": "`useCallback(fn, [a])` thực sự làm gì?",
+      "en": "What does `useCallback(fn, [a])` actually do?"
+    },
+    "options": [
+      { "text": { "vi": "Trả về cùng một tham chiếu hàm giữa các lần render, miễn là `a` không đổi", "en": "Returns the same function reference across renders as long as `a` is unchanged" } },
+      {
+        "text": { "vi": "Ngăn component hiện tại re-render", "en": "Prevents the current component from re-rendering" },
+        "misconception": { "id": "usecallback-prevents-rerender", "text": { "vi": "Nghĩ rằng useCallback ngăn được re-render. Nó chỉ giữ ổn định tham chiếu của hàm.", "en": "Believing useCallback prevents re-renders. It only keeps the function reference stable." } }
+      },
+      {
+        "text": { "vi": "Tự động memo component con nhận hàm đó", "en": "Automatically memoizes the child that receives the function" },
+        "misconception": { "id": "usecallback-memoizes-child", "text": { "vi": "Nghĩ rằng useCallback tự memo component con. Component con vẫn phải được bọc React.memo thì tham chiếu ổn định mới có tác dụng.", "en": "Believing useCallback memoizes the child. The child must still be wrapped in React.memo for a stable reference to matter." } }
+      },
+      {
+        "text": { "vi": "Gọi `fn` một lần rồi cache giá trị trả về", "en": "Calls `fn` once and caches its return value" },
+        "misconception": { "id": "usecallback-is-usememo", "text": { "vi": "Nhầm useCallback với useMemo. useMemo cache giá trị trả về, còn useCallback cache chính hàm.", "en": "Confusing useCallback with useMemo. useMemo caches a return value; useCallback caches the function itself." } }
+      }
+    ],
+    "answer": [0],
+    "explanation": {
+      "vi": "`useCallback(fn, deps)` tương đương `useMemo(() => fn, deps)`: nó chỉ giữ ổn định tham chiếu của hàm. Việc này chỉ có ích khi hàm được truyền cho một component con đã bọc `React.memo`, hoặc được dùng trong mảng deps của một hook khác.",
+      "en": "`useCallback(fn, deps)` is equivalent to `useMemo(() => fn, deps)`: it only keeps the function reference stable. That helps only when the function goes to a child wrapped in `React.memo`, or into another hook's dependency array."
+    }
+  },
+  {
+    "id": "render-memo-003",
+    "type": "spot-bug",
+    "topics": ["render/memo", "performance/lists"],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": ["render-memo-pitfalls"],
+    "prompt": {
+      "vi": "Mỗi lần chọn một dòng, toàn bộ các `Row` đều re-render dù đã bọc `React.memo`. Dòng nào gây ra lỗi, và vì sao?",
+      "en": "Every time a row is selected, every `Row` re-renders even though it is wrapped in `React.memo`. Which line causes it, and why?"
+    },
+    "code": "const Row = React.memo(({ item, onPress }) => (\n  <Pressable onPress={() => onPress(item.id)}>\n    <Text>{item.title}</Text>\n  </Pressable>\n));\n\nfunction List({ data }) {\n  const [selected, setSelected] = useState(null);\n  return (\n    <FlatList\n      data={data}\n      extraData={selected}\n      renderItem={({ item }) => <Row item={item} onPress={(id) => setSelected(id)} />}\n    />\n  );\n}",
+    "answerLine": 13,
+    "causeOptions": [
+      { "text": { "vi": "Arrow function inline tạo tham chiếu mới ở mỗi lần render, nên `React.memo` của `Row` luôn thấy prop `onPress` thay đổi", "en": "The inline arrow function is a new reference on every render, so `Row`'s `React.memo` always sees `onPress` as changed" } },
+      {
+        "text": { "vi": "`extraData` khiến FlatList không bao giờ re-render", "en": "`extraData` stops FlatList from ever re-rendering" },
+        "misconception": { "id": "extradata-blocks-render", "text": { "vi": "Hiểu ngược vai trò của extraData. Nó báo cho FlatList biết cần render lại khi giá trị đó đổi, chứ không chặn render.", "en": "Getting extraData backwards. It tells FlatList to re-render when that value changes; it does not block rendering." } }
+      },
+      {
+        "text": { "vi": "`React.memo` không dùng được cho component bên trong FlatList", "en": "`React.memo` does not work for components inside FlatList" },
+        "misconception": { "id": "memo-not-in-flatlist", "text": { "vi": "Nghĩ rằng memo không có tác dụng trong FlatList. Thực tế, bọc memo cho item là cách tối ưu phổ biến nhất.", "en": "Believing memo has no effect inside FlatList. Memoizing items is in fact the most common list optimisation." } }
+      },
+      { "text": { "vi": "`useState(null)` phải được khai báo kiểu", "en": "`useState(null)` must be given a type" } }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "Ở dòng 13, `(id) => setSelected(id)` là một hàm mới ở mỗi lần `List` render. Có thể truyền thẳng `setSelected` (tham chiếu luôn ổn định), hoặc bọc hàm bằng `useCallback`. Tốt hơn nữa là chỉ truyền cho `Row` một prop `isSelected` kiểu boolean.",
+      "en": "On line 13, `(id) => setSelected(id)` is a new function on every `List` render. Pass `setSelected` directly (its reference is always stable) or wrap the function in `useCallback`. Better still, pass `Row` only an `isSelected` boolean."
+    }
+  },
+  {
+    "id": "render-memo-004",
+    "type": "open",
+    "topics": ["render/memo", "performance/lists"],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 300,
+    "lessons": ["render-memo-pitfalls"],
+    "prompt": {
+      "vi": "Một màn hình có danh sách 500 item bị giật mỗi khi chọn một item. Profiler cho thấy mọi Row đều re-render. Bạn sẽ điều tra và sửa như thế nào?",
+      "en": "A screen with a 500-item list stutters whenever an item is selected. The profiler shows every Row re-rendering. How would you investigate and fix it?"
+    },
+    "keyPoints": [
+      { "vi": "Dùng React DevTools Profiler (bật \"record why each component rendered\") để xác định prop nào thay đổi", "en": "Use the React DevTools Profiler (\"record why each component rendered\") to find which prop changes" },
+      { "vi": "Giữ ổn định tham chiếu của callback và object truyền xuống (useCallback, useMemo, hoặc truyền thẳng setter)", "en": "Stabilise callback and object references passed down (useCallback, useMemo, or pass the setter directly)" },
+      { "vi": "Bọc Row bằng React.memo và đảm bảo keyExtractor trả về key ổn định", "en": "Wrap Row in React.memo and make sure keyExtractor returns stable keys" },
+      { "vi": "Chỉ truyền dữ liệu mà Row cần (ví dụ boolean isSelected) thay vì cả state selected", "en": "Pass Row only what it needs (e.g. an isSelected boolean) instead of the whole selected state" },
+      { "vi": "Dùng extraData đúng cách để FlatList biết khi nào cần render lại", "en": "Use extraData correctly so FlatList knows when to re-render" }
+    ],
+    "modelAnswer": {
+      "vi": "Đầu tiên, mình đo bằng React DevTools Profiler, bật tuỳ chọn ghi lại lý do render, để biết Row re-render vì prop nào. Thường nguyên nhân là callback hoặc object được tạo mới trong renderItem. Mình sẽ bọc Row bằng React.memo, giữ ổn định callback (truyền thẳng setter hoặc dùng useCallback), và chỉ truyền cho Row một boolean isSelected. Như vậy khi chọn item, chỉ 2 dòng thay đổi (dòng cũ và dòng mới) là render lại. Cuối cùng, mình kiểm tra keyExtractor ổn định, đặt extraData là id đang được chọn, rồi đo lại để xác nhận.",
+      "en": "First I would measure with the React DevTools Profiler, recording why each component rendered, to see which prop makes Row re-render. Usually it is a callback or object created inside renderItem. I would wrap Row in React.memo, stabilise the callback (pass the setter directly or use useCallback), and give Row only an isSelected boolean, so selecting an item re-renders just the two rows that changed. Finally I would check that keyExtractor is stable, set extraData to the selected id, and profile again to confirm."
+    },
+    "followUps": [
+      { "vi": "Nếu đã làm hết những việc trên mà vẫn giật thì bạn kiểm tra tiếp những gì?", "en": "If it still stutters after all of that, what do you check next?" },
+      { "vi": "Khi nào nên dùng FlashList thay cho FlatList?", "en": "When would you switch from FlatList to FlashList?" }
+    ]
+  }
+]

@@ -51,4 +51,28 @@ describe.each<[string, () => Repo]>([
     await repo.putDraft('deb', 'b');
     expect(await repo.getDraft('deb')).toBe('b');
   });
+
+  it('lists sessions by start time', async () => {
+    const repo = make();
+    await repo.putSession({ ...session('late', '2026-10-01'), startedAt: NOW + 5 });
+    await repo.putSession(session('early', '2026-09-30'));
+    expect((await repo.listSessions()).map((s) => s.id)).toEqual(['early', 'late']);
+  });
+
+  it('exports everything and imports a snapshot in place of the current data', async () => {
+    const repo = make();
+    await repo.putSession(session('old', '2026-09-01'));
+    await repo.addAttempt(attempt('q1', { id: 'old-a' }));
+    await repo.putDraft('deb', 'old');
+    const snapshot = {
+      sessions: [session('s', '2026-10-01')],
+      attempts: [attempt('q2', { id: 'a2', sessionId: 's' })],
+      reviews: [{ itemId: 'q2', box: 1, dueAt: 5 }],
+      drafts: [{ challengeId: 'deb', code: 'new', updatedAt: 7 }],
+      settings: [{ key: 'lang', value: 'en' }],
+    };
+    await repo.importAll(snapshot);
+    expect(await repo.exportAll()).toEqual(snapshot);
+    expect(await repo.getDraft('deb')).toBe('new');
+  });
 });

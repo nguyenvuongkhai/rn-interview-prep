@@ -3,6 +3,7 @@ import type { Content } from '../content/load';
 import { NOW, challenge, mcq, open, topic } from '../core/testFixtures';
 import { DAY_MS } from '../core/types';
 import { createMemoryRepo } from '../storage/repo';
+import { parseBackup } from './backup';
 import { createSessionService, localDate } from './sessionService';
 
 const content: Content = {
@@ -105,5 +106,35 @@ describe('session service', () => {
     expect((await service.load(b.id))?.attempts).toEqual([]);
     expect(b.itemIds).toEqual(['q2']);
     expect(await service.load('missing')).toBeUndefined();
+  });
+
+  it('stats returns sessions, attempts and mastery', async () => {
+    const { service } = setup();
+    const s = await service.startPractice(['q1'], NOW);
+    await service.answer({
+      sessionId: s.id, itemId: 'q1', response: { type: 'mcq', selected: [0] },
+      confidence: 'sure', timeSpent: 5, lang: 'vi', now: NOW,
+    });
+    const stats = await service.stats(NOW);
+    expect(stats.sessions.map((x) => x.id)).toEqual([s.id]);
+    expect(stats.attempts).toHaveLength(1);
+    expect(stats.mastery.get('render/memo')?.count).toBe(1);
+  });
+
+  it('startTopicPractice uses the topic’s own items and refuses an empty topic', async () => {
+    const { service } = setup();
+    const s = await service.startTopicPractice('render/memo', NOW);
+    expect(s).toMatchObject({ mode: 'practice' });
+    expect(s.itemIds).toHaveLength(8);
+    await expect(service.startTopicPractice('render', NOW)).rejects.toThrow('No items');
+  });
+
+  it('exports a backup that another store can import', async () => {
+    const { service } = setup();
+    await service.start(30, NOW);
+    const backup = await service.exportBackup(NOW);
+    const other = setup().service;
+    await other.importBackup(parseBackup(JSON.stringify(backup)));
+    expect((await other.stats(NOW)).sessions).toEqual(backup.sessions);
   });
 });

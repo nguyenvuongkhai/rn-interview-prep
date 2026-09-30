@@ -66,6 +66,14 @@ describe('question schema', () => {
     });
     expect(r.success).toBe(false);
   });
+
+  it('rejects an unknown key such as a misspelt misconception', () => {
+    const r = question.safeParse({
+      ...base, type: 'mcq', prompt: L('p'), multi: false, answer: [0], explanation: L('e'),
+      options: [{ text: L('a') }, { text: L('b'), misconcepton: { id: 'm-b', text: L('wrong') } }],
+    });
+    expect(r.success).toBe(false);
+  });
 });
 
 describe('other schemas', () => {

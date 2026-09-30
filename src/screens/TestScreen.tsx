@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { EMPTY_DRAFT, toResponse, type Draft } from '../app/draft';
 import { href, navigate } from '../app/router';
 import type { LoadedSession, SessionService } from '../app/sessionService';
@@ -27,6 +27,14 @@ export function TestScreen({ service, content, sessionId }: { service: SessionSe
   const [alt, setAlt] = useState(false);
   const [shownAt, setShownAt] = useState(() => Date.now());
   const [busy, setBusy] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  const currentId = data ? data.session.itemIds.find((id) => byId.has(id) && !data.attempts.some((a) => a.itemId === id)) : undefined;
+
+  // Move focus to each new question so keyboard and screen-reader users start there.
+  useEffect(() => {
+    titleRef.current?.focus();
+  }, [currentId]);
 
   useEffect(() => {
     let live = true;
@@ -43,7 +51,7 @@ export function TestScreen({ service, content, sessionId }: { service: SessionSe
 
   const { session, attempts } = data;
   const answered = new Map(attempts.map((a) => [a.itemId, a]));
-  const index = session.itemIds.findIndex((id) => !answered.has(id));
+  const index = session.itemIds.findIndex((id) => byId.has(id) && !answered.has(id));
   const item = index === -1 ? undefined : byId.get(session.itemIds[index]);
   const textLang = alt ? otherLang(lang) : lang;
   const text = (l: Localized) => l[textLang];
@@ -55,28 +63,41 @@ export function TestScreen({ service, content, sessionId }: { service: SessionSe
   });
 
   async function finish() {
-    setBusy(true);
     await service.finish(sessionId, Date.now());
     navigate({ name: 'result', sessionId });
+  }
+
+  async function run(work: () => Promise<void>) {
+    if (busy) return;
+    setBusy(true);
+    setFailed(false);
+    try {
+      await work();
+    } catch {
+      setFailed(true);
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function submit(target: Item) {
     const response = toResponse(target, draft);
     if (!response || !draft.confidence) return;
-    setBusy(true);
-    const attempt = await service.answer({
-      sessionId, itemId: target.id, response, confidence: draft.confidence,
-      timeSpent: Math.round((Date.now() - shownAt) / 1000), lang: textLang, now: Date.now(),
+    const confidence = draft.confidence;
+    await run(async () => {
+      const attempt = await service.answer({
+        sessionId, itemId: target.id, response, confidence,
+        timeSpent: Math.round((Date.now() - shownAt) / 1000), lang: textLang, now: Date.now(),
+      });
+      if (session.itemIds.every((id) => id === target.id || answered.has(id) || !byId.has(id))) {
+        await finish();
+        return;
+      }
+      setData({ session, attempts: [...attempts, attempt] });
+      setDraft(EMPTY_DRAFT);
+      setAlt(false);
+      setShownAt(Date.now());
     });
-    if (session.itemIds.every((id) => id === target.id || answered.has(id))) {
-      await finish();
-      return;
-    }
-    setData({ session, attempts: [...attempts, attempt] });
-    setDraft(EMPTY_DRAFT);
-    setAlt(false);
-    setShownAt(Date.now());
-    setBusy(false);
   }
 
   const position = index === -1 ? session.itemIds.length : index + 1;
@@ -90,16 +111,22 @@ export function TestScreen({ service, content, sessionId }: { service: SessionSe
         </div>
         <Segments states={states} />
       </div>
-      <span className={remaining < 0 ? 'numeral overtime' : 'numeral'} aria-label={t('timeLeft')}>{formatClock(remaining)}</span>
+      <span className={remaining < 0 ? 'numeral overtime' : 'numeral'} title={t('timeLeft')}>{formatClock(remaining)}</span>
     </header>
   );
+  const alert = failed ? <p role="alert" className="muted down">{t('saveFailed')}</p> : null;
 
   if (!item) {
     return (
       <>
         {header}
         <main className="question">
-          <Button variant="primary" disabled={busy} onClick={() => void finish()}>{t('finishSession')}</Button>
+          {session.finishedAt !== undefined ? (
+            <a className="btn btn-primary" href={href({ name: 'result', sessionId })}>{t('finishSession')}</a>
+          ) : (
+            <Button variant="primary" disabled={busy} onClick={() => void run(finish)}>{t('finishSession')}</Button>
+          )}
+          {alert}
         </main>
       </>
     );
@@ -119,7 +146,7 @@ export function TestScreen({ service, content, sessionId }: { service: SessionSe
           <Button className="btn-small" onClick={() => setAlt(!alt)}>{t(alt ? 'showOwn' : 'showOther')}</Button>
         </div>
 
-        {item.type !== 'challenge' ? <h2 className="title"><Rich text={text(item.prompt)} /></h2> : null}
+        {item.type !== 'challenge' ? <h2 ref={titleRef} tabIndex={-1} className="title"><Rich text={text(item.prompt)} /></h2> : null}
 
         {item.type === 'mcq' ? (
           <>
@@ -153,6 +180,7 @@ export function TestScreen({ service, content, sessionId }: { service: SessionSe
           </div>
           <Button variant="primary" disabled={!ready || busy} onClick={() => void submit(item)}>{t('submit')}</Button>
         </div>
+        {alert}
       </main>
     </>
   );

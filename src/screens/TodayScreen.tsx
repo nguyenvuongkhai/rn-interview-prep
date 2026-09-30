@@ -17,26 +17,35 @@ export function TodayScreen({ service, content }: { service: SessionService; con
   const [duration, setDuration] = useState<Duration>(30);
   const [overview, setOverview] = useState<Overview>();
   const [busy, setBusy] = useState(false);
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
     let live = true;
-    void service.overview(duration, Date.now()).then((o) => {
-      if (live) setOverview(o);
-    });
+    service.overview(duration, Date.now()).then(
+      (o) => {
+        if (live) setOverview(o);
+      },
+      () => {
+        if (live) setFailed(true);
+      },
+    );
     return () => {
       live = false;
     };
   }, [service, duration]);
 
   const byId = new Map(content.items.map((i) => [i.id, i]));
-  const planItems = (overview?.plan.itemIds ?? []).flatMap((id) => {
+  const daily = overview?.daily;
+  // An unfinished Daily is what the main button resumes, so describe that session, not a new plan.
+  const resuming = daily && !daily.finishedAt ? daily : undefined;
+  const shownDuration = resuming ? resuming.durationMin : duration;
+  const planItems = (resuming ? resuming.itemIds : (overview?.plan.itemIds ?? [])).flatMap((id) => {
     const item = byId.get(id);
     return item ? [item] : [];
   });
   const quick = planItems.filter((i) => i.type === 'mcq' || i.type === 'spot-bug').length;
   const opens = planItems.filter((i) => i.type === 'open').length;
-  const minutes = Math.round((overview?.plan.estSeconds ?? 0) / 60);
-  const daily = overview?.daily;
+  const minutes = Math.round(planItems.reduce((s, i) => s + i.estSeconds, 0) / 60);
   const topicTitle = (id: string) => {
     const topic = content.topics.find((x) => x.id === id);
     return topic ? pick(topic.title) : id;
@@ -44,8 +53,14 @@ export function TodayScreen({ service, content }: { service: SessionService; con
 
   async function start() {
     setBusy(true);
-    const session = await service.start(duration, Date.now());
-    navigate({ name: 'test', sessionId: session.id });
+    setFailed(false);
+    try {
+      const session = await service.start(duration, Date.now());
+      navigate({ name: 'test', sessionId: session.id });
+    } catch {
+      setFailed(true);
+      setBusy(false);
+    }
   }
 
   return (
@@ -61,7 +76,18 @@ export function TodayScreen({ service, content }: { service: SessionService; con
 
         <div role="radiogroup" aria-label={t('durationGroup')} className="durations">
           {DURATIONS.map((d) => (
-            <button key={d} type="button" role="radio" aria-checked={d === duration} className="duration" onClick={() => setDuration(d)}>
+            <button
+              key={d}
+              type="button"
+              role="radio"
+              aria-checked={d === shownDuration}
+              disabled={resuming !== undefined}
+              className="duration"
+              onClick={() => {
+                setDuration(d);
+                setOverview(undefined);
+              }}
+            >
               <span className="numeral">{d}'</span>
               <span className="muted">{t(MIX_KEY[d])}</span>
             </button>
@@ -69,7 +95,7 @@ export function TodayScreen({ service, content }: { service: SessionService; con
         </div>
 
         <div className="panel stack">
-          <span className="label">{t('includes', { d: duration })}</span>
+          <span className="label">{t('includes', { d: shownDuration })}</span>
           <div className="counts">
             <div className="stack" style={{ gap: 2 }}>
               <span className="count">{quick}</span>
@@ -82,7 +108,8 @@ export function TodayScreen({ service, content }: { service: SessionService; con
           </div>
         </div>
 
-        {overview && planItems.length === 0 ? <p className="muted">{t('emptyBank')}</p> : null}
+        {overview && planItems.length === 0 ? <p className="muted">{t(daily ? 'allDoneToday' : 'emptyBank')}</p> : null}
+        {failed ? <p role="alert" className="muted down">{t('saveFailed')}</p> : null}
 
         <div className="row">
           {daily && !daily.finishedAt ? (

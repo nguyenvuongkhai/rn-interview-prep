@@ -80,6 +80,13 @@ describe('session service', () => {
     expect(await service.finish(s.id, NOW + 16 * 60_000)).toMatchObject({ finishedAt: NOW + 16 * 60_000, overtimeSec: 60 });
   });
 
+  it('finish keeps the first finish time when called again', async () => {
+    const { service } = setup();
+    const s = await service.start(15, NOW);
+    await service.finish(s.id, NOW + 16 * 60_000);
+    expect(await service.finish(s.id, NOW + 30 * 60_000)).toMatchObject({ finishedAt: NOW + 16 * 60_000, overtimeSec: 60 });
+  });
+
   it('load returns only that session’s attempts, and undefined for unknown ids', async () => {
     const { service } = setup();
     const a = await service.startPractice(['q1'], NOW);

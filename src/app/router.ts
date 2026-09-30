@@ -4,7 +4,13 @@ export type Route = { name: 'today' } | { name: 'test'; sessionId: string } | { 
 
 export function parseRoute(hash: string): Route {
   const [, name, id] = hash.replace(/^#/, '').split('/');
-  if ((name === 'test' || name === 'result') && id) return { name, sessionId: decodeURIComponent(id) };
+  if ((name === 'test' || name === 'result') && id) {
+    try {
+      return { name, sessionId: decodeURIComponent(id) };
+    } catch {
+      // a malformed escape such as %E0 falls back to Today instead of crashing the app
+    }
+  }
   return { name: 'today' };
 }
 

@@ -32,6 +32,7 @@ export function ResultScreen({ service, content, sessionId }: { service: Session
   const { t, pick } = useLang();
   const [report, setReport] = useState<SessionReport | null>();
   const [busy, setBusy] = useState(false);
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
     let live = true;
@@ -74,8 +75,14 @@ export function ResultScreen({ service, content, sessionId }: { service: Session
 
   async function practise(itemIds: string[]) {
     setBusy(true);
-    const session = await service.startPractice(itemIds, Date.now());
-    navigate({ name: 'test', sessionId: session.id });
+    setFailed(false);
+    try {
+      const session = await service.startPractice(itemIds, Date.now());
+      navigate({ name: 'test', sessionId: session.id });
+    } catch {
+      setFailed(true);
+      setBusy(false);
+    }
   }
 
   return (
@@ -101,6 +108,7 @@ export function ResultScreen({ service, content, sessionId }: { service: Session
 
       <section className="stack">
         <h2 className="title">{t('gapsTitle')}</h2>
+        {failed ? <p role="alert" className="muted down">{t('saveFailed')}</p> : null}
         {report.gaps.length === 0 ? <p className="muted">{t('noGaps')}</p> : null}
         <div className="gaps">
           {report.gaps.map((g, index) => {

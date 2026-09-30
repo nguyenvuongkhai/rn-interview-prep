@@ -120,6 +120,7 @@ export function createSessionService(repo: Repo, content: Content) {
     async finish(sessionId: string, now: number): Promise<SessionRecord> {
       const session = await repo.getSession(sessionId);
       if (!session) throw new Error(`Unknown session "${sessionId}"`);
+      if (session.finishedAt !== undefined) return session;
       const elapsed = Math.round((now - session.startedAt) / 1000);
       const done = { ...session, finishedAt: now, overtimeSec: Math.max(0, elapsed - session.durationMin * 60) };
       await repo.putSession(done);

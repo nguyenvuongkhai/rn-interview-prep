@@ -28,6 +28,14 @@ export const UI = {
   viewResult: { vi: 'Xem kết quả hôm nay', en: 'See today’s result' },
   estimate: { vi: 'Ước tính {m} phút · đồng hồ là giới hạn mềm', en: 'About {m} minutes · the timer is a soft limit' },
   emptyBank: { vi: 'Chưa có câu hỏi nào để ghép bài.', en: 'There are no questions to build a session from yet.' },
+  allDoneToday: {
+    vi: 'Bạn đã làm hết các câu có thể luyện hôm nay. Quay lại ngày mai để ôn lại.',
+    en: 'You have answered every question available today. Come back tomorrow for reviews.',
+  },
+  saveFailed: {
+    vi: 'Không lưu được. Thử lại, hoặc tải lại trang.',
+    en: 'Could not save. Try again, or reload the page.',
+  },
   weakNow: { vi: 'Đang yếu', en: 'Weak spots' },
   noGaps: {
     vi: 'Chưa đủ dữ liệu. Làm vài bài để app biết bạn yếu ở đâu.',

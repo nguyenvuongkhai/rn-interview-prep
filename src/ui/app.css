@@ -107,6 +107,9 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
 .code-block { display: flex; flex-direction: column; padding: var(--space-2) 0; border-radius: var(--radius-lg); border: 1px solid var(--line); background: var(--surface-raised); overflow-x: auto; }
 .code-line { display: grid; grid-template-columns: 32px minmax(0, 1fr); gap: var(--space-3); padding: 0 var(--space-3); border: 0; background: transparent; text-align: left; font: 13px/22px var(--font-mono); white-space: pre; }
 .code-line[aria-pressed="true"] { background: var(--mastery-weak); }
+.code-line[aria-pressed="true"] .ln { color: var(--ink); }
+.code-line:focus-visible { outline-offset: -3px; }
+.title:focus { outline: none; }
 .ln { color: var(--ink-muted); text-align: right; }
 .answer-box { width: 100%; min-height: 120px; padding: var(--space-3); border-radius: var(--radius-md); border: 1px solid var(--line); background: var(--surface-raised); color: var(--ink); font: inherit; resize: vertical; }
 .check { display: flex; gap: var(--space-2); align-items: flex-start; }

@@ -1981,13 +1981,13 @@ export function App() {
 cd ~/Downloads/rn-interview-prep && npm run check
 ```
 
-Kỳ vọng: `tsc` không lỗi, Vitest báo **100 test pass trên 16 file**. Trong đó 67 test là của P1 và 33 test mới:
+Kỳ vọng: `tsc` không lỗi, Vitest báo **101 test pass trên 16 file**. Trong đó 67 test là của P1 và 34 test mới (sau review thêm 1 test cho `finish`):
 
 | File test | Test mới |
 |---|---|
 | recommend | +1 |
 | storage/repo | 8 |
-| sessionService | 9 |
+| sessionService | 10 |
 | report | 3 |
 | draft | 5 |
 | router | 3 |

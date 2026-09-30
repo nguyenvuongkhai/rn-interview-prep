@@ -8,7 +8,7 @@ import { ResultScreen } from './screens/ResultScreen';
 import { TestScreen } from './screens/TestScreen';
 import { TodayScreen } from './screens/TodayScreen';
 import { openRepo } from './storage/openRepo';
-import type { Repo } from './storage/repo';
+import { createMemoryRepo, type Repo } from './storage/repo';
 import { StorageBanner, TopBar } from './ui/Chrome';
 
 interface Booted {
@@ -23,10 +23,16 @@ export function App() {
   const [boot, setBoot] = useState<Booted>();
 
   useEffect(() => {
-    void openRepo().then(async ({ repo, persistent }) => {
-      const lang = (await repo.getSetting<Lang>('lang')) ?? 'vi';
-      setBoot({ repo, persistent, lang, service: createSessionService(repo, content) });
-    });
+    let live = true;
+    const ready = (repo: Repo, persistent: boolean, lang: Lang) => {
+      if (live) setBoot({ repo, persistent, lang, service: createSessionService(repo, content) });
+    };
+    void openRepo()
+      .then(async ({ repo, persistent }) => ready(repo, persistent, (await repo.getSetting<Lang>('lang')) ?? 'vi'))
+      .catch(() => ready(createMemoryRepo(), false, 'vi'));
+    return () => {
+      live = false;
+    };
   }, []);
 
   const saveLang = useCallback(

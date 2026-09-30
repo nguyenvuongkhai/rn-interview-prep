@@ -7,6 +7,7 @@ describe('router', () => {
     expect(parseRoute('#/')).toEqual({ name: 'today' });
     expect(parseRoute('#/test')).toEqual({ name: 'today' });
     expect(parseRoute('#/nope/x')).toEqual({ name: 'today' });
+    expect(parseRoute('#/test/%E0')).toEqual({ name: 'today' });
   });
 
   it('parses test and result routes', () => {

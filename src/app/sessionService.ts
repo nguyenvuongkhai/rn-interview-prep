@@ -1,0 +1,131 @@
+import type { Content } from '../content/load';
+import { grade, type Response } from '../core/grading';
+import { masteryByTopic, type Mastery } from '../core/mastery';
+import { diagnose, topGaps, type Gap } from '../core/recommend';
+import { nextReview } from '../core/scheduler';
+import { buildSession, type Duration, type SessionPlan } from '../core/sessionBuilder';
+import type { Attempt, Confidence, Lang, ReviewState } from '../core/types';
+import type { Repo, SessionRecord } from '../storage/repo';
+
+export interface AnswerInput {
+  sessionId: string;
+  itemId: string;
+  response: Response;
+  confidence: Confidence;
+  /** seconds */
+  timeSpent: number;
+  lang: Lang;
+  now: number;
+}
+
+export interface Overview {
+  daily?: SessionRecord;
+  plan: SessionPlan;
+  gaps: Gap[];
+  misconceptions: { id: string; occurrences: number }[];
+}
+
+export interface LoadedSession {
+  session: SessionRecord;
+  attempts: Attempt[];
+}
+
+interface History {
+  attempts: Attempt[];
+  reviews: ReviewState[];
+  mastery: Map<string, Mastery>;
+}
+
+export function localDate(now: number): string {
+  const d = new Date(now);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+export function createSessionService(repo: Repo, content: Content) {
+  const byId = new Map(content.items.map((i) => [i.id, i]));
+  // Challenges need the code runner, which arrives in P3.
+  const quizItems = content.items.filter((i) => i.type !== 'challenge');
+
+  async function history(now: number): Promise<History> {
+    const [attempts, reviews] = await Promise.all([repo.listAttempts(), repo.listReviews()]);
+    return { attempts, reviews, mastery: masteryByTopic(content.topics, attempts, byId, now) };
+  }
+
+  /** The first session of a day is the Daily; later ones are practice with their own seed. */
+  async function today(now: number) {
+    const date = localDate(now);
+    const sessions = await repo.findSessions(date);
+    const daily = sessions.find((s) => s.mode === 'daily');
+    return { date, daily, seed: daily ? `${date}#${sessions.length}` : date };
+  }
+
+  function plan(duration: Duration, seed: string, now: number, h: History): SessionPlan {
+    return buildSession({ duration, date: seed, now, items: quizItems, attempts: h.attempts, reviews: h.reviews, mastery: h.mastery });
+  }
+
+  return {
+    async overview(duration: Duration, now: number): Promise<Overview> {
+      const [{ daily, seed }, h] = await Promise.all([today(now), history(now)]);
+      const gaps = topGaps({ topics: content.topics, mastery: h.mastery, items: content.items, lessons: content.lessons, attempts: h.attempts });
+      const misconceptions = diagnose(content.topics, h.attempts, byId, now).flatMap((d) =>
+        d.code === 'misconception' ? [{ id: d.misconceptionId, occurrences: d.occurrences }] : [],
+      );
+      return { daily, plan: plan(duration, seed, now, h), gaps, misconceptions };
+    },
+
+    async start(duration: Duration, now: number): Promise<SessionRecord> {
+      const [{ date, daily, seed }, h] = await Promise.all([today(now), history(now)]);
+      const session: SessionRecord = {
+        id: crypto.randomUUID(), date, mode: daily ? 'practice' : 'daily', durationMin: duration,
+        itemIds: plan(duration, seed, now, h).itemIds, startedAt: now, overtimeSec: 0,
+      };
+      await repo.putSession(session);
+      return session;
+    },
+
+    /** A short practice run over chosen items, e.g. a gap's plan from the Result screen. */
+    async startPractice(itemIds: string[], now: number): Promise<SessionRecord> {
+      const session: SessionRecord = {
+        id: crypto.randomUUID(), date: localDate(now), mode: 'practice', durationMin: 15,
+        itemIds, startedAt: now, overtimeSec: 0,
+      };
+      await repo.putSession(session);
+      return session;
+    },
+
+    async load(sessionId: string): Promise<LoadedSession | undefined> {
+      const session = await repo.getSession(sessionId);
+      if (!session) return undefined;
+      const attempts = (await repo.listAttempts()).filter((a) => a.sessionId === sessionId);
+      return { session, attempts };
+    },
+
+    listAttempts: () => repo.listAttempts(),
+
+    async answer(input: AnswerInput): Promise<Attempt> {
+      const { sessionId, itemId, response, confidence, timeSpent, lang, now } = input;
+      const item = byId.get(itemId);
+      if (!item) throw new Error(`Unknown item "${itemId}"`);
+      const { score, misconceptionIds } = grade(item, response);
+      const attempt: Attempt = {
+        id: crypto.randomUUID(), itemId, sessionId, score, timeSpent, confidence, lang, at: now, misconceptionIds,
+        usedHints: response.type === 'challenge' ? response.usedHints : 0,
+        ...(response.type === 'challenge' ? { testResults: response.tests } : {}),
+      };
+      await repo.addAttempt(attempt);
+      await repo.putReview(nextReview(await repo.getReview(itemId), itemId, score, confidence, now));
+      return attempt;
+    },
+
+    async finish(sessionId: string, now: number): Promise<SessionRecord> {
+      const session = await repo.getSession(sessionId);
+      if (!session) throw new Error(`Unknown session "${sessionId}"`);
+      const elapsed = Math.round((now - session.startedAt) / 1000);
+      const done = { ...session, finishedAt: now, overtimeSec: Math.max(0, elapsed - session.durationMin * 60) };
+      await repo.putSession(done);
+      return done;
+    },
+  };
+}
+
+export type SessionService = ReturnType<typeof createSessionService>;

@@ -99,6 +99,7 @@ export const lessonMeta = z.strictObject({
 });
 
 export type Localized = z.infer<typeof localized>;
+export type Option = z.infer<typeof option>;
 export type Kind = z.infer<typeof kind>;
 export type Difficulty = z.infer<typeof difficulty>;
 export type Question = z.infer<typeof question>;

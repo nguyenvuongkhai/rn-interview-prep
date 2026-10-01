@@ -4,7 +4,7 @@ import { masteryByTopic, type Mastery } from '../core/mastery';
 import { diagnose, topGaps, type Gap } from '../core/recommend';
 import { nextReview } from '../core/scheduler';
 import { buildSession, type Duration, type SessionPlan } from '../core/sessionBuilder';
-import type { Attempt, Confidence, Lang, ReviewState } from '../core/types';
+import type { Attempt, Confidence, Lang, Picked, ReviewState } from '../core/types';
 import type { Repo, SessionRecord, Snapshot } from '../storage/repo';
 import { toBackup, type Backup } from './backup';
 import { localDate } from './dates';
@@ -44,6 +44,22 @@ interface History {
   attempts: Attempt[];
   reviews: ReviewState[];
   mastery: Map<string, Mastery>;
+}
+
+function pickedFrom(response: Response): Picked | undefined {
+  switch (response.type) {
+    case 'mcq':
+      return { selected: response.selected };
+    case 'spot-bug':
+      return {
+        ...(response.line !== null ? { line: response.line } : {}),
+        ...(response.cause !== null ? { cause: response.cause } : {}),
+      };
+    case 'open':
+      return { hitKeyPoints: response.hitKeyPoints };
+    case 'challenge':
+      return undefined;
+  }
 }
 
 /** Items in one topic-practice run from the Library or a Lesson. */
@@ -137,6 +153,7 @@ export function createSessionService(repo: Repo, content: Content) {
         id: crypto.randomUUID(), itemId, sessionId, score, timeSpent, confidence, lang, at: now, misconceptionIds,
         usedHints: response.type === 'challenge' ? response.usedHints : 0,
         ...(response.type === 'challenge' ? { testResults: response.tests } : {}),
+        ...(pickedFrom(response) ? { picked: pickedFrom(response) } : {}),
       };
       await repo.addAttempt(attempt);
       await repo.putReview(nextReview(await repo.getReview(itemId), itemId, score, confidence, now));

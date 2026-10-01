@@ -8,6 +8,7 @@ import { useLang } from '../i18n/LangProvider';
 import { NotFound } from '../ui/Chrome';
 import { Button, Rich, Stat } from '../ui/components';
 import { formatClock, formatScore } from '../ui/format';
+import { ReviewItem } from './questions/ReviewItem';
 
 function Delta({ before, after }: { before: number | null; after: number | null }) {
   if (after === null) return null;
@@ -158,19 +159,12 @@ export function ResultScreen({ service, content, sessionId }: { service: Session
         <div className="panel stack" style={{ gap: 'var(--space-2)' }}>
           <span className="label">{t('wrongTitle')}</span>
           {report.wrong.length === 0 ? <span className="muted">{t('noneWrong')}</span> : null}
-          {report.wrong.map(({ item }) => (
-            <details key={item.id}>
+          {report.wrong.map(({ item, attempt }) => (
+            <details key={attempt.id}>
               <summary>
                 <span className="down">✗</span> {item.type === 'challenge' ? pick(item.title) : <Rich text={pick(item.prompt)} />}
               </summary>
-              {'explanation' in item ? <p className="muted"><Rich text={pick(item.explanation)} /></p> : null}
-              {item.type === 'open' ? <p className="muted"><Rich text={pick(item.modelAnswer)} /></p> : null}
-              {item.type === 'challenge' && content.challenges[item.id] ? (
-                <>
-                  <span className="label">{t('solutionTitle')}</span>
-                  <pre className="md-code">{content.challenges[item.id].solution}</pre>
-                </>
-              ) : null}
+              <ReviewItem item={item} attempt={attempt} content={content} service={service} />
             </details>
           ))}
         </div>

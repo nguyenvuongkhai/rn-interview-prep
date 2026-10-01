@@ -13,6 +13,14 @@ const attempt = z.object({
   score: z.number().min(0).max(1), timeSpent: z.number().min(0),
   confidence: z.enum(['guess', 'fairly', 'sure']), usedHints: z.number().int().min(0), lang: z.enum(['vi', 'en']),
   at: z.number(), misconceptionIds: z.array(z.string()), testResults: z.array(testResult).optional(),
+  picked: z
+    .object({
+      selected: z.array(z.number().int()).optional(),
+      line: z.number().int().optional(),
+      cause: z.number().int().optional(),
+      hitKeyPoints: z.array(z.number().int()).optional(),
+    })
+    .optional(),
 });
 const session = z.object({
   id: z.string(), date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), mode: z.enum(['daily', 'practice']),

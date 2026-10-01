@@ -68,7 +68,7 @@ describe('session service', () => {
       sessionId: s.id, itemId: 'q0', response: { type: 'mcq', selected: [1] },
       confidence: 'sure', timeSpent: 20, lang: 'vi', now: NOW,
     });
-    expect(a).toMatchObject({ score: 0, misconceptionIds: ['m-b'], sessionId: s.id, timeSpent: 20 });
+    expect(a).toMatchObject({ score: 0, misconceptionIds: ['m-b'], sessionId: s.id, timeSpent: 20, picked: { selected: [1] } });
     expect((await service.load(s.id))?.attempts).toHaveLength(1);
     expect(await repo.getReview('q0')).toEqual({ itemId: 'q0', box: 0, dueAt: NOW + DAY_MS });
   });

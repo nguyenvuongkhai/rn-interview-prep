@@ -11,6 +11,13 @@ export interface TestResult {
   hidden: boolean;
 }
 
+export interface Picked {
+  selected?: number[];
+  line?: number;
+  cause?: number;
+  hitKeyPoints?: number[];
+}
+
 export interface Attempt {
   id: string;
   itemId: string;
@@ -27,6 +34,8 @@ export interface Attempt {
   /** from grade(): misconceptions of the wrong options picked */
   misconceptionIds: string[];
   testResults?: TestResult[];
+  /** what the user picked, so the Result screen can show it next to the answer key */
+  picked?: Picked;
 }
 
 export interface ReviewState {

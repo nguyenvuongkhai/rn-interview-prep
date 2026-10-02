@@ -1,0 +1,387 @@
+[
+  {
+    "id": "native-build-001",
+    "type": "mcq",
+    "topics": ["native/build"],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": ["native-build-core"],
+    "multi": false,
+    "prompt": {
+      "vi": "Nâng `targetSdkVersion` của một app Android thay đổi điều gì?",
+      "en": "What does raising `targetSdkVersion` in an Android app change?"
+    },
+    "options": [
+      { "text": { "vi": "App chịu các thay đổi hành vi của phiên bản Android đó", "en": "It opts the app into that Android version's behaviour changes" } },
+      {
+        "text": { "vi": "Những máy nào cài được app; máy cũ hơn bị chặn", "en": "Which devices can install the app; older ones are blocked" },
+        "misconception": { "id": "targetsdk-is-minsdk", "text": { "vi": "Nhầm `targetSdkVersion` với `minSdkVersion`. `minSdkVersion` mới quyết định máy nào cài được app.", "en": "Confusing `targetSdkVersion` with `minSdkVersion`. `minSdkVersion` decides which devices can install the app." } }
+      },
+      {
+        "text": { "vi": "Những API Android mà code được phép biên dịch", "en": "Which Android APIs your code can compile against" },
+        "misconception": { "id": "targetsdk-is-compilesdk", "text": { "vi": "Nhầm `targetSdkVersion` với `compileSdkVersion`. `compileSdkVersion` quyết định API nào gọi được lúc biên dịch.", "en": "Confusing `targetSdkVersion` with `compileSdkVersion`. `compileSdkVersion` decides which APIs you can call at compile time." } }
+      },
+      {
+        "text": { "vi": "Không gì lúc runtime; đó chỉ là metadata cho Google Play đọc", "en": "Nothing at runtime; it is metadata that only Google Play reads" },
+        "misconception": { "id": "targetsdk-metadata-only", "text": { "vi": "Nghĩ rằng `targetSdkVersion` chỉ là metadata cho store. Hệ điều hành đọc nó lúc runtime để quyết định thay đổi hành vi nào áp dụng cho app.", "en": "Believing `targetSdkVersion` is only store metadata. The OS reads it at runtime to decide which behaviour changes apply to the app." } }
+      }
+    ],
+    "answer": [0],
+    "explanation": {
+      "vi": "Ba con số có ba vai trò. `minSdkVersion` là phiên bản thấp nhất cài được app. `compileSdkVersion` là bộ API dùng lúc biên dịch. `targetSdkVersion` báo cho hệ điều hành biết app đã sẵn sàng cho hành vi của phiên bản nào, nên nâng nó có thể làm code cũ vỡ trên máy mới. Play yêu cầu nâng target theo lịch hằng năm; con số cụ thể thay đổi, nên hãy kiểm tra trong Play Console và trang target API level requirements thay vì nhớ một con số.",
+      "en": "The three numbers do three jobs. `minSdkVersion` is the lowest version that can install the app. `compileSdkVersion` is the API set used at compile time. `targetSdkVersion` tells the OS which version's behaviour the app is ready for, so raising it can break old code on new devices. Play requires the target to rise on a yearly schedule; the exact level changes, so check Play Console and the target API level requirements page instead of memorising a number."
+    }
+  },
+  {
+    "id": "native-build-002",
+    "type": "mcq",
+    "topics": ["native/build"],
+    "kind": "core",
+    "difficulty": 2,
+    "estSeconds": 75,
+    "lessons": ["native-build-core"],
+    "multi": false,
+    "prompt": {
+      "vi": "Bạn thêm một thư viện có code iOS native. Android build được, nhưng iOS build fail với lỗi không tìm thấy header của thư viện đó (`file not found`). Bước nào nhiều khả năng bị thiếu nhất?",
+      "en": "You add a library with native iOS code. Android builds, but the iOS build fails because the library's header is not found (`file not found`). What is the most likely missing step?"
+    },
+    "options": [
+      { "text": { "vi": "Chạy `pod install` trong `ios/` để autolinking thêm pod của thư viện", "en": "Running `pod install` in `ios/` so autolinking adds the library's pod" } },
+      {
+        "text": { "vi": "Khởi động lại Metro với `--reset-cache`", "en": "Restarting Metro with `--reset-cache`" },
+        "misconception": { "id": "metro-cache-fixes-native", "text": { "vi": "Nghĩ rằng cache của Metro ảnh hưởng tới build native. Metro chỉ phục vụ JavaScript; header native đến từ các pod mà Xcode biên dịch.", "en": "Believing Metro's cache affects native builds. Metro only serves JavaScript; native headers come from the pods Xcode compiles." } }
+      },
+      {
+        "text": { "vi": "Tự thêm một dòng `pod` cho thư viện vào Podfile", "en": "Adding a `pod` line for the library to the Podfile by hand" },
+        "misconception": { "id": "build-manual-pod-entry", "text": { "vi": "Nghĩ rằng thư viện nào cũng cần khai báo tay trong Podfile. `use_native_modules!` đã thêm các pod được autolink; dòng viết tay chỉ dành cho thư viện nằm ngoài autolinking.", "en": "Believing each library needs a manual Podfile entry. `use_native_modules!` adds autolinked pods; a hand-written line is only for libraries outside autolinking." } }
+      },
+      {
+        "text": { "vi": "Thêm thư mục của thư viện vào Header Search Paths trong Xcode", "en": "Adding the library's folder to Header Search Paths in Xcode" },
+        "misconception": { "id": "build-manual-header-paths", "text": { "vi": "Nghĩ rằng header path phải đặt tay. CocoaPods cấu hình nó cho từng pod; sửa tay chỉ che đi vấn đề thật.", "en": "Believing header paths must be set by hand. CocoaPods configures them for each pod; editing them by hand hides the real problem." } }
+      }
+    ],
+    "answer": [0],
+    "explanation": {
+      "vi": "Trên iOS, autolinking chạy qua `use_native_modules!` trong Podfile, và nó chỉ có tác dụng khi bạn chạy `pod install`. Bước này cũng chạy Codegen cho các thư viện có `codegenConfig`. Android không cần bước tương đương vì Gradle đọc cấu hình autolinking ở mỗi lần build. Thói quen nên có: mỗi lần thêm, xoá hay nâng thư viện có code native, chạy `bundle exec pod install`, mở `.xcworkspace` chứ không mở `.xcodeproj`, và commit `Podfile.lock`.",
+      "en": "On iOS, autolinking runs through `use_native_modules!` in the Podfile, and it only takes effect when you run `pod install`. That step also runs Codegen for libraries with a `codegenConfig`. Android needs no equivalent step because Gradle reads the autolinking config on every build. The habit to keep: whenever you add, remove or upgrade a library with native code, run `bundle exec pod install`, open the `.xcworkspace` rather than the `.xcodeproj`, and commit `Podfile.lock`."
+    }
+  },
+  {
+    "id": "native-build-003",
+    "type": "mcq",
+    "topics": ["native/build", "maintain/upgrade"],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 75,
+    "lessons": ["native-build-core"],
+    "multi": false,
+    "prompt": {
+      "vi": "Sau khi nâng React Native (lên 0.73 hoặc mới hơn, bản dùng Android Gradle Plugin 8), một thư viện fail với `Namespace not specified`. Cách sửa đúng là gì?",
+      "en": "After upgrading React Native (to 0.73 or later, which uses Android Gradle Plugin 8), a library fails with `Namespace not specified`. What is the correct fix?"
+    },
+    "options": [
+      { "text": { "vi": "Khai báo `namespace` trong `build.gradle` của thư viện (nâng hoặc patch nó)", "en": "Declare `namespace` in the library's `build.gradle` (upgrade or patch the library)" } },
+      {
+        "text": { "vi": "Đặt `namespace` trong `build.gradle` của app; thư viện sẽ kế thừa", "en": "Set `namespace` in the app's `build.gradle`; libraries inherit it" },
+        "misconception": { "id": "build-app-namespace-for-libs", "text": { "vi": "Nghĩ rằng thư viện kế thừa namespace của app. Với AGP 8, mỗi module Android tự khai báo namespace trong `build.gradle` của nó.", "en": "Believing libraries inherit the app's namespace. Under AGP 8 every Android module declares its own namespace in its `build.gradle`." } }
+      },
+      {
+        "text": { "vi": "Thêm thuộc tính `package` vào `AndroidManifest.xml` của thư viện", "en": "Add a `package` attribute to the library's `AndroidManifest.xml`" },
+        "misconception": { "id": "build-manifest-package-namespace", "text": { "vi": "Nghĩ rằng thuộc tính `package` trong manifest đặt namespace. Từ AGP 8 nó không còn dùng cho việc đó; namespace phải nằm trong `build.gradle`.", "en": "Believing the manifest `package` attribute sets the namespace. From AGP 8 it is no longer used for that; the namespace must be in `build.gradle`." } }
+      },
+      {
+        "text": { "vi": "Hạ Gradle wrapper xuống bản cũ nhưng giữ React Native bản mới", "en": "Downgrade the Gradle wrapper while keeping the new React Native version" },
+        "misconception": { "id": "build-downgrade-gradle", "text": { "vi": "Nghĩ rằng có thể giữ Gradle cũ dưới React Native mới. Gradle plugin của RN cần đúng phiên bản AGP và Gradle trong diff nâng cấp.", "en": "Believing you can keep an older Gradle under a newer React Native. The RN Gradle plugin needs the AGP and Gradle versions from the upgrade diff." } }
+      }
+    ],
+    "answer": [0],
+    "explanation": {
+      "vi": "AGP 8 bắt buộc mỗi module Android khai báo `namespace` trong `build.gradle`, thay cho thuộc tính `package` cũ trong manifest. Thư viện chưa cập nhật sẽ fail ngay khi app chuyển sang AGP 8. Thứ tự xử lý: tìm bản mới của thư viện đã thêm `namespace`; nếu chưa có, dùng `patch-package` để thêm `namespace \"com.vendor.lib\"` (khớp package cũ) và ghi lại lý do; nếu thư viện bị bỏ rơi, cân nhắc thay thế.",
+      "en": "AGP 8 requires every Android module to declare `namespace` in its `build.gradle`, replacing the old `package` attribute in the manifest. A library that has not caught up fails as soon as the app moves to AGP 8. The order of work: look for a newer release that adds `namespace`; if there is none, use `patch-package` to add `namespace \"com.vendor.lib\"` (matching the old package) and record why; if the library is abandoned, plan to replace it."
+    }
+  },
+  {
+    "id": "native-build-004",
+    "type": "mcq",
+    "topics": ["native/build"],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": ["native-build-core"],
+    "multi": true,
+    "prompt": {
+      "vi": "Một tính năng chạy tốt ở bản debug nhưng hỏng ở bản release. Những nguyên nhân nào có thể gây ra điều này? (chọn tất cả đáp án đúng)",
+      "en": "A feature works in debug builds but breaks in the release build. Which of these can cause that? (select all that apply)"
+    },
+    "options": [
+      { "text": { "vi": "R8 xoá hoặc đổi tên class mà thư viện load bằng reflection, do thiếu keep rule", "en": "R8 strips or renames a class a library loads by reflection, with no keep rule" } },
+      { "text": { "vi": "Code khởi tạo nằm trong `if (__DEV__)` nhưng production cần nó", "en": "Setup code sits inside `if (__DEV__)`, and production code depends on it" } },
+      {
+        "text": { "vi": "Hermes chỉ chạy ở debug, nên bản release chạy trên JavaScriptCore", "en": "Hermes runs only in debug, so release falls back to JavaScriptCore" },
+        "misconception": { "id": "build-hermes-debug-only", "text": { "vi": "Nghĩ rằng Hermes chỉ dùng cho debug. Khi bật, Hermes chạy ở mọi bản build; bản release còn biên dịch sẵn bundle thành Hermes bytecode.", "en": "Believing Hermes is debug-only. When enabled it runs in every build; release builds also precompile the bundle to Hermes bytecode." } }
+      },
+      {
+        "text": { "vi": "Bản release vẫn load JavaScript từ Metro nếu Metro đang chạy", "en": "A release build still loads JavaScript from Metro while Metro is running" },
+        "misconception": { "id": "release-uses-metro", "text": { "vi": "Nghĩ rằng bản release nói chuyện với Metro. Nó chạy bundle được nhúng lúc build, nên đổi JS thì cần build mới hoặc một bản OTA.", "en": "Believing release builds talk to Metro. They run the bundle embedded at build time, so a JS change needs a new build or an OTA update." } }
+      }
+    ],
+    "answer": [0, 1],
+    "explanation": {
+      "vi": "Bản release khác bản debug ở nhiều chỗ: code được minify và shrink (R8 trên Android khi `minifyEnabled` bật), `__DEV__` là `false`, JS là bundle nhúng sẵn thay vì từ Metro, và thường có cấu hình môi trường hay signing riêng. Lỗi do R8 thường hiện ra dưới dạng `ClassNotFoundException` hoặc field bị null trong thư viện dùng reflection; sửa bằng keep rule trong `proguard-rules.pro` theo hướng dẫn của thư viện. Cách phòng tốt nhất là chạy bản release trên máy thật trước mỗi lần phát hành.",
+      "en": "Release differs from debug in several ways: code is minified and shrunk (R8 on Android when `minifyEnabled` is on), `__DEV__` is `false`, JS is an embedded bundle instead of coming from Metro, and environment config or signing is often different. R8 problems usually show up as `ClassNotFoundException` or null fields in a library that uses reflection; fix them with keep rules in `proguard-rules.pro` as the library documents. The best prevention is running a release build on a real device before every release."
+    }
+  },
+  {
+    "id": "native-build-005",
+    "type": "mcq",
+    "topics": ["native/build"],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": ["native-build-core"],
+    "multi": true,
+    "prompt": {
+      "vi": "Những phát biểu nào về CocoaPods trong một project iOS React Native là đúng? (chọn tất cả đáp án đúng)",
+      "en": "Which statements about CocoaPods in a React Native iOS project are true? (select all that apply)"
+    },
+    "options": [
+      { "text": { "vi": "Commit `Podfile.lock`, để đồng nghiệp và CI cài đúng cùng phiên bản pod", "en": "Commit `Podfile.lock`, so teammates and CI install the same pod versions" } },
+      { "text": { "vi": "Cố định phiên bản CocoaPods bằng `Gemfile` và chạy `bundle exec pod install`", "en": "Pin the CocoaPods version with a `Gemfile` and run `bundle exec pod install`" } },
+      {
+        "text": { "vi": "Chạy `pod update` sau khi thêm bất kỳ dependency nào; đó là bước cài thông thường", "en": "Run `pod update` after adding any dependency; it is the routine install step" },
+        "misconception": { "id": "build-pod-update-routine", "text": { "vi": "Nghĩ rằng `pod update` là bước thông thường. Nó nâng mọi pod lên bản mới nhất mà Podfile cho phép; `pod install` thì tôn trọng `Podfile.lock`.", "en": "Believing `pod update` is the routine step. It moves every pod to the newest version the Podfile allows; `pod install` respects `Podfile.lock`." } }
+      },
+      {
+        "text": { "vi": "Thư viện nào viết bằng Swift cũng bắt buộc `use_frameworks!`", "en": "Any library written in Swift requires `use_frameworks!`" },
+        "misconception": { "id": "build-swift-needs-frameworks", "text": { "vi": "Nghĩ rằng mọi pod Swift đều cần `use_frameworks!`. Từ CocoaPods 1.5, pod Swift build được dưới dạng static library; chỉ bật `use_frameworks!` khi thư viện yêu cầu, ví dụ một số cấu hình Firebase.", "en": "Believing every Swift pod needs `use_frameworks!`. CocoaPods has built Swift pods as static libraries since 1.5; turn on `use_frameworks!` only when a library asks for it, such as some Firebase setups." } }
+      }
+    ],
+    "answer": [0, 1],
+    "explanation": {
+      "vi": "`Podfile.lock` ghi phiên bản chính xác của từng pod, nên commit nó giúp mọi máy build ra cùng một thứ. Phiên bản CocoaPods khác nhau có thể viết lại lockfile và file project, vì vậy template RN đi kèm `Gemfile` để bạn chạy `bundle exec pod install`. `pod update` chỉ dùng khi bạn cố ý nâng pod, và tốt nhất là nâng từng pod một (`pod update TênPod`). Khi thư viện yêu cầu `use_frameworks!`, React Native hỗ trợ dạng `use_frameworks! :linkage => :static`.",
+      "en": "`Podfile.lock` records the exact version of every pod, so committing it makes every machine build the same thing. Different CocoaPods versions can rewrite the lockfile and project files, which is why the RN template ships a `Gemfile` so you run `bundle exec pod install`. Use `pod update` only when you mean to upgrade, ideally one pod at a time (`pod update PodName`). When a library needs `use_frameworks!`, React Native supports it as `use_frameworks! :linkage => :static`."
+    }
+  },
+  {
+    "id": "native-build-006",
+    "type": "mcq",
+    "topics": ["native/build"],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": ["native-build-core"],
+    "multi": false,
+    "prompt": {
+      "vi": "Build phase `Bundle React Native code and images` trong project iOS làm gì?",
+      "en": "What does the `Bundle React Native code and images` build phase in the iOS project do?"
+    },
+    "options": [
+      { "text": { "vi": "Nhúng JS bundle và asset vào app; bản Debug cho simulator bỏ qua bước này", "en": "It embeds the JS bundle and assets; Debug simulator builds skip it" } },
+      {
+        "text": { "vi": "Biên dịch native module trong `node_modules` vào binary của app", "en": "It compiles native modules from `node_modules` into the app binary" },
+        "misconception": { "id": "build-bundle-phase-compiles-native", "text": { "vi": "Nghĩ rằng phase này biên dịch code native. Pod và native module được biên dịch bởi các target Xcode; phase này chỉ tạo JS bundle và asset.", "en": "Believing this phase compiles native code. Pods and native modules are compiled by Xcode targets; this phase only produces the JS bundle and assets." } }
+      },
+      {
+        "text": { "vi": "Upload bundle lên dịch vụ OTA để người dùng nhận bản cập nhật", "en": "It uploads the bundle to an OTA service so users get updates" },
+        "misconception": { "id": "build-bundle-phase-uploads", "text": { "vi": "Nghĩ rằng phase bundle phát hành bản OTA. Nó chỉ nhúng bundle vào app; dịch vụ OTA cần bước phát hành riêng.", "en": "Believing the bundle phase publishes OTA updates. It only embeds the bundle in the app; OTA services need their own release step." } }
+      },
+      {
+        "text": { "vi": "Chỉ chạy ở Debug, để khởi động Metro trước khi app mở", "en": "It runs only in Debug, to start Metro before the app launches" },
+        "misconception": { "id": "build-bundle-phase-debug-only", "text": { "vi": "Nghĩ rằng phase này chỉ dành cho debug. Nó quan trọng nhất ở Release, nơi bundle nhúng sẵn là JS duy nhất app có.", "en": "Believing the phase is debug-only. It matters most in Release, where the embedded bundle is the only JS the app has." } }
+      }
+    ],
+    "answer": [0],
+    "explanation": {
+      "vi": "Phase này chạy script `react-native-xcode.sh`, gọi bundler để tạo `main.jsbundle` và copy asset vào app (với Hermes thì bundle còn được biên dịch sang bytecode). Ở Debug cho simulator, script bỏ qua bước bundle vì app load JS từ Metro. Khi bản Release báo không load được script, hãy kiểm tra phase này có chạy không, có biến `SKIP_BUNDLING` không, và `main.jsbundle` có nằm trong file `.app` không.",
+      "en": "The phase runs `react-native-xcode.sh`, which calls the bundler to produce `main.jsbundle` and copies the assets into the app (with Hermes, the bundle is also compiled to bytecode). For Debug simulator builds the script skips bundling, because the app loads JS from Metro. When a Release build cannot load its script, check that this phase ran, that `SKIP_BUNDLING` is not set, and that `main.jsbundle` is inside the `.app`."
+    }
+  },
+  {
+    "id": "native-build-007",
+    "type": "spot-bug",
+    "topics": ["native/build", "release/android"],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 105,
+    "lessons": ["native-build-core"],
+    "prompt": {
+      "vi": "Play Console từ chối bản upload với lỗi về cách App Bundle được ký. Các giá trị keystore release nằm trong `~/.gradle/gradle.properties`. Dòng nào trong `android/app/build.gradle` gây lỗi, và vì sao?",
+      "en": "Play Console rejects the upload with an error about how the App Bundle is signed. The release keystore values live in `~/.gradle/gradle.properties`. Which line in `android/app/build.gradle` causes it, and why?"
+    },
+    "code": "android {\n    namespace \"com.shopapp\"\n    defaultConfig {\n        applicationId \"com.shopapp\"\n        versionCode 42\n    }\n    signingConfigs {\n        release {\n            storeFile file(SHOPAPP_UPLOAD_STORE_FILE)\n            storePassword SHOPAPP_UPLOAD_STORE_PASSWORD\n            keyAlias SHOPAPP_UPLOAD_KEY_ALIAS\n            keyPassword SHOPAPP_UPLOAD_KEY_PASSWORD\n        }\n    }\n    buildTypes {\n        release {\n            signingConfig signingConfigs.debug\n        }\n    }\n}",
+    "answerLine": 17,
+    "causeOptions": [
+      { "text": { "vi": "Build type `release` ký bằng `signingConfigs.debug`, nên config `release` không bao giờ được dùng", "en": "The release build type signs with `signingConfigs.debug`, so the release config is never used" } },
+      {
+        "text": { "vi": "Giá trị signing phải viết cứng trong file; Gradle không đọc được từ `gradle.properties`", "en": "Signing values must be hardcoded in the file; Gradle cannot read them from `gradle.properties`" },
+        "misconception": { "id": "build-signing-props-unreadable", "text": { "vi": "Nghĩ rằng Gradle không đọc được giá trị signing từ `gradle.properties`. Property ở đó dùng được như biến trong `build.gradle`; đó chính là cách làm được tài liệu hoá.", "en": "Believing Gradle cannot read signing values from `gradle.properties`. Properties there are available as variables in `build.gradle`; that is the documented setup." } }
+      },
+      {
+        "text": { "vi": "`namespace` phải trùng `applicationId`, nên bundle bị ký cho sai app", "en": "`namespace` must equal `applicationId`, so the bundle is signed for the wrong app" },
+        "misconception": { "id": "build-namespace-equals-appid", "text": { "vi": "Nghĩ rằng `namespace` phải trùng `applicationId`. `namespace` đặt package cho code sinh ra như `R` và `BuildConfig`; `applicationId` là danh tính trên store, và hai giá trị có thể khác nhau.", "en": "Believing `namespace` must match `applicationId`. `namespace` sets the package for generated code such as `R` and `BuildConfig`; `applicationId` is the store identity, and the two may differ." } }
+      },
+      {
+        "text": { "vi": "`signingConfigs` phải đứng sau `buildTypes`, nên ở đây `release` chưa được định nghĩa", "en": "`signingConfigs` must come after `buildTypes`, so `release` is undefined here" },
+        "misconception": { "id": "build-signing-order", "text": { "vi": "Nghĩ rằng `signingConfigs` phải đứng sau `buildTypes`. Thực tế ngược lại: config phải được định nghĩa trước khi build type tham chiếu tới nó, đúng như code này.", "en": "Believing `signingConfigs` must follow `buildTypes`. It is the other way round: a config must be defined before a build type references it, as it is here." } }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "Template React Native để bản release ký bằng debug keystore, để `run-android` ở chế độ release chạy được ngay. Bạn đã thêm config `release` nhưng dòng 17 vẫn trỏ tới `signingConfigs.debug`, nên bundle được ký bằng key debug và Play từ chối. Sửa thành `signingConfig signingConfigs.release`. Với Play App Signing, key này là upload key; Google ký lại bằng app signing key. Trước khi upload, kiểm tra chứng chỉ đã ký bằng `keytool -printcert -jarfile app-release.aab`, và không bao giờ commit keystore hay mật khẩu vào git.",
+      "en": "The React Native template signs release builds with the debug keystore, so a release `run-android` works out of the box. You added a `release` config, but line 17 still points at `signingConfigs.debug`, so the bundle is signed with the debug key and Play rejects it. Change it to `signingConfig signingConfigs.release`. With Play App Signing this key is the upload key; Google re-signs with the app signing key. Before uploading, check the certificate with `keytool -printcert -jarfile app-release.aab`, and never commit the keystore or its passwords to git."
+    }
+  },
+  {
+    "id": "native-build-008",
+    "type": "spot-bug",
+    "topics": ["native/build"],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 105,
+    "lessons": ["native-build-core"],
+    "prompt": {
+      "vi": "Bạn dán một đoạn từ README của thư viện vào cuối Podfile để Xcode không ký resource bundle nữa. Giờ `pod install` dừng với lỗi trước khi kịp sinh ra gì. Dòng nào gây lỗi, và vì sao?",
+      "en": "You paste a snippet from a library's README at the end of the Podfile to stop Xcode from signing resource bundles. Now `pod install` stops with an error before generating anything. Which line causes it, and why?"
+    },
+    "code": "require Pod::Executable.execute_command('node', ['-p', 'require.resolve(\"react-native/scripts/react_native_pods.rb\", {paths: [process.argv[1]]})', __dir__]).strip\n\nplatform :ios, min_ios_version_supported\nprepare_react_native_project!\n\ntarget 'ShopApp' do\n  config = use_native_modules!\n  use_react_native!(:path => config[:reactNativePath])\n\n  post_install do |installer|\n    react_native_post_install(installer, config[:reactNativePath], :mac_catalyst_enabled => false)\n  end\nend\n\npost_install do |installer|\n  installer.pods_project.targets.each do |target|\n    next unless target.respond_to?(:product_type) && target.product_type == 'com.apple.product-type.bundle'\n    target.build_configurations.each { |c| c.build_settings['CODE_SIGNING_ALLOWED'] = 'NO' }\n  end\nend",
+    "answerLine": 15,
+    "causeOptions": [
+      { "text": { "vi": "Nó khai báo hook `post_install` thứ hai, mà CocoaPods chỉ cho một hook mỗi Podfile", "en": "It declares a second `post_install` hook, and CocoaPods allows only one per Podfile" } },
+      {
+        "text": { "vi": "`post_install` phải nằm trong block `target`, nên hook ở cấp ngoài bị bỏ qua", "en": "`post_install` must sit inside a `target` block, so the top-level one is ignored" },
+        "misconception": { "id": "build-post-install-in-target", "text": { "vi": "Nghĩ rằng `post_install` phải nằm trong một target. Đó là hook cấp Podfile; đặt trong block target như template là hợp lệ, nhưng nó vẫn áp dụng cho cả lần cài.", "en": "Believing `post_install` must sit inside a target. It is a Podfile-level hook; placing it in the target block, as the template does, is allowed, but it still applies to the whole install." } }
+      },
+      {
+        "text": { "vi": "`CODE_SIGNING_ALLOWED` không phải build setting hợp lệ của Xcode", "en": "`CODE_SIGNING_ALLOWED` is not a valid Xcode build setting" },
+        "misconception": { "id": "build-code-signing-allowed-invalid", "text": { "vi": "Nghĩ rằng `CODE_SIGNING_ALLOWED` không có thật. Đó là build setting chuẩn của Xcode, thường được đặt `NO` cho target resource bundle.", "en": "Believing `CODE_SIGNING_ALLOWED` is not a real setting. It is a standard Xcode build setting, commonly set to `NO` for resource bundle targets." } }
+      },
+      {
+        "text": { "vi": "`use_native_modules!` phải được gọi sau `use_react_native!`", "en": "`use_native_modules!` has to be called after `use_react_native!`" },
+        "misconception": { "id": "build-autolink-order", "text": { "vi": "Nghĩ rằng `use_native_modules!` phải đứng sau `use_react_native!`. Template gọi nó trước, vì `use_react_native!` cần `reactNativePath` mà nó trả về.", "en": "Believing `use_native_modules!` must follow `use_react_native!`. The template calls it first because `use_react_native!` needs the `reactNativePath` it returns." } }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "CocoaPods chỉ cho một hook `post_install` mỗi Podfile, và dừng với lỗi `Specifying multiple post_install hooks is unsupported`. Dòng 15 mở hook thứ hai. Hãy chuyển phần thân của nó vào hook có sẵn, ngay sau `react_native_post_install(...)`, để bước của React Native vẫn chạy trước. Khi nâng RN, so lại Podfile với template của phiên bản mới, vì những đoạn dán thêm kiểu này là chỗ dễ lệch nhất.",
+      "en": "CocoaPods allows a single `post_install` hook per Podfile and stops with `Specifying multiple post_install hooks is unsupported`. Line 15 opens a second one. Move its body into the existing hook, right after `react_native_post_install(...)`, so React Native's step still runs first. When you upgrade RN, compare the Podfile with the new version's template, because pasted additions like this are where it drifts most."
+    }
+  },
+  {
+    "id": "native-build-009",
+    "type": "spot-bug",
+    "topics": ["native/build"],
+    "kind": "hard-issue",
+    "difficulty": 2,
+    "estSeconds": 120,
+    "lessons": ["native-build-core"],
+    "prompt": {
+      "vi": "QA cài APK `stagingRelease` lên một máy không chạy Metro, và app crash ngay khi mở; logcat báo `Unable to load script`. `prodRelease` thì chạy tốt. Dòng nào trong `android/app/build.gradle` gây lỗi, và vì sao?",
+      "en": "QA installs the `stagingRelease` APK on a phone with no Metro running, and the app crashes on launch; logcat shows `Unable to load script`. `prodRelease` works. Which line in `android/app/build.gradle` causes it, and why?"
+    },
+    "code": "apply plugin: \"com.android.application\"\napply plugin: \"org.jetbrains.kotlin.android\"\napply plugin: \"com.facebook.react\"\n\nreact {\n    debuggableVariants = [\"devDebug\", \"stagingDebug\", \"stagingRelease\"]\n    autolinkLibrariesWithApp()\n}\n\nandroid {\n    namespace \"com.shopapp\"\n    flavorDimensions \"env\"\n    productFlavors {\n        dev { applicationIdSuffix \".dev\" }\n        staging { applicationIdSuffix \".staging\" }\n        prod { }\n    }\n}",
+    "answerLine": 6,
+    "causeOptions": [
+      { "text": { "vi": "Đưa `stagingRelease` vào danh sách debuggable khiến plugin không bundle JS vào variant đó", "en": "Listing `stagingRelease` as debuggable makes the plugin skip bundling JS into that variant" } },
+      {
+        "text": { "vi": "`applicationIdSuffix` đổi package, nên bundle bị tìm dưới một tên khác", "en": "`applicationIdSuffix` changes the package, so the bundle is looked up under the wrong name" },
+        "misconception": { "id": "build-suffix-breaks-bundle", "text": { "vi": "Nghĩ rằng `applicationIdSuffix` làm lệch chỗ load bundle. Bundle là asset nằm trong APK; application id không đổi nơi nó được load.", "en": "Believing `applicationIdSuffix` moves the JS bundle. The bundle is an asset inside the APK; the application id does not change where it loads from." } }
+      },
+      {
+        "text": { "vi": "`autolinkLibrariesWithApp()` phải gọi ngoài block `react`, nên không module nào được load", "en": "`autolinkLibrariesWithApp()` must be called outside the `react` block, so no modules load" },
+        "misconception": { "id": "build-autolink-outside-react", "text": { "vi": "Nghĩ rằng `autolinkLibrariesWithApp` phải nằm ngoài block `react`. Template gọi nó bên trong `react { }`, và nó link thư viện native chứ không liên quan tới JS bundle.", "en": "Believing `autolinkLibrariesWithApp` belongs outside the `react` block. The template calls it inside `react { }`, and it links native libraries, not the JS bundle." } }
+      },
+      {
+        "text": { "vi": "Variant release của một flavor phải tắt Hermes thì mới nhúng được bundle", "en": "Release variants of a flavor need Hermes turned off to embed the bundle" },
+        "misconception": { "id": "build-hermes-blocks-bundle", "text": { "vi": "Nghĩ rằng Hermes cản việc nhúng bundle. Khi bật Hermes, bản release nhúng bundle đã biên dịch sang bytecode.", "en": "Believing Hermes stops the bundle from being embedded. With Hermes on, release builds embed the bundle compiled to bytecode." } }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "Với React Native Gradle plugin, `debuggableVariants` là các variant không được bundle JS và asset, vì chúng được coi là luôn có Metro. Mặc định chỉ có `debug`; khi dùng flavor, bạn phải liệt kê tên variant đầy đủ. Dòng 6 thêm `stagingRelease`, nên APK đó không có `index.android.bundle`. Bỏ nó khỏi danh sách. Nếu staging cần dev menu, hãy tạo một build type debuggable riêng thay vì biến một variant release thành variant debug.",
+      "en": "In the React Native Gradle plugin, `debuggableVariants` lists the variants that skip bundling JS and assets, because they are expected to run against Metro. The default is just `debug`; with flavors you list full variant names. Line 6 adds `stagingRelease`, so that APK ships without `index.android.bundle`. Remove it from the list. If staging needs the dev menu, create a separate debuggable build type instead of turning a release variant into a debug one."
+    }
+  },
+  {
+    "id": "native-build-010",
+    "type": "open",
+    "topics": ["native/build", "maintain/upgrade"],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 330,
+    "lessons": ["native-build-core"],
+    "prompt": {
+      "vi": "Sau khi nâng React Native hai minor version, `./gradlew assembleRelease` fail. Log rất dài, có lỗi `Module was compiled with an incompatible version of Kotlin` từ một thư viện và lỗi AAR metadata check từ một thư viện khác. Kể lại cách bạn xử lý.",
+      "en": "After bumping React Native by two minor versions, `./gradlew assembleRelease` fails. The log is long, with `Module was compiled with an incompatible version of Kotlin` from one library and an AAR metadata check failure from another. Walk me through how you would work through it."
+    },
+    "keyPoints": [
+      { "vi": "Đọc từ lỗi thật đầu tiên chứ không phải dòng `BUILD FAILED` cuối; chạy lại với `--stacktrace` (hoặc `--info`) và ghi lại module, task nào fail", "en": "Read from the first real error, not the final `BUILD FAILED` line; rerun with `--stacktrace` (or `--info`) and note which module and task fail" },
+      { "vi": "So file Android của bạn với template của cả hai phiên bản bằng React Native Upgrade Helper: Gradle wrapper, AGP, phiên bản Kotlin, `compileSdkVersion`, JDK yêu cầu", "en": "Diff your Android files against the template for both versions with the React Native Upgrade Helper: Gradle wrapper, AGP, Kotlin version, `compileSdkVersion`, required JDK" },
+      { "vi": "Căn `kotlinVersion` và các SDK version ở root theo template mới; lỗi AAR metadata thường nghĩa là một dependency cần `compileSdk` cao hơn (đôi khi là AGP mới hơn); thông báo lỗi ghi rõ giá trị cần", "en": "Align the root `kotlinVersion` and SDK versions with the new template; an AAR metadata error usually means a dependency needs a higher `compileSdk` (sometimes a newer AGP); the message names the required value" },
+      { "vi": "Với thư viện bị tụt lại, ưu tiên nâng nó; chỉ dùng `patch-package` làm giải pháp tạm và ghi lại lý do", "en": "For a library that lags behind, upgrade it first; use `patch-package` only as a stopgap and record why" },
+      { "vi": "Chỉ dọn trạng thái cũ (`./gradlew clean`, xoá `android/.gradle` và thư mục build, `./gradlew --stop`) sau khi cấu hình đã đúng, rồi build cả debug lẫn release và chạy lại trên CI", "en": "Clear stale state (`./gradlew clean`, delete `android/.gradle` and build folders, `./gradlew --stop`) only once the config is right, then build debug and release and run the same build on CI" }
+    ],
+    "modelAnswer": {
+      "vi": "Mình không đọc log từ dưới lên. Mình chạy lại với `--stacktrace`, tìm lỗi thật đầu tiên, và ghi lại module nào fail ở task nào. Sau đó mình mở Upgrade Helper để so file Android với template của bản cũ và bản mới, vì một lần nhảy hai version thường kéo theo Gradle wrapper, AGP, Kotlin và cả JDK. Lỗi Kotlin metadata nghĩa là thư viện được biên dịch bằng Kotlin mới hơn bản project đang dùng, nên mình nâng `kotlinVersion` theo template. Lỗi AAR metadata thường nghĩa là một dependency cần `compileSdk` cao hơn. Thư viện nào bị tụt lại thì mình nâng trước, `patch-package` chỉ là phương án tạm. Khi cấu hình đã đúng mình mới dọn cache, rồi build cả debug và release, local và CI.",
+      "en": "I do not read the log from the bottom up. I rerun with `--stacktrace`, find the first real error, and note which module fails in which task. Then I open the Upgrade Helper to diff my Android files against the old and new templates, because a two-version jump usually moves the Gradle wrapper, AGP, Kotlin and sometimes the JDK. The Kotlin metadata error means a library was compiled with a newer Kotlin than the project uses, so I raise `kotlinVersion` to match the template. The AAR metadata error usually means a dependency needs a higher `compileSdk`. A library that lags gets upgraded first, with `patch-package` only as a stopgap. Once the config is right I clear the caches, then build debug and release, locally and on CI."
+    },
+    "followUps": [
+      { "vi": "Bạn giữ một lần nâng hai version dễ review trong một PR bằng cách nào?", "en": "How do you keep a two-version upgrade reviewable in a single PR?" }
+    ]
+  },
+  {
+    "id": "native-build-011",
+    "type": "open",
+    "topics": ["native/build", "release/ios"],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 330,
+    "lessons": ["native-build-core"],
+    "prompt": {
+      "vi": "Bản Debug chạy bình thường, nhưng bản TestFlight crash ngay khi mở. Bạn có crash report và archive. Bạn tìm nguyên nhân thế nào?",
+      "en": "Debug builds run fine, but the TestFlight build crashes immediately on launch. You have the crash report and the archive. How do you find the cause?"
+    },
+    "keyPoints": [
+      { "vi": "Symbolicate crash bằng dSYM của archive, và phân biệt crash native với `RCTFatal` do một lỗi JavaScript không được bắt lúc khởi động", "en": "Symbolicate the crash with the archive's dSYMs, and tell a native crash apart from an `RCTFatal` caused by an unhandled JavaScript error at startup" },
+      { "vi": "Tái hiện ở máy bằng cấu hình Release (Edit Scheme › Run › Build Configuration) trên thiết bị thật, không có Metro", "en": "Reproduce locally by running the Release configuration (Edit Scheme › Run › Build Configuration) on a real device, without Metro" },
+      { "vi": "Xác nhận bundle được nhúng: phase `Bundle React Native code and images` đã chạy, không đặt `SKIP_BUNDLING`, và có `main.jsbundle` trong file `.app`", "en": "Confirm the bundle is embedded: the `Bundle React Native code and images` phase ran, `SKIP_BUNDLING` is not set, and `main.jsbundle` is inside the `.app`" },
+      { "vi": "So những gì khác nhau theo cấu hình: biến môi trường, code chỉ chạy khi `__DEV__`, entitlements và provisioning profile, và cấu hình tuỳ chỉnh được map trong Podfile (`project 'ShopApp', 'Staging' => :release`)", "en": "Compare what differs per configuration: environment config, `__DEV__`-only code, entitlements and the provisioning profile, and custom configurations mapped in the Podfile (`project 'ShopApp', 'Staging' => :release`)" },
+      { "vi": "Sau khi sửa, thêm một bước CI build và khởi chạy bản Release để lỗ hổng này không quay lại", "en": "After the fix, add a CI step that builds and launches a Release build so the gap does not come back" }
+    ],
+    "modelAnswer": {
+      "vi": "Việc đầu tiên là symbolicate crash bằng dSYM của đúng archive đó. Nếu stack là `RCTFatal`, đây là lỗi JavaScript không được bắt lúc khởi động, và ở Release nó làm app crash thay vì hiện màn hình đỏ. Mình chạy cấu hình Release trên máy thật, tắt Metro, để thấy đúng lỗi. Nguyên nhân hay gặp: code khởi tạo nằm trong `__DEV__`, biến môi trường chỉ có ở Debug, bundle không được nhúng, hoặc cấu hình tuỳ chỉnh như Staging chưa được map trong Podfile nên pod build sai kiểu. Nếu là crash native, mình xem entitlements, provisioning profile và những thư viện có hành vi khác khi tối ưu. Sửa xong, mình thêm bước CI build và mở bản Release.",
+      "en": "First I symbolicate the crash with the dSYMs from that exact archive. If the stack shows `RCTFatal`, it is an unhandled JavaScript error at startup, which crashes the app in Release instead of showing a red screen. I run the Release configuration on a real device with Metro off to see the actual error. Common causes: setup code inside `__DEV__`, environment values that only exist in Debug, a bundle that was not embedded, or a custom configuration such as Staging that is not mapped in the Podfile, so pods build the wrong way. If it is a native crash, I look at entitlements, the provisioning profile and libraries that behave differently when optimised. After the fix I add a CI step that builds and launches a Release build."
+    },
+    "followUps": [
+      { "vi": "Bạn làm cho lỗi JavaScript lúc khởi động hiện rõ trong crash reporting ở production bằng cách nào?", "en": "How would you make JavaScript startup errors visible in production crash reporting?" }
+    ]
+  },
+  {
+    "id": "native-build-012",
+    "type": "open",
+    "topics": ["native/build"],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 300,
+    "lessons": ["native-build-core"],
+    "prompt": {
+      "vi": "Giải thích autolinking hoạt động thế nào trên iOS và Android, và kể một lần bạn phải override hoặc debug nó.",
+      "en": "Explain how autolinking works on iOS and Android, and tell me about a time you had to override or debug it."
+    },
+    "keyPoints": [
+      { "vi": "CLI đọc dependency từ package.json và cấu hình native của từng thư viện; `npx react-native config` in ra những gì nó tìm thấy", "en": "The CLI reads dependencies from package.json and each library's native config; `npx react-native config` prints what it found" },
+      { "vi": "iOS: `use_native_modules!` trong Podfile thêm podspec của từng thư viện, nên phải chạy `pod install` mỗi khi thêm hoặc xoá một thư viện", "en": "iOS: `use_native_modules!` in the Podfile adds each library's podspec, so `pod install` must run after adding or removing one" },
+      { "vi": "Android: phía Gradle (từ RN 0.75 là React Native Gradle plugin qua `autolinkLibrariesWithApp()`, trước đó là `native_modules.gradle` của CLI) include project của từng thư viện và sinh `PackageList`", "en": "Android: the Gradle side (from RN 0.75 the React Native Gradle plugin via `autolinkLibrariesWithApp()`, earlier the CLI's `native_modules.gradle`) includes each library's project and generates `PackageList`" },
+      { "vi": "Module nằm trong chính app không được autolink; package của nó phải thêm tay", "en": "Modules inside the app itself are not autolinked; their packages are added by hand" },
+      { "vi": "`react-native.config.js` có thể tắt một dependency trên một nền tảng (`platforms: { ios: null }`) hoặc trỏ tới đường dẫn native tuỳ chỉnh", "en": "`react-native.config.js` can disable a dependency on one platform (`platforms: { ios: null }`) or point to a custom native path" },
+      { "vi": "Codegen cũng chạy cho thư viện được autolink có `codegenConfig`, nên code sinh ra bị cũ là nguyên nhân hay gặp sau khi nâng cấp", "en": "Codegen also runs for autolinked libraries that declare `codegenConfig`, so stale generated code is a common cause of trouble after upgrades" }
+    ],
+    "modelAnswer": {
+      "vi": "Autolinking bắt đầu từ CLI: nó đọc dependency trong package.json và cấu hình native của từng thư viện. Mình hay chạy `npx react-native config` để xem nó thật sự thấy gì. Trên iOS, `use_native_modules!` trong Podfile thêm podspec của từng thư viện, nên quên `pod install` là lỗi phổ biến nhất. Trên Android, phía Gradle include project của thư viện và sinh `PackageList`, nên không cần sửa `MainApplication`; từ RN 0.75 việc này nằm trong Gradle plugin qua `autolinkLibrariesWithApp()`. Có lần một thư viện chỉ dùng cho iOS làm hỏng build Android; mình tắt nó trên Android bằng `platforms: { android: null }` trong `react-native.config.js`. Module viết trong app thì không được autolink, nên phải đăng ký tay.",
+      "en": "Autolinking starts in the CLI: it reads the dependencies in package.json and each library's native config. I often run `npx react-native config` to see what it actually found. On iOS, `use_native_modules!` in the Podfile adds each library's podspec, so a forgotten `pod install` is the most common failure. On Android, the Gradle side includes each library's project and generates `PackageList`, so `MainApplication` needs no edits; from RN 0.75 that lives in the Gradle plugin through `autolinkLibrariesWithApp()`. Once, an iOS-only library broke our Android build, and I disabled it on Android with `platforms: { android: null }` in `react-native.config.js`. Modules written inside the app are not autolinked, so they are registered by hand."
+    },
+    "followUps": [
+      { "vi": "Bạn debug thế nào khi một thư viện có trong `npx react-native config` nhưng vẫn không có mặt trong `PackageList`?", "en": "How would you debug a library that shows up in `npx react-native config` but is still missing from `PackageList`?" }
+    ]
+  }
+]

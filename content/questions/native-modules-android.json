@@ -1,0 +1,387 @@
+[
+  {
+    "id": "native-modules-android-001",
+    "type": "mcq",
+    "topics": ["native/modules-android"],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": ["native-modules-android-core"],
+    "multi": false,
+    "prompt": {
+      "vi": "Một module Android legacy (`ReactContextBaseJavaModule`) có `@ReactMethod fun load(promise: Promise)`. Method này chạy trên thread nào?",
+      "en": "A legacy Android module (`ReactContextBaseJavaModule`) exposes `@ReactMethod fun load(promise: Promise)`. Which thread runs it?"
+    },
+    "options": [
+      { "text": { "vi": "Một thread nền dùng chung giữa các native module", "en": "A background thread shared by native modules" } },
+      {
+        "text": { "vi": "UI thread, nên có thể cập nhật view trực tiếp", "en": "The UI thread, so it can update views directly" },
+        "misconception": { "id": "native-method-on-main", "text": { "vi": "Nghĩ rằng method của native module chạy trên main thread. Method bất đồng bộ chạy trên một queue hoặc thread nền, nên việc đụng tới UI phải tự đẩy về main thread.", "en": "Believing native module methods run on the main thread. Async methods run on a background queue or thread, so UI work must be dispatched to the main thread explicitly." } }
+      },
+      {
+        "text": { "vi": "JS thread, nên JavaScript phải chờ nó xong", "en": "The JS thread, so JavaScript waits for it" },
+        "misconception": { "id": "native-async-on-js-thread", "text": { "vi": "Nghĩ rằng method native bất đồng bộ chạy trên JS thread. Chỉ method đồng bộ (blocking) mới vậy; lời gọi bất đồng bộ được giao cho thread native nên JavaScript vẫn chạy tiếp.", "en": "Believing async native methods run on the JS thread. Only synchronous (blocking) methods do; async calls are handed to a native thread so JavaScript keeps running." } }
+      },
+      {
+        "text": { "vi": "Một thread mới cho mỗi lời gọi, nên các lời gọi chạy chồng nhau", "en": "A new thread for each call, so calls overlap" },
+        "misconception": { "id": "android-thread-per-call", "text": { "vi": "Nghĩ rằng mỗi lời gọi `@ReactMethod` có thread riêng. Method bất đồng bộ xếp hàng trên một thread native module dùng chung, nên một method chậm làm trễ lời gọi của mọi module khác.", "en": "Believing each `@ReactMethod` call gets its own thread. Async methods queue on one shared native modules thread, so a slow method delays every other module's calls." } }
+      }
+    ],
+    "answer": [0],
+    "explanation": {
+      "vi": "Ở module legacy, method `@ReactMethod` bất đồng bộ chạy trên native modules thread (`mqt_native_modules` khi dùng bridge, `mqt_v_native` ở chế độ bridgeless), dùng chung cho mọi module. Việc UI phải đẩy về UI thread bằng `UiThreadUtil.runOnUiThread { ... }`. Việc chậm như I/O hay network nên chạy trên executor hoặc coroutine riêng, vì nó chặn cả hàng đợi chung. Method `@ReactMethod(isBlockingSynchronousMethod = true)` là ngoại lệ: nó chạy trên JS thread và chặn JS.",
+      "en": "In a legacy module, an async `@ReactMethod` runs on the native modules thread (`mqt_native_modules` with the bridge, `mqt_v_native` in bridgeless mode), which every module shares. UI work has to be posted to the UI thread with `UiThreadUtil.runOnUiThread { ... }`. Slow work such as I/O or network belongs on your own executor or coroutine, because it holds up the shared queue. `@ReactMethod(isBlockingSynchronousMethod = true)` is the exception: it runs on the JS thread and blocks it."
+    }
+  },
+  {
+    "id": "native-modules-android-002",
+    "type": "mcq",
+    "topics": ["native/modules-android"],
+    "kind": "core",
+    "difficulty": 2,
+    "estSeconds": 75,
+    "lessons": ["native-modules-android-core"],
+    "multi": false,
+    "prompt": {
+      "vi": "Bạn thêm `CalendarModule.kt` và `CalendarPackage.kt` vào `android/app/src/main/java`. App build được, nhưng `NativeModules.CalendarModule` là `undefined`. Nguyên nhân khả dĩ nhất là gì?",
+      "en": "You add `CalendarModule.kt` and `CalendarPackage.kt` under `android/app/src/main/java`. The app builds, but `NativeModules.CalendarModule` is `undefined`. What is the most likely cause?"
+    },
+    "options": [
+      { "text": { "vi": "`CalendarPackage` chưa được thêm vào danh sách package trong `MainApplication`", "en": "`CalendarPackage` was never added to the package list in `MainApplication`" } },
+      {
+        "text": { "vi": "Autolinking bỏ qua nó vì cache Gradle đã cũ", "en": "Autolinking skipped it because the Gradle cache is stale" },
+        "misconception": { "id": "autolink-local-modules", "text": { "vi": "Nghĩ rằng autolinking tìm cả module trong code của chính app. Nó chỉ link các dependency khai báo trong package.json; package nằm trong app phải được thêm tay vào `MainApplication`.", "en": "Believing autolinking finds modules in the app's own code. It links dependencies declared in package.json; an in-app package must be added in `MainApplication` by hand." } }
+      },
+      {
+        "text": { "vi": "`getName()` trả `\"CalendarModule\"`, nhưng JS cần tên không có hậu tố `Module`", "en": "`getName()` returns `\"CalendarModule\"`, but JS needs the name without the `Module` suffix" },
+        "misconception": { "id": "android-module-name-suffix", "text": { "vi": "Nghĩ rằng React Native tự cắt tên module. Phía JS thấy đúng chuỗi mà `getName()` trả về.", "en": "Believing React Native trims the module name. JS sees exactly the string `getName()` returns." } }
+      },
+      {
+        "text": { "vi": "Module Kotlin cần một class Java bọc ngoài thì React Native mới load được", "en": "Kotlin modules need a Java wrapper class before React Native can load them" },
+        "misconception": { "id": "kotlin-needs-java-wrapper", "text": { "vi": "Nghĩ rằng module Kotlin cần lớp Java ở giữa. React Native load class Kotlin trực tiếp, vì cả hai đều biên dịch ra JVM bytecode.", "en": "Believing Kotlin modules need Java glue. React Native loads Kotlin classes directly; both compile to JVM bytecode." } }
+      }
+    ],
+    "answer": [0],
+    "explanation": {
+      "vi": "Autolinking sinh `PackageList` cho các thư viện trong package.json, còn package viết ngay trong app thì phải tự thêm: trong `getPackages()` của `MainApplication`, viết `PackageList(this).packages.apply { add(CalendarPackage()) }`. Package đó trả module trong `createNativeModules`. Khi `NativeModules.X` là `undefined`, hãy kiểm tra theo thứ tự: package đã được đăng ký chưa, `getName()` có khớp tên JS dùng không, và app đã được build lại chưa (Metro reload không nạp code native mới).",
+      "en": "Autolinking generates `PackageList` for libraries in package.json, but a package that lives in the app has to be added by hand: in `MainApplication.getPackages()`, write `PackageList(this).packages.apply { add(CalendarPackage()) }`. That package returns the module from `createNativeModules`. When `NativeModules.X` is `undefined`, check in this order: is the package registered, does `getName()` match the name JS uses, and was the app rebuilt (a Metro reload does not load new native code)."
+    }
+  },
+  {
+    "id": "native-modules-android-003",
+    "type": "mcq",
+    "topics": ["native/modules-android"],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 75,
+    "lessons": ["native-modules-android-core"],
+    "multi": false,
+    "prompt": {
+      "vi": "JS tạo `new NativeEventEmitter(NativeModules.Upload)` và log ra: `` `new NativeEventEmitter()` was called with a non-null argument without the required `addListener` method``. Event vẫn tới. Cách sửa đúng trong module Android là gì?",
+      "en": "JS creates `new NativeEventEmitter(NativeModules.Upload)` and logs: `` `new NativeEventEmitter()` was called with a non-null argument without the required `addListener` method``. Events still arrive. What is the right fix in the Android module?"
+    },
+    "options": [
+      { "text": { "vi": "Thêm `@ReactMethod` `addListener(eventName)` và `removeListeners(count)`", "en": "Add `@ReactMethod` `addListener(eventName)` and `removeListeners(count)`" } },
+      {
+        "text": { "vi": "Emit từ UI thread bằng `UiThreadUtil.runOnUiThread`", "en": "Emit from the UI thread with `UiThreadUtil.runOnUiThread`" },
+        "misconception": { "id": "native-emit-needs-main", "text": { "vi": "Nghĩ rằng native event phải được emit từ main thread. Emit từ thread nào cũng được; lời gọi được xếp hàng sang JS thread.", "en": "Believing native events must be emitted from the main thread. Emitting is safe from any thread; the call is queued to the JS thread." } }
+      },
+      {
+        "text": { "vi": "Liệt kê tên event trong `getConstants()`, giống `supportedEvents` trên iOS", "en": "List the event names in `getConstants()`, like `supportedEvents` on iOS" },
+        "misconception": { "id": "android-event-name-whitelist", "text": { "vi": "Nghĩ rằng Android cần danh sách tên event như `supportedEvents` của iOS. `DeviceEventManagerModule` emit được mọi tên; cảnh báo này nói về hai method listener còn thiếu.", "en": "Believing Android needs an event-name list like iOS `supportedEvents`. `DeviceEventManagerModule` emits any name; the warning is about the missing listener methods." } }
+      },
+      {
+        "text": { "vi": "Emit qua `RCTNativeAppEventEmitter` thay cho `RCTDeviceEventEmitter`", "en": "Emit through `RCTNativeAppEventEmitter` instead of `RCTDeviceEventEmitter`" },
+        "misconception": { "id": "android-wrong-emitter-module", "text": { "vi": "Nghĩ rằng cảnh báo nói về JS module dùng để emit. Nó kiểm tra object NativeModule bạn truyền vào `NativeEventEmitter` có `addListener` và `removeListeners` hay không.", "en": "Believing the warning is about which JS emitter module you emit through. It checks whether the NativeModule you pass to `NativeEventEmitter` has `addListener` and `removeListeners`." } }
+      }
+    ],
+    "answer": [0],
+    "explanation": {
+      "vi": "`NativeEventEmitter` gọi `addListener` và `removeListeners` của module mỗi khi JS subscribe và unsubscribe. Trên Android, chúng có thể chỉ là method rỗng: `@ReactMethod fun addListener(eventName: String) {}` và `@ReactMethod fun removeListeners(count: Int) {}`. Cách tốt hơn là dùng chúng để đếm listener, chỉ bật sensor hay receiver khi số đếm lớn hơn 0. Với TurboModule, hai method này nằm trong spec và `count` có kiểu `Double`, vì `number` của TS map sang `Double`.",
+      "en": "`NativeEventEmitter` calls the module's `addListener` and `removeListeners` whenever JS subscribes and unsubscribes. On Android they can be empty: `@ReactMethod fun addListener(eventName: String) {}` and `@ReactMethod fun removeListeners(count: Int) {}`. Better, use them to count listeners and only run the sensor or receiver while the count is above 0. In a TurboModule both methods live in the spec, and `count` is a `Double` because a TS `number` maps to `Double`."
+    }
+  },
+  {
+    "id": "native-modules-android-004",
+    "type": "mcq",
+    "topics": ["native/modules-android"],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": ["native-modules-android-core"],
+    "multi": true,
+    "prompt": {
+      "vi": "LeakCanary báo leak `MainActivity` sau khi Activity bị huỷ và tạo lại. Những cách viết nào trong native module có thể gây ra điều này? (chọn tất cả đáp án đúng)",
+      "en": "LeakCanary reports a leaked `MainActivity` after the Activity is destroyed and recreated. Which patterns in your native modules can cause that? (select all that apply)"
+    },
+    "options": [
+      { "text": { "vi": "Lưu `currentActivity` vào một field trong `companion object`", "en": "Saving `currentActivity` in a `companion object` field" } },
+      { "text": { "vi": "Đưa Activity cho một SDK singleton sống lâu hơn nó", "en": "Passing the Activity to an SDK singleton that outlives it" } },
+      {
+        "text": { "vi": "Giữ `ReactApplicationContext` nhận từ constructor trong một property của module", "en": "Keeping the `ReactApplicationContext` from the constructor in a module property" },
+        "misconception": { "id": "android-app-context-leaks", "text": { "vi": "Nghĩ rằng giữ `ReactApplicationContext` làm module leak. Nó sống cùng React instance, giống chính module; thứ không được giữ là Activity.", "en": "Believing a module leaks by holding `ReactApplicationContext`. It lives as long as the React instance, like the module itself; it is the Activity that must not be held." } }
+      },
+      {
+        "text": { "vi": "Giữ Activity trong một `WeakReference` và kiểm tra null trước khi dùng", "en": "Holding the Activity in a `WeakReference` and null-checking it before use" },
+        "misconception": { "id": "android-weakref-leaks", "text": { "vi": "Nghĩ rằng `WeakReference` vẫn giữ Activity sống. Nó không chặn garbage collection; bạn chỉ cần xử lý trường hợp nó trả null.", "en": "Believing a `WeakReference` keeps the Activity alive. It does not stop garbage collection; you only need to handle it being null." } }
+      }
+    ],
+    "answer": [0, 1],
+    "explanation": {
+      "vi": "Activity bị huỷ và tạo lại khi đổi cấu hình hệ thống mà nó không tự xử lý, hoặc khi hệ thống thu hồi nó. Field static hay singleton giữ Activity cũ khiến cả cây view của nó không được thu hồi. Hãy đọc `reactApplicationContext.currentActivity` ngay lúc cần, kiểm tra null, và gỡ mọi listener trong `invalidate()`. `ReactApplicationContext` thì an toàn để giữ, vì nó sống đúng bằng vòng đời của module.",
+      "en": "An Activity is destroyed and recreated on configuration changes it does not handle itself, or when the system reclaims it. A static field or singleton that holds the old Activity keeps its whole view tree from being collected. Read `reactApplicationContext.currentActivity` when you need it, null-check it, and remove every listener in `invalidate()`. Holding `ReactApplicationContext` is safe, because it lives exactly as long as the module."
+    }
+  },
+  {
+    "id": "native-modules-android-005",
+    "type": "mcq",
+    "topics": ["native/modules-android", "release/android"],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": ["native-modules-android-core"],
+    "multi": true,
+    "prompt": {
+      "vi": "Bạn nâng `targetSdkVersion` từ 31 lên 34. Những thay đổi nào có thể làm hỏng native module của bạn trên máy đời mới? (chọn tất cả đáp án đúng)",
+      "en": "You raise `targetSdkVersion` from 31 to 34. Which changes can break your native modules on newer devices? (select all that apply)"
+    },
+    "options": [
+      { "text": { "vi": "Từ Android 13, notification cần quyền runtime `POST_NOTIFICATIONS`", "en": "From Android 13, notifications need the runtime `POST_NOTIFICATIONS` permission" } },
+      { "text": { "vi": "Từ Android 14, `registerReceiver` cho broadcast của app cần cờ `RECEIVER_EXPORTED`/`RECEIVER_NOT_EXPORTED`", "en": "From Android 14, `registerReceiver` for app broadcasts needs `RECEIVER_EXPORTED` or `RECEIVER_NOT_EXPORTED`" } },
+      {
+        "text": { "vi": "Quyền đã cấp một lần thì giữ mãi, nên không cần kiểm tra trước mỗi lần dùng", "en": "A permission granted once stays granted, so you can skip checking it before each use" },
+        "misconception": { "id": "android-permission-granted-forever", "text": { "vi": "Nghĩ rằng quyền đã cấp thì giữ mãi. Người dùng có thể thu hồi trong Settings, và từ Android 11 hệ thống tự reset quyền của app lâu không dùng, nên hãy kiểm tra trước mỗi lần dùng.", "en": "Believing a granted permission stays granted. Users can revoke it in Settings, and from Android 11 the system auto-resets permissions of unused apps, so check before each use." } }
+      },
+      {
+        "text": { "vi": "`PermissionsAndroid.request` vẫn hiện hộp thoại xin quyền dù quyền đó chưa được khai báo trong manifest", "en": "`PermissionsAndroid.request` still shows its dialog if the permission is missing from the manifest" },
+        "misconception": { "id": "android-request-without-manifest", "text": { "vi": "Nghĩ rằng request quyền runtime chạy được khi thiếu khai báo trong manifest. Quyền không khai báo bị từ chối ngay mà không hiện hộp thoại.", "en": "Believing a runtime request works without a manifest entry. An undeclared permission is denied without showing a dialog." } }
+      }
+    ],
+    "answer": [0, 1],
+    "explanation": {
+      "vi": "Nhiều thay đổi hành vi của Android chỉ áp dụng khi app target phiên bản đó, nên nâng `targetSdkVersion` là lúc native code cũ dễ vỡ. Target từ 33 trở lên, app phải tự xin `POST_NOTIFICATIONS`, nếu không notification không hiện trên Android 13 trở lên. Target 34, `registerReceiver` thiếu cờ exported sẽ ném `SecurityException` trên Android 14. Trước khi nâng, hãy đọc trang behaviour changes của từng phiên bản và tìm trong code (kể cả thư viện) những API bị ảnh hưởng.",
+      "en": "Many Android behaviour changes apply only once the app targets that version, so raising `targetSdkVersion` is when old native code tends to break. Targeting 33 or higher, the app must request `POST_NOTIFICATIONS` itself, or notifications do not show on Android 13 and newer. Targeting 34, a `registerReceiver` call without an exported flag throws `SecurityException` on Android 14. Before raising it, read each version's behaviour-changes page and search your code, libraries included, for the affected APIs."
+    }
+  },
+  {
+    "id": "native-modules-android-006",
+    "type": "mcq",
+    "topics": ["native/modules-android"],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": ["native-modules-android-core"],
+    "multi": false,
+    "prompt": {
+      "vi": "Module của bạn mở trình chọn file của hệ thống bằng `startActivityForResult`. Module nhận file đã chọn bằng cách nào?",
+      "en": "Your module opens the system document picker with `startActivityForResult`. How does the module receive the picked file?"
+    },
+    "options": [
+      { "text": { "vi": "Đăng ký một `ActivityEventListener` và xử lý `onActivityResult` theo request code của bạn", "en": "Register an `ActivityEventListener` and handle `onActivityResult` for your request code" } },
+      {
+        "text": { "vi": "Implement `LifecycleEventListener`; `onHostResume` nhận intent kết quả", "en": "Implement `LifecycleEventListener`; `onHostResume` receives the result intent" },
+        "misconception": { "id": "android-lifecycle-gets-result", "text": { "vi": "Nghĩ rằng `LifecycleEventListener` trả kết quả của Activity. Nó chỉ báo host resume, pause và destroy; kết quả đi qua `ActivityEventListener`.", "en": "Believing `LifecycleEventListener` delivers activity results. It only reports host resume, pause and destroy; results come through `ActivityEventListener`." } }
+      },
+      {
+        "text": { "vi": "Override `onActivityResult` ngay trong class module; React Native tự chuyển tiếp", "en": "Override `onActivityResult` in the module class; React Native forwards it automatically" },
+        "misconception": { "id": "android-module-gets-activity-callbacks", "text": { "vi": "Nghĩ rằng module tự nhận callback của Activity. `ReactActivity` chỉ chuyển kết quả tới các listener đăng ký bằng `addActivityEventListener`.", "en": "Believing modules receive Activity callbacks automatically. `ReactActivity` forwards results only to listeners registered with `addActivityEventListener`." } }
+      },
+      {
+        "text": { "vi": "Kết quả tới JS qua `Linking`, nên module không cần xử lý", "en": "The result reaches JS through `Linking`, so the module does not handle it" },
+        "misconception": { "id": "android-result-via-linking", "text": { "vi": "Nghĩ rằng kết quả Activity đi qua `Linking`. `Linking` xử lý URL và intent mở app, không phải kết quả của `startActivityForResult`.", "en": "Believing activity results arrive through `Linking`. `Linking` handles URLs and intents that open the app, not results of `startActivityForResult`." } }
+      }
+    ],
+    "answer": [0],
+    "explanation": {
+      "vi": "Gọi `reactApplicationContext.addActivityEventListener(listener)`, thường với một `BaseActivityEventListener`, rồi trong `onActivityResult` so request code, đọc `resultCode` và `data`, và settle promise đang chờ đúng một lần. Nhớ xử lý `RESULT_CANCELED`, và gỡ listener trong `invalidate()`. `LifecycleEventListener` hữu ích cho việc khác: tạm dừng sensor ở `onHostPause` và bật lại ở `onHostResume`.",
+      "en": "Call `reactApplicationContext.addActivityEventListener(listener)`, usually with a `BaseActivityEventListener`, and in `onActivityResult` match the request code, read `resultCode` and `data`, and settle the pending promise exactly once. Handle `RESULT_CANCELED`, and remove the listener in `invalidate()`. `LifecycleEventListener` serves a different purpose, such as pausing a sensor in `onHostPause` and restarting it in `onHostResume`."
+    }
+  },
+  {
+    "id": "native-modules-android-007",
+    "type": "spot-bug",
+    "topics": ["native/modules-android"],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 105,
+    "lessons": ["native-modules-android-core"],
+    "prompt": {
+      "vi": "JS gọi `ProfileModule.saveProfile(user.id, user.nickname ?? null)`. Khi test thì chạy tốt, nhưng production crash với `NullPointerException` ném ra trước khi thân method kịp chạy, chỉ với người dùng chưa đặt nickname. Dòng nào gây lỗi, và vì sao?",
+      "en": "JS calls `ProfileModule.saveProfile(user.id, user.nickname ?? null)`. It works in testing, but production crashes with a `NullPointerException` thrown before the method body runs, only for users without a nickname. Which line causes it, and why?"
+    },
+    "code": "class ProfileModule(reactContext: ReactApplicationContext) :\n  ReactContextBaseJavaModule(reactContext) {\n\n  override fun getName() = \"ProfileModule\"\n\n  @ReactMethod\n  fun saveProfile(userId: String, nickname: String, promise: Promise) {\n    val prefs = reactApplicationContext\n      .getSharedPreferences(\"profile\", Context.MODE_PRIVATE)\n    prefs.edit()\n      .putString(\"userId\", userId)\n      .putString(\"nickname\", nickname)\n      .apply()\n    promise.resolve(true)\n  }\n}",
+    "answerLine": 7,
+    "causeOptions": [
+      { "text": { "vi": "`nickname: String` là non-null, nên Kotlin ném lỗi khi JS gửi `null`", "en": "`nickname: String` is non-null, so Kotlin's null check throws on a JS `null`" } },
+      {
+        "text": { "vi": "`apply()` ghi trên thread nền, nên `promise.resolve` bị race với nó", "en": "`apply()` writes on a background thread, so `promise.resolve` races it" },
+        "misconception": { "id": "android-apply-race", "text": { "vi": "Nghĩ rằng `SharedPreferences.apply` làm resolve không an toàn. `apply` cập nhật bộ nhớ ngay và ghi đĩa ở nền; nó không ném lỗi ở đây.", "en": "Believing `SharedPreferences.apply` makes the resolve unsafe. `apply` updates memory at once and writes to disk in the background; it does not throw here." } }
+      },
+      {
+        "text": { "vi": "`reactApplicationContext` là null cho tới khi Activity đầu tiên được tạo", "en": "`reactApplicationContext` is null until the first Activity is created" },
+        "misconception": { "id": "android-app-context-null", "text": { "vi": "Nghĩ rằng `reactApplicationContext` có thể null trong method. Nó được gán từ constructor và sống cùng module; thứ có thể null là `currentActivity`.", "en": "Believing `reactApplicationContext` can be null inside a method. It is set from the constructor and lives with the module; `currentActivity` is what can be null." } }
+      },
+      {
+        "text": { "vi": "Method bridge không nhận `String`; chuỗi JS tới dưới dạng `ReadableMap`", "en": "Bridge methods cannot take `String`; JS strings arrive as a `ReadableMap`" },
+        "misconception": { "id": "android-strings-as-readablemap", "text": { "vi": "Nghĩ rằng chuỗi JS tới dưới dạng `ReadableMap`. Chuỗi JS map sang `String`; object JS mới map sang `ReadableMap`.", "en": "Believing JS strings arrive as a `ReadableMap`. A JS string maps to `String`; a JS object maps to `ReadableMap`." } }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "Kotlin chèn phép kiểm tra null cho tham số non-null của hàm public. Bridge legacy truyền `null` của JS thành `null` trong Java, nên lời gọi ném `NullPointerException` ngay khi vào hàm ở dòng 7. Sửa bằng `nickname: String?` và xử lý trường hợp null (ví dụ `remove(\"nickname\")`). Với TurboModule, spec quyết định: khai báo `nickname: string | null` thì Codegen sinh tham số nullable. Bug kiểu này chỉ lộ ra với dữ liệu thật, nên hãy test với giá trị null cho mọi tham số tuỳ chọn.",
+      "en": "Kotlin inserts null checks for non-null parameters of public functions. The legacy bridge turns a JS `null` into a Java `null`, so the call throws `NullPointerException` as soon as it enters the function on line 7. Fix it with `nickname: String?` and handle the null case (for example `remove(\"nickname\")`). In a TurboModule the spec decides: declare `nickname: string | null` and Codegen generates a nullable parameter. This bug only shows up with real data, so test every optional parameter with null."
+    }
+  },
+  {
+    "id": "native-modules-android-008",
+    "type": "spot-bug",
+    "topics": ["native/modules-android"],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 105,
+    "lessons": ["native-modules-android-core"],
+    "prompt": {
+      "vi": "Upload thành công và JS nhận được `uploadDone`, nhưng ngay sau đó app ném `ObjectAlreadyConsumedException`. Dòng nào gây lỗi, và vì sao?",
+      "en": "Uploads succeed and JS receives `uploadDone`, but right after that the app throws `ObjectAlreadyConsumedException`. Which line causes it, and why?"
+    },
+    "code": "@ReactMethod\nfun upload(path: String, promise: Promise) {\n  uploader.start(path, onDone = { response ->\n    val result = Arguments.createMap().apply {\n      putString(\"path\", path)\n      putInt(\"status\", response.code)\n    }\n    reactApplicationContext\n      .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)\n      .emit(\"uploadDone\", result)\n    promise.resolve(result)\n  }, onError = { e ->\n    promise.reject(\"E_UPLOAD\", e.message, e)\n  })\n}",
+    "answerLine": 11,
+    "causeOptions": [
+      { "text": { "vi": "`emit` đã gửi map sang JS, và `resolve` cố gửi lại chính map đã bị dùng đó", "en": "`emit` already sent the map to JS, and `resolve` tries to send that consumed map again" } },
+      {
+        "text": { "vi": "`emit` phải chạy trên UI thread, còn `onDone` chạy trên thread của uploader", "en": "`emit` must run on the UI thread, and `onDone` runs on the uploader's thread" },
+        "misconception": { "id": "native-emit-needs-main", "text": { "vi": "Nghĩ rằng native event phải được emit từ main thread. Emit từ thread nào cũng được; lời gọi được xếp hàng sang JS thread.", "en": "Believing native events must be emitted from the main thread. Emitting is safe from any thread; the call is queued to the JS thread." } }
+      },
+      {
+        "text": { "vi": "`putInt` không lưu được mã HTTP; số phải được đặt bằng `putDouble`", "en": "`putInt` cannot store an HTTP status; numbers must be put with `putDouble`" },
+        "misconception": { "id": "android-putint-invalid", "text": { "vi": "Nghĩ rằng `WritableMap` chỉ lưu được double. `putInt` hợp lệ, và giá trị tới JS dưới dạng number.", "en": "Believing `WritableMap` only stores doubles. `putInt` is valid, and the value reaches JS as a number." } }
+      },
+      {
+        "text": { "vi": "`promise.reject` chỉ nhận `Exception`, nên truyền `e` sẽ không biên dịch", "en": "`promise.reject` only takes an `Exception`, so passing `e` does not compile" },
+        "misconception": { "id": "android-reject-signature", "text": { "vi": "Nghĩ rằng `reject` chỉ nhận `Exception`. `Promise.reject` có overload nhận code, message và một `Throwable`.", "en": "Believing `reject` only accepts an `Exception`. `Promise.reject` has overloads that take a code, a message and a `Throwable`." } }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "`WritableMap` tạo bằng `Arguments.createMap()` là một map native dùng một lần: khi được chuyển sang JS, dữ liệu của nó bị lấy đi. Dòng 10 đã chuyển `result` qua `emit`, nên dòng 11 dùng lại một map đã bị tiêu thụ. Hãy tạo hai map riêng (ví dụ một hàm `buildResult()` gọi hai lần), hoặc tạo bản sao bằng `Arguments.createMap().apply { merge(result) }` trước khi gửi lần đầu. Quy tắc tương tự áp dụng cho `WritableArray`.",
+      "en": "A `WritableMap` from `Arguments.createMap()` is a one-shot native map: passing it to JS takes its contents. Line 10 already handed `result` to `emit`, so line 11 reuses a consumed map. Build two separate maps (for example a `buildResult()` function called twice), or copy it with `Arguments.createMap().apply { merge(result) }` before the first send. The same rule applies to `WritableArray`."
+    }
+  },
+  {
+    "id": "native-modules-android-009",
+    "type": "spot-bug",
+    "topics": ["native/modules-android", "maintain/crash"],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 135,
+    "lessons": ["native-modules-android-core"],
+    "prompt": {
+      "vi": "Sau khi nâng `targetSdkVersion` từ 30 lên 31, việc đặt nhắc nhở crash với `IllegalArgumentException`, nhưng chỉ trên máy Android 12 trở lên. Máy cũ vẫn chạy tốt. Dòng nào gây lỗi, và vì sao?",
+      "en": "After raising `targetSdkVersion` from 30 to 31, scheduling a reminder crashes with `IllegalArgumentException`, but only on Android 12 and newer. Older devices are fine. Which line causes it, and why?"
+    },
+    "code": "@ReactMethod\nfun scheduleReminder(id: Int, title: String, atMillis: Double, promise: Promise) {\n  val context = reactApplicationContext\n  val intent = Intent(context, ReminderReceiver::class.java).apply {\n    putExtra(\"title\", title)\n  }\n  val pending = PendingIntent.getBroadcast(\n    context,\n    id,\n    intent,\n    PendingIntent.FLAG_UPDATE_CURRENT\n  )\n  val alarm = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager\n  alarm.set(AlarmManager.RTC_WAKEUP, atMillis.toLong(), pending)\n  promise.resolve(null)\n}",
+    "answerLine": 11,
+    "causeOptions": [
+      { "text": { "vi": "Target Android 12 bắt buộc mọi `PendingIntent` có `FLAG_IMMUTABLE` hoặc `FLAG_MUTABLE`", "en": "Targeting Android 12 requires `FLAG_IMMUTABLE` or `FLAG_MUTABLE` on every `PendingIntent`" } },
+      {
+        "text": { "vi": "Android 12 cấm `AlarmManager.set`; app phải dùng WorkManager", "en": "Android 12 forbids `AlarmManager.set`; apps must use WorkManager" },
+        "misconception": { "id": "android-alarm-forbidden", "text": { "vi": "Nghĩ rằng Android 12 bỏ alarm không chính xác. `set` vẫn chạy; chỉ alarm chính xác mới cần quyền `SCHEDULE_EXACT_ALARM`.", "en": "Believing Android 12 removed inexact alarms. `set` still works; only exact alarms need the `SCHEDULE_EXACT_ALARM` permission." } }
+      },
+      {
+        "text": { "vi": "Số JS tới dưới dạng `Double`, nên `id: Int` ném lỗi khi decode lời gọi", "en": "JS numbers arrive as `Double`, so `id: Int` throws when the call is decoded" },
+        "misconception": { "id": "android-int-args-invalid", "text": { "vi": "Nghĩ rằng `@ReactMethod` không nhận `Int`. Module legacy chấp nhận tham số `Int`; số JS được chuyển sang `Int`.", "en": "Believing `@ReactMethod` cannot take `Int`. Legacy modules accept `Int` parameters; JS numbers are converted to `Int`." } }
+      },
+      {
+        "text": { "vi": "`reactApplicationContext` không tạo được broadcast; chỉ Activity mới làm được", "en": "`reactApplicationContext` cannot create broadcasts; only an Activity can" },
+        "misconception": { "id": "android-broadcast-needs-activity", "text": { "vi": "Nghĩ rằng `PendingIntent` cần context của Activity. API broadcast và alarm chạy với application context, và đó là lựa chọn an toàn hơn trong module.", "en": "Believing a `PendingIntent` needs an Activity context. Broadcast and alarm APIs work with the application context, which is the safer choice in a module." } }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "Từ khi target Android 12 (API 31), tạo `PendingIntent` mà không chỉ rõ tính mutable sẽ ném `IllegalArgumentException` trên máy Android 12 trở lên. Máy cũ không kiểm tra nên vẫn chạy, đó là lý do crash chỉ thấy trên một số phiên bản OS. Sửa dòng 11 thành `PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE`; chỉ dùng `FLAG_MUTABLE` khi hệ thống cần điền thêm dữ liệu vào intent (ví dụ inline reply). Thư viện notification hay alarm cũ cũng crash y như vậy, nên trước khi nâng target hãy nâng các thư viện đó.",
+      "en": "Once you target Android 12 (API 31), creating a `PendingIntent` without stating its mutability throws `IllegalArgumentException` on Android 12 and newer devices. Older devices do not check, so they keep working, which is why the crash appears on some OS versions only. Change line 11 to `PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE`; use `FLAG_MUTABLE` only when the system must fill in the intent (for example inline reply). Older notification or alarm libraries crash the same way, so upgrade them before raising the target."
+    }
+  },
+  {
+    "id": "native-modules-android-010",
+    "type": "open",
+    "topics": ["native/modules-android"],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 330,
+    "lessons": ["native-modules-android-core"],
+    "prompt": {
+      "vi": "Một module thanh toán mở app ngân hàng bằng `startActivityForResult`. Trên vài máy Android ít RAM, người dùng quay lại sau khi trả tiền thì app hoặc crash với `NullPointerException` trong `onActivityResult`, hoặc `await` phía JS không bao giờ trả về. Kể lại cách bạn điều tra và sửa.",
+      "en": "A payment module opens the bank's app with `startActivityForResult`. On some low-memory Android phones, users come back after paying and the app either crashes with a `NullPointerException` in `onActivityResult`, or the JS `await` never returns. Walk me through how you would investigate and fix it."
+    },
+    "keyPoints": [
+      { "vi": "Tái hiện bằng Developer options › Don't keep activities (Activity bị huỷ) và bằng cách kill process khi app ở nền, ví dụ `adb shell am kill <package>` (process bị huỷ)", "en": "Reproduce with Developer options › Don't keep activities (the Activity dies) and by killing the process while the app is in the background, for example `adb shell am kill <package>` (the process dies)" },
+      { "vi": "Nếu chỉ Activity bị tạo lại, React instance và promise đang chờ vẫn còn; crash đến từ một tham chiếu Activity cũ hoặc null (field trỏ tới Activity đã bị huỷ, hoặc đọc `currentActivity` trước khi Activity mới resume). Dùng tham số `activity` mà `onActivityResult` nhận được, kiểm tra null và reject với mã lỗi rõ ràng", "en": "If only the Activity is recreated, the React instance and the pending promise survive; the crash comes from a stale or null Activity reference (a field pointing at the destroyed Activity, or `currentActivity` read before the new one resumes). Use the `activity` argument `onActivityResult` receives, null-check it and reject with a clear code" },
+      { "vi": "Nếu process bị huỷ, React instance và `Promise` đang chờ đều mất; `await` cũ không còn tồn tại để resolve", "en": "If the process dies, the React instance and the pending `Promise` are gone; the old `await` no longer exists to resolve" },
+      { "vi": "Lưu giao dịch đang chờ (id, request code) trước khi rời app, và khi khởi động lại thì hỏi backend trạng thái thật thay vì tin vào callback trong bộ nhớ", "en": "Persist the pending payment (id, request code) before leaving the app, and on restart ask the backend for the real status instead of trusting an in-memory callback" },
+      { "vi": "Đăng ký `ActivityEventListener` một lần, so request code, settle promise đúng một lần và gỡ listener trong `invalidate()`", "en": "Register the `ActivityEventListener` once, match the request code, settle the promise exactly once and remove the listener in `invalidate()`" }
+    ],
+    "modelAnswer": {
+      "vi": "Hai triệu chứng này gợi ý hai đường khác nhau, nên mình tái hiện cả hai. Bật Don't keep activities để Activity bị huỷ khi mở app ngân hàng: nếu crash, module đang dùng một Activity cũ hoặc null: một field vẫn trỏ tới Activity đã bị huỷ, hoặc `currentActivity` vẫn còn null khi kết quả tới. Mình dùng tham số `activity` mà listener nhận được và reject khi nó null. Sau đó mình kill process bằng `adb shell am kill` khi app ở nền: lúc quay lại, React instance là mới, promise cũ đã mất, nên `await` treo là đúng hành vi chứ không sửa được trong module. Vì vậy mình lưu giao dịch đang chờ trước khi rời app, và khi khởi động lại thì hỏi backend trạng thái thanh toán thật. Mình cũng thêm log cho từng nhánh để theo dõi tỉ lệ trên production.",
+      "en": "The two symptoms point to two different paths, so I reproduce both. I turn on Don't keep activities so the Activity is destroyed while the bank app is open: if that crashes, the module is using a stale or null Activity: a field that still points at the destroyed one, or `currentActivity`, which can still be null when the result arrives. I use the `activity` argument the listener receives and reject when it is null. Then I kill the process with `adb shell am kill` while the app is in the background: on return the React instance is new and the old promise is gone, so the hanging `await` is expected and cannot be fixed inside the module. So I persist the pending payment before leaving the app, and on restart I ask the backend for the real payment status. I also log each branch to track the rates in production."
+    },
+    "followUps": [
+      { "vi": "Màn hình JS nên hiển thị gì khi app khởi động lại mà có một giao dịch đang chờ?", "en": "What should the JS screen show when the app restarts with a payment still pending?" }
+    ]
+  },
+  {
+    "id": "native-modules-android-011",
+    "type": "open",
+    "topics": ["native/modules-android", "maintain/crash"],
+    "kind": "hard-issue",
+    "difficulty": 2,
+    "estSeconds": 300,
+    "lessons": ["native-modules-android-core"],
+    "prompt": {
+      "vi": "Android vitals cho thấy ANR tăng vọt sau bản phát hành gần nhất. Stack của main thread chỉ vào module ảnh của bạn: một block `UiThreadUtil.runOnUiThread` decode bitmap lớn và ghi thumbnail ra file. Bạn xử lý thế nào?",
+      "en": "Android vitals shows an ANR spike after your latest release. The main-thread stack points into your image module: a `UiThreadUtil.runOnUiThread` block that decodes a large bitmap and writes a thumbnail to disk. How do you handle it?"
+    },
+    "keyPoints": [
+      { "vi": "ANR nghĩa là UI thread bị chặn (khoảng 5 giây với input); đọc stack main thread trong Play Console hoặc công cụ crash reporting để xác nhận thủ phạm", "en": "An ANR means the UI thread was blocked (about 5 seconds for input); read the main-thread stack in Play Console or your crash reporting tool to confirm the culprit" },
+      { "vi": "Decode và ghi file không thuộc về UI thread; chỉ bước cập nhật view cuối cùng mới cần ở đó", "en": "Decoding and file writes do not belong on the UI thread; only the final view update does" },
+      { "vi": "`@ReactMethod` đã chạy ngoài UI thread nhưng trên một thread dùng chung, nên chuyển việc dài sang executor hoặc coroutine riêng (`Dispatchers.IO`)", "en": "`@ReactMethod` already runs off the UI thread, but on a shared thread, so move long work to your own executor or coroutine (`Dispatchers.IO`)" },
+      { "vi": "Resolve promise từ thread nền là hợp lệ; không cần đẩy về UI thread chỉ để resolve", "en": "Resolving the promise from a background thread is fine; there is no need to post to the UI thread just to resolve" },
+      { "vi": "Bật `StrictMode` ở bản debug để bắt truy cập đĩa và network trên main thread, và test trên máy cấu hình thấp", "en": "Enable `StrictMode` in debug builds to catch disk and network access on the main thread, and test on a low-end device" },
+      { "vi": "Phát hành bản sửa theo staged rollout và theo dõi tỉ lệ ANR trong Android vitals", "en": "Ship the fix through a staged rollout and watch the ANR rate in Android vitals" }
+    ],
+    "modelAnswer": {
+      "vi": "Stack đã chỉ ra vấn đề: ai đó bọc cả việc decode lẫn ghi file trong `runOnUiThread`, có lẽ vì nghĩ mọi thứ liên quan tới ảnh đều phải ở UI thread. Trên máy yếu với ảnh lớn, việc đó vượt ngưỡng ANR. Mình chuyển decode và ghi file sang một coroutine trên `Dispatchers.IO`, hoặc một executor riêng, vì native modules thread dùng chung cho mọi module và không nên bị chặn lâu. Promise được resolve thẳng từ thread nền. Chỉ khi cần đụng tới view thì mới đẩy về UI thread. Mình bật `StrictMode` ở bản debug để lần sau bắt lỗi này sớm, test trên một máy cấu hình thấp, rồi phát hành theo staged rollout và theo dõi tỉ lệ ANR trong Android vitals.",
+      "en": "The stack already names the problem: someone wrapped both the decode and the file write in `runOnUiThread`, probably assuming anything image-related must be on the UI thread. On a slow phone with a large image, that crosses the ANR threshold. I move the decode and the write to a coroutine on `Dispatchers.IO`, or a dedicated executor, because the native modules thread is shared by every module and should not be blocked for long. The promise is resolved directly from the background thread. Only work that touches a view goes back to the UI thread. I enable `StrictMode` in debug builds to catch this earlier next time, test on a low-end device, then ship through a staged rollout and watch the ANR rate in Android vitals."
+    },
+    "followUps": [
+      { "vi": "Điều gì thay đổi nếu method này là `isBlockingSynchronousMethod = true`?", "en": "What changes if this method is declared with `isBlockingSynchronousMethod = true`?" }
+    ]
+  },
+  {
+    "id": "native-modules-android-012",
+    "type": "open",
+    "topics": ["native/modules-android", "architecture/new-arch"],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 300,
+    "lessons": ["native-modules-android-core"],
+    "prompt": {
+      "vi": "Hãy trình bày cách bạn chuyển một `ReactContextBaseJavaModule` có sẵn trên Android sang TurboModule mà không làm hỏng code JS đang gọi nó.",
+      "en": "Walk me through migrating an existing Android `ReactContextBaseJavaModule` to a TurboModule without breaking the JS code that calls it."
+    },
+    "keyPoints": [
+      { "vi": "Viết spec `Native<Name>.ts` khớp với API JS hiện tại và thêm `codegenConfig` (kèm `android.javaPackageName`) vào package.json", "en": "Write a `Native<Name>.ts` spec that matches the current JS API and add `codegenConfig` (with `android.javaPackageName`) to package.json" },
+      { "vi": "Gradle chạy Codegen trong lúc build và sinh class trừu tượng `Native<Name>Spec`; module kế thừa nó và override method với kiểu được sinh ra (`number` của TS thành `Double`)", "en": "Gradle runs Codegen during the build and generates an abstract `Native<Name>Spec` class; the module extends it and overrides its methods with the generated types (a TS `number` becomes `Double`)" },
+      { "vi": "Chuyển package sang `BaseReactPackage` (bản cũ là `TurboReactPackage`), implement `getModule` và một `ReactModuleInfoProvider` đánh dấu đây là TurboModule", "en": "Switch the package to `BaseReactPackage` (`TurboReactPackage` in older versions), implementing `getModule` and a `ReactModuleInfoProvider` that marks it as a TurboModule" },
+      { "vi": "Giữ nguyên tên module để `TurboModuleRegistry.getEnforcing` và các chỗ gọi cũ vẫn tìm thấy nó", "en": "Keep the module name identical so `TurboModuleRegistry.getEnforcing` and existing callers still find it" },
+      { "vi": "Test method async và sync, event và constants, và kiểm tra trên bản release, vì lệch kiểu giờ sẽ lỗi trong code được sinh ra", "en": "Test async and sync methods, events and constants, and check a release build, since type mismatches now fail in generated code" }
+    ],
+    "modelAnswer": {
+      "vi": "Mình bắt đầu từ API JS đang có và viết spec `NativeCalendar.ts` khớp đúng với nó, rồi thêm `codegenConfig` vào package.json với `android.javaPackageName`. Khi build, Gradle chạy Codegen và sinh class trừu tượng `NativeCalendarSpec`. Module đổi từ `ReactContextBaseJavaModule` sang kế thừa spec đó, và trình biên dịch sẽ chỉ ra mọi chỗ lệch kiểu, ví dụ tham số `Int` phải thành `Double`. Package chuyển sang `BaseReactPackage` với `getModule` và `ReactModuleInfoProvider` đánh dấu TurboModule. Tên module giữ nguyên để code JS không phải đổi. Cuối cùng mình test từng method, event và constants trên cả debug lẫn release, vì nhiều lỗi giờ lộ ra ở lớp chuyển kiểu được sinh ra.",
+      "en": "I start from the JS API that exists today and write a `NativeCalendar.ts` spec that matches it exactly, then add `codegenConfig` to package.json with `android.javaPackageName`. On build, Gradle runs Codegen and generates an abstract `NativeCalendarSpec` class. The module stops extending `ReactContextBaseJavaModule` and extends that spec instead, and the compiler points out every type mismatch, such as an `Int` parameter that must become `Double`. The package moves to `BaseReactPackage`, with `getModule` and a `ReactModuleInfoProvider` that flags it as a TurboModule. The module name stays the same, so JS code does not change. Finally I test each method, event and constant on both debug and release, since many errors now surface in the generated conversion layer."
+    },
+    "followUps": [
+      { "vi": "Bạn xử lý method đồng bộ cũ (`isBlockingSynchronousMethod`) thế nào trong spec?", "en": "How do you handle an old synchronous method (`isBlockingSynchronousMethod`) in the spec?" }
+    ]
+  }
+]

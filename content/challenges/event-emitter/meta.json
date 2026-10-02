@@ -1,0 +1,14 @@
+{
+  "id": "event-emitter",
+  "type": "challenge",
+  "topics": ["native/modules-ios", "native/modules-android"],
+  "kind": "advanced",
+  "difficulty": 2,
+  "estSeconds": 600,
+  "lessons": ["native-modules-ios-core"],
+  "title": { "vi": "Event emitter có kiểu cho native event", "en": "A typed emitter for native events" },
+  "hints": [
+    { "vi": "Lưu mỗi listener thành một entry có cờ `active`. Unsubscribe chỉ cần tắt cờ và bỏ entry khỏi danh sách; gọi lần hai thì không làm gì.", "en": "Store each listener as an entry with an `active` flag. Unsubscribing clears the flag and drops the entry from the list; a second call does nothing." },
+    { "vi": "Trong `emit`, duyệt một bản chụp của danh sách và bỏ qua entry đã tắt. Bọc từng lời gọi bằng `try/catch`, giữ lỗi đầu tiên và ném lại sau vòng lặp.", "en": "In `emit`, walk a snapshot of the list and skip inactive entries. Wrap each call in `try/catch`, keep the first error and rethrow it after the loop." }
+  ]
+}

@@ -1,0 +1,388 @@
+[
+  {
+    "id": "native-modules-ios-001",
+    "type": "mcq",
+    "topics": ["native/modules-ios"],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": ["native-modules-ios-core"],
+    "multi": false,
+    "prompt": {
+      "vi": "Một module iOS legacy (không phải TurboModule) export một method bất đồng bộ bằng `RCT_EXPORT_METHOD` và không override `methodQueue`. Thân method chạy trên thread nào?",
+      "en": "A legacy iOS module (not a TurboModule) exports an async method with `RCT_EXPORT_METHOD` and does not override `methodQueue`. Which thread runs the method body?"
+    },
+    "options": [
+      { "text": { "vi": "Một serial GCD queue mà React Native tạo riêng cho module đó", "en": "A serial GCD queue that React Native creates for that module" } },
+      {
+        "text": { "vi": "Main thread, nên gọi UIKit trong đó là an toàn", "en": "The main thread, so UIKit calls are safe there" },
+        "misconception": { "id": "native-method-on-main", "text": { "vi": "Nghĩ rằng method của native module chạy trên main thread. Method bất đồng bộ chạy trên một queue hoặc thread nền, nên việc đụng tới UI phải tự đẩy về main thread.", "en": "Believing native module methods run on the main thread. Async methods run on a background queue or thread, so UI work must be dispatched to the main thread explicitly." } }
+      },
+      {
+        "text": { "vi": "JS thread, nên JavaScript bị chặn cho tới khi method trả về", "en": "The JS thread, so JavaScript is blocked until it returns" },
+        "misconception": { "id": "native-async-on-js-thread", "text": { "vi": "Nghĩ rằng method native bất đồng bộ chạy trên JS thread. Chỉ method đồng bộ (blocking) mới vậy; lời gọi bất đồng bộ được giao cho thread native nên JavaScript vẫn chạy tiếp.", "en": "Believing async native methods run on the JS thread. Only synchronous (blocking) methods do; async calls are handed to a native thread so JavaScript keeps running." } }
+      },
+      {
+        "text": { "vi": "Một global queue concurrent, nên hai lời gọi có thể chạy chồng lên nhau", "en": "A concurrent global queue, so two calls can overlap" },
+        "misconception": { "id": "ios-method-queue-concurrent", "text": { "vi": "Nghĩ rằng các method của một module mặc định chạy song song. Mỗi module legacy có serial queue riêng, nên các lời gọi chạy lần lượt theo thứ tự.", "en": "Believing a module's methods run concurrently by default. Each legacy module gets its own serial queue, so its calls run one at a time, in order." } }
+      }
+    ],
+    "answer": [0],
+    "explanation": {
+      "vi": "Trong bridge legacy, mỗi module có một serial queue riêng, trừ khi nó override `methodQueue`. Nhờ vậy các lời gọi tới cùng một module giữ đúng thứ tự và không chạy trên main thread. Bẫy chính là gọi UIKit ngay trong method: hãy `dispatch_async` về main queue cho phần UI, hoặc trả `dispatch_get_main_queue()` từ `methodQueue` nếu cả module chỉ làm UI. Ngoại lệ là method đồng bộ (`RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD`): nó chạy trên JS thread và chặn JS cho tới khi xong.",
+      "en": "In the legacy bridge each module gets its own serial queue unless it overrides `methodQueue`. That keeps calls to one module in order and off the main thread. The trap is calling UIKit straight from the method: `dispatch_async` to the main queue for the UI part, or return `dispatch_get_main_queue()` from `methodQueue` when the whole module is UI work. Synchronous methods (`RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD`) are the exception: they run on the JS thread and block it until they return."
+    }
+  },
+  {
+    "id": "native-modules-ios-002",
+    "type": "mcq",
+    "topics": ["native/modules-ios", "architecture/new-arch"],
+    "kind": "core",
+    "difficulty": 2,
+    "estSeconds": 75,
+    "lessons": ["native-modules-ios-core"],
+    "multi": false,
+    "prompt": {
+      "vi": "Bạn chuyển một module nội bộ sang TurboModule. Phát biểu nào về file spec TypeScript của nó là đúng?",
+      "en": "You are turning an in-house module into a TurboModule. Which statement about its TypeScript spec is correct?"
+    },
+    "options": [
+      { "text": { "vi": "Codegen đọc nó lúc build và sinh ra interface native mà module phải implement", "en": "Codegen reads it at build time and generates the native interface the module implements" } },
+      {
+        "text": { "vi": "Nó chỉ khai báo kiểu cho phía JS; code native vẫn nhận mọi giá trị JS gửi sang", "en": "It only types the JS side; native code still accepts any value JS sends" },
+        "misconception": { "id": "codegen-spec-only-for-ts", "text": { "vi": "Nghĩ rằng spec chỉ phục vụ editor TypeScript. Codegen biến nó thành interface native và code chuyển kiểu, nên lệch kiểu sẽ làm build native fail hoặc lời gọi báo lỗi.", "en": "Believing the spec only helps the TypeScript editor. Codegen turns it into native interfaces and typed conversion code, so a mismatch fails the native build or the call." } }
+      },
+      {
+        "text": { "vi": "React Native parse nó lúc runtime để tìm danh sách method của module", "en": "React Native parses it at runtime to look up the module's methods" },
+        "misconception": { "id": "codegen-runtime-reflection", "text": { "vi": "Nghĩ rằng spec được đọc lúc runtime. Codegen dùng nó trong lúc build; app chỉ mang theo code native đã sinh, không mang theo spec.", "en": "Believing the spec is read at runtime. Codegen consumes it during the build; the app ships the generated native code, not the spec." } }
+      },
+      {
+        "text": { "vi": "Codegen chỉ chạy một lần lúc `npm install`, nên sửa spec không cần build lại native", "en": "Codegen runs once on `npm install`, so editing the spec needs no native rebuild" },
+        "misconception": { "id": "codegen-once-on-install", "text": { "vi": "Nghĩ rằng code do Codegen sinh ra không bao giờ cần làm mới. Codegen chạy trong quá trình build native (`pod install` và build phase của pod `ReactCodegen` trên iOS, Gradle build trên Android), nên sửa spec thì phải build lại native.", "en": "Believing Codegen output never needs refreshing. It runs as part of the native build (`pod install` and the `ReactCodegen` build phase on iOS, the Gradle build on Android), so a spec change needs a native rebuild." } }
+      }
+    ],
+    "answer": [0],
+    "explanation": {
+      "vi": "File spec có tên bắt đầu bằng `Native` (ví dụ `NativeCalendar.ts`), nằm trong thư mục `jsSrcsDir` khai báo ở `codegenConfig` của package.json, và export `TurboModuleRegistry.getEnforcing<Spec>('Calendar')`. Codegen sinh từ đó một protocol Obj-C++ và class C++ JSI; class `.mm` của bạn conform protocol đó và trả binding JSI từ `getTurboModule:`. Vì kiểu được chuyển bằng code sinh ra, spec chính là hợp đồng giữa JS và native. Bẫy thường gặp là thêm spec hoặc module mới mà không chạy lại `pod install`, bước thiết lập file sinh ra và pod `ReactCodegen`. Khi sửa một spec có sẵn, build phase `Generate Specs` của pod sẽ sinh lại code, nhưng chạy lại `pod install` sau mỗi lần đổi spec vẫn là thói quen an toàn.",
+      "en": "The spec file's name starts with `Native` (for example `NativeCalendar.ts`), it lives in the `jsSrcsDir` set in package.json's `codegenConfig`, and it exports `TurboModuleRegistry.getEnforcing<Spec>('Calendar')`. Codegen turns it into an Obj-C++ protocol and a C++ JSI class; your `.mm` class conforms to the protocol and returns the JSI binding from `getTurboModule:`. Because values are converted by generated code, the spec is the contract between JS and native. The usual trap is adding a spec or a new module without rerunning `pod install`, which is where the generated files and the `ReactCodegen` pod are set up. The pod's `Generate Specs` build phase regenerates code when an existing spec changes, but rerunning `pod install` after any spec change is the safe habit."
+    }
+  },
+  {
+    "id": "native-modules-ios-003",
+    "type": "mcq",
+    "topics": ["native/modules-ios"],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 75,
+    "lessons": ["native-modules-ios-core"],
+    "multi": false,
+    "prompt": {
+      "vi": "Team iOS của bạn viết toàn bộ code native bằng Swift. Một module Swift thường được đưa ra thành TurboModule như thế nào?",
+      "en": "Your iOS team writes all native code in Swift. How is a Swift module usually exposed as a TurboModule?"
+    },
+    "options": [
+      { "text": { "vi": "Logic nằm trong class Swift `@objc`; một class Obj-C++ (`.mm`) conform spec và gọi sang nó", "en": "An `@objc` Swift class holds the logic; an Obj-C++ (`.mm`) class conforms to the spec and calls it" } },
+      {
+        "text": { "vi": "Cho class Swift conform trực tiếp spec C++; Codegen sinh code Swift cho việc đó", "en": "Make the Swift class conform to the C++ spec directly; Codegen emits Swift for it" },
+        "misconception": { "id": "codegen-emits-swift", "text": { "vi": "Nghĩ rằng Codegen sinh code Swift. Spec được sinh ra là Objective-C++ và C++, thứ Swift không implement trực tiếp được, nên cần một lớp `.mm` mỏng ở giữa.", "en": "Believing Codegen generates Swift. The generated spec is Objective-C++ and C++, which Swift cannot implement directly, so a thin `.mm` wrapper sits in between." } }
+      },
+      {
+        "text": { "vi": "Khai báo bằng `RCT_EXTERN_MODULE`, Codegen sẽ sinh binding JSI từ macro đó", "en": "Declare it with `RCT_EXTERN_MODULE`; Codegen builds the JSI binding from that macro" },
+        "misconception": { "id": "extern-module-is-turbo", "text": { "vi": "Nghĩ rằng `RCT_EXTERN_MODULE` tạo ra TurboModule. Macro này đăng ký một module legacy; dưới kiến trúc mới nó chỉ chạy qua interop layer, không phải module Codegen.", "en": "Believing `RCT_EXTERN_MODULE` makes a TurboModule. It registers a legacy module; under the New Architecture it runs only through the interop layer, not as a Codegen module." } }
+      },
+      {
+        "text": { "vi": "Không làm được; module Swift ngừng chạy từ khi kiến trúc mới thành mặc định", "en": "You cannot; Swift modules stopped working once the New Architecture became default" },
+        "misconception": { "id": "swift-unsupported-new-arch", "text": { "vi": "Nghĩ rằng kiến trúc mới không hỗ trợ Swift. Code Swift vẫn chạy bình thường, chỉ cần đứng sau một điểm vào Objective-C++.", "en": "Believing Swift is unsupported in the New Architecture. Swift code works fine; it just sits behind an Objective-C++ entry point." } }
+      }
+    ],
+    "answer": [0],
+    "explanation": {
+      "vi": "Protocol do Codegen sinh ra và method `getTurboModule:` dùng kiểu C++ (`std::shared_ptr<facebook::react::TurboModule>`), nên điểm vào phải là file `.mm`. Class `.mm` đó conform spec, giữ một instance của class Swift (đánh dấu `@objc`, import qua header `-Swift.h` sinh tự động) và chuyển tiếp từng lời gọi. Logic vẫn viết bằng Swift. Bẫy ở đây là nhầm `RCT_EXTERN_MODULE` với TurboModule: module đó vẫn chạy được qua interop layer, nhưng không có kiểm tra kiểu của Codegen; tham số được chuyển kiểu động bởi interop layer.",
+      "en": "The Codegen protocol and the `getTurboModule:` method use C++ types (`std::shared_ptr<facebook::react::TurboModule>`), so the entry point has to be an `.mm` file. That class conforms to the spec, holds an instance of the Swift class (marked `@objc` and imported through the generated `-Swift.h` header) and forwards each call. The logic stays in Swift. The trap is mistaking `RCT_EXTERN_MODULE` for a TurboModule: such a module still runs through the interop layer, but without Codegen type checks; arguments are converted dynamically by the interop layer."
+    }
+  },
+  {
+    "id": "native-modules-ios-004",
+    "type": "mcq",
+    "topics": ["native/modules-ios"],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": ["native-modules-ios-core"],
+    "multi": true,
+    "prompt": {
+      "vi": "Một method của module legacy tạo và present một `UIActivityViewController`. Main Thread Checker báo lỗi, và share sheet đôi khi hiện chậm hoặc không hiện. Những thay đổi nào sửa được lỗi này? (chọn tất cả đáp án đúng)",
+      "en": "A legacy module method creates and presents a `UIActivityViewController`. Main Thread Checker fires, and the share sheet sometimes shows late or not at all. Which changes fix it? (select all that apply)"
+    },
+    "options": [
+      { "text": { "vi": "Bọc phần UIKit trong `dispatch_async(dispatch_get_main_queue(), ^{ ... })`", "en": "Wrap the UIKit work in `dispatch_async(dispatch_get_main_queue(), ^{ ... })`" } },
+      { "text": { "vi": "Trả `dispatch_get_main_queue()` từ `methodQueue` khi module chỉ làm việc UI", "en": "Return `dispatch_get_main_queue()` from `methodQueue` when the module only does UI work" } },
+      {
+        "text": { "vi": "Trả `YES` từ `requiresMainQueueSetup`", "en": "Return `YES` from `requiresMainQueueSetup`" },
+        "misconception": { "id": "main-queue-setup-for-methods", "text": { "vi": "Nghĩ rằng `requiresMainQueueSetup` chuyển lời gọi method về main thread. Nó chỉ quyết định module được khởi tạo ở đâu (và, với module legacy, constants được đọc ở đâu); method vẫn chạy trên method queue.", "en": "Believing `requiresMainQueueSetup` moves method calls to the main thread. It only decides where the module is initialised (and, for legacy modules, where constants are read); methods still run on the method queue." } }
+      },
+      {
+        "text": { "vi": "Export bằng `RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD` để nó chạy ngay lập tức", "en": "Export it with `RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD` so it runs immediately" },
+        "misconception": { "id": "sync-method-runs-on-main", "text": { "vi": "Nghĩ rằng method native đồng bộ chạy trên main thread. Nó chạy trên JS thread và chặn JS, mà JS thread cũng không phải main thread.", "en": "Believing synchronous native methods run on the main thread. They run on the JS thread and block it, and that is still not the main thread." } }
+      }
+    ],
+    "answer": [0, 1],
+    "explanation": {
+      "vi": "UIKit chỉ được dùng trên main thread, còn method legacy chạy trên queue riêng của module. Hai cách sửa đúng là đẩy phần UI về main queue, hoặc cho cả module chạy trên main queue qua `methodQueue` khi module đó chỉ làm UI. Khi present, lấy view controller trên cùng bằng `RCTPresentedViewController()` và resolve promise trong completion. `requiresMainQueueSetup` chỉ ảnh hưởng lúc khởi tạo, còn method đồng bộ chạy trên JS thread nên không giải quyết được gì.",
+      "en": "UIKit must only be used on the main thread, and a legacy method runs on the module's own queue. The two real fixes are to hop to the main queue for the UI part, or to run the whole module on the main queue through `methodQueue` when it only does UI work. When presenting, get the top view controller with `RCTPresentedViewController()` and resolve the promise in the completion block. `requiresMainQueueSetup` only affects initialisation, and a synchronous method runs on the JS thread, so neither helps."
+    }
+  },
+  {
+    "id": "native-modules-ios-005",
+    "type": "mcq",
+    "topics": ["native/modules-ios"],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": ["native-modules-ios-core"],
+    "multi": true,
+    "prompt": {
+      "vi": "Module của bạn kế thừa `RCTEventEmitter` để đẩy tiến độ tải file lên JS. Những phát biểu nào đúng? (chọn tất cả đáp án đúng)",
+      "en": "Your module subclasses `RCTEventEmitter` to stream download progress to JS. Which statements are true? (select all that apply)"
+    },
+    "options": [
+      { "text": { "vi": "`startObserving` chạy ở listener JS đầu tiên, `stopObserving` sau khi listener cuối bị gỡ", "en": "`startObserving` runs on the first JS listener, `stopObserving` after the last is removed" } },
+      { "text": { "vi": "Mọi tên event truyền vào `sendEventWithName:body:` phải có trong `supportedEvents`", "en": "Every name passed to `sendEventWithName:body:` must appear in `supportedEvents`" } },
+      {
+        "text": { "vi": "Event gửi lúc JS chưa có listener được xếp hàng và giao khi có listener subscribe", "en": "Events sent while JS has no listener are queued and delivered once one subscribes" },
+        "misconception": { "id": "events-queued-until-listener", "text": { "vi": "Nghĩ rằng native event được giữ lại cho tới khi JS subscribe. Event gửi lúc chưa có listener bị bỏ (kèm cảnh báo khi dev), nên hãy gửi trạng thái hiện tại khi bắt đầu observe.", "en": "Believing native events are buffered until JS subscribes. Events sent with no listener are dropped (with a dev warning), so send the current state when observing starts." } }
+      },
+      {
+        "text": { "vi": "`sendEventWithName:body:` phải được gọi trên main thread", "en": "`sendEventWithName:body:` must be called on the main thread" },
+        "misconception": { "id": "native-emit-needs-main", "text": { "vi": "Nghĩ rằng native event phải được emit từ main thread. Emit từ thread nào cũng được; lời gọi được xếp hàng sang JS thread.", "en": "Believing native events must be emitted from the main thread. Emitting is safe from any thread; the call is queued to the JS thread." } }
+      }
+    ],
+    "answer": [0, 1],
+    "explanation": {
+      "vi": "`RCTEventEmitter` đếm listener qua `addListener` và `removeListeners` mà `NativeEventEmitter` gọi từ JS. Khi số đếm từ 0 lên 1, nó gọi `startObserving`; khi về 0, nó gọi `stopObserving`. Đây là chỗ bật, tắt nguồn event (sensor, notification, timer) để không tốn pin khi không ai nghe. Ở bản debug, tên event không có trong `supportedEvents` sẽ báo lỗi. Event gửi lúc không có listener bị bỏ, kèm cảnh báo `Sending ... with no listeners registered`.",
+      "en": "`RCTEventEmitter` counts listeners through the `addListener` and `removeListeners` methods that `NativeEventEmitter` calls from JS. When the count goes from 0 to 1 it calls `startObserving`, and when it drops to 0 it calls `stopObserving`. That is where you start and stop the source (a sensor, a notification, a timer), so nothing drains the battery when nobody listens. In debug builds, an event name missing from `supportedEvents` logs an error. Events sent with no listener are dropped with the warning `Sending ... with no listeners registered`."
+    }
+  },
+  {
+    "id": "native-modules-ios-006",
+    "type": "mcq",
+    "topics": ["native/modules-ios"],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": ["native-modules-ios-core"],
+    "multi": false,
+    "prompt": {
+      "vi": "Một `RCTViewManager` legacy cho view biểu đồ native implement `- (UIView *)view`. Method này nên trả về gì?",
+      "en": "A legacy `RCTViewManager` for a native chart view implements `- (UIView *)view`. What should that method return?"
+    },
+    "options": [
+      { "text": { "vi": "Một instance view mới ở mỗi lần được gọi", "en": "A new view instance each time it is called" } },
+      {
+        "text": { "vi": "Một view được cache, dùng lại để mọi `<Chart />` chung state", "en": "One cached view, reused so every `<Chart />` shares its state" },
+        "misconception": { "id": "ios-view-manager-shared-view", "text": { "vi": "Nghĩ rằng view manager phát ra một view dùng chung. Manager là singleton, nhưng React gọi `view` một lần cho mỗi component được mount, nên mỗi lần gọi phải trả một view mới.", "en": "Believing the view manager hands out one shared view. The manager is a singleton, but React calls `view` once per mounted component, so each call must return a fresh view." } }
+      },
+      {
+        "text": { "vi": "View controller sở hữu biểu đồ, để React push nó lên", "en": "The view controller that owns the chart, so React can push it" },
+        "misconception": { "id": "ios-view-manager-returns-vc", "text": { "vi": "Nghĩ rằng view manager trả về view controller. Nó trả về một UIView; nếu cần controller, hãy gắn nó làm child view controller từ bên trong view của bạn.", "en": "Believing a view manager returns a view controller. It returns a UIView; if you need a controller, attach it as a child view controller from inside your view." } }
+      },
+      {
+        "text": { "vi": "`nil`, vì React Native tự dựng view từ các prop đã export", "en": "`nil`, because React Native builds the view from the exported props" },
+        "misconception": { "id": "ios-view-from-props", "text": { "vi": "Nghĩ rằng React Native tự dựng view native từ prop. Nó chỉ gán các prop đã export lên view mà bạn trả về.", "en": "Believing React Native builds the native view from props. It only sets the exported props on the view you return." } }
+      }
+    ],
+    "answer": [0],
+    "explanation": {
+      "vi": "Mỗi `<Chart />` trên màn hình cần một view native riêng, nên `view` phải tạo view mới mỗi lần. Prop được nối qua `RCT_EXPORT_VIEW_PROPERTY(name, type)`, còn event dùng một property kiểu `RCTDirectEventBlock` hoặc `RCTBubblingEventBlock` có tên bắt đầu bằng `on`. Trả về một view được cache là lỗi kinh điển: hai component sẽ tranh nhau một view, và layout của view đó nhảy lung tung.",
+      "en": "Each `<Chart />` on screen needs its own native view, so `view` must build a new one every time. Props are wired with `RCT_EXPORT_VIEW_PROPERTY(name, type)`, and events use an `RCTDirectEventBlock` or `RCTBubblingEventBlock` property whose name starts with `on`. Returning a cached view is the classic bug: two components fight over one view and its layout jumps around."
+    }
+  },
+  {
+    "id": "native-modules-ios-007",
+    "type": "spot-bug",
+    "topics": ["native/modules-ios"],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 120,
+    "lessons": ["native-modules-ios-core"],
+    "prompt": {
+      "vi": "JS gọi `CalendarModule.createEvent('Standup')`. Module được tìm thấy, nhưng lời gọi báo lỗi lúc runtime rằng không có method Objective-C nào khớp. Dòng nào gây lỗi, và vì sao?",
+      "en": "JS calls `CalendarModule.createEvent('Standup')`. The module is found, but the call fails at runtime saying no Objective-C method matches. Which line causes it, and why?"
+    },
+    "code": "// CalendarModule.m\n#import <React/RCTBridgeModule.h>\n\n@interface RCT_EXTERN_MODULE(CalendarModule, NSObject)\nRCT_EXTERN_METHOD(createEvent:(NSString *)title\n                  resolver:(RCTPromiseResolveBlock)resolve\n                  rejecter:(RCTPromiseRejectBlock)reject)\n@end\n\n// CalendarModule.swift\n@objc(CalendarModule)\nclass CalendarModule: NSObject {\n  @objc static func requiresMainQueueSetup() -> Bool { false }\n\n  @objc func createEvent(title: String,\n                         resolver resolve: @escaping RCTPromiseResolveBlock,\n                         rejecter reject: @escaping RCTPromiseRejectBlock) {\n    resolve(EventStore.shared.add(title: title))\n  }\n}",
+    "answerLine": 15,
+    "causeOptions": [
+      { "text": { "vi": "Nhãn Swift `title:` tạo ra `createEventWithTitle:...`, không phải selector đã khai báo", "en": "The Swift label `title:` yields `createEventWithTitle:...`, not the declared selector" } },
+      {
+        "text": { "vi": "`requiresMainQueueSetup` phải là instance method, nên module setup thất bại", "en": "`requiresMainQueueSetup` must be an instance method, so module setup fails" },
+        "misconception": { "id": "ios-main-queue-setup-instance", "text": { "vi": "Nghĩ rằng `requiresMainQueueSetup` là instance method. Nó là class method (`+` trong Obj-C, `static` trong Swift), đúng như dòng 13 khai báo.", "en": "Believing `requiresMainQueueSetup` is an instance method. It is a class method (`+` in Obj-C, `static` in Swift), which line 13 declares correctly." } }
+      },
+      {
+        "text": { "vi": "Swift không nhận được `RCTPromiseResolveBlock`; promise cần class Obj-C", "en": "Swift cannot take `RCTPromiseResolveBlock`; promises need an Obj-C class" },
+        "misconception": { "id": "swift-no-promise-blocks", "text": { "vi": "Nghĩ rằng Swift không nhận được block của promise. `RCTPromiseResolveBlock` bridge sang closure Swift; đánh dấu `@escaping` khi lưu lại hoặc gọi sau.", "en": "Believing Swift cannot receive promise blocks. `RCTPromiseResolveBlock` bridges to a Swift closure; mark it `@escaping` when you store it or call it later." } }
+      },
+      {
+        "text": { "vi": "`@objc(CalendarModule)` giấu class khỏi Obj-C, nên module không được đăng ký", "en": "`@objc(CalendarModule)` hides the class from Obj-C, so it is never registered" },
+        "misconception": { "id": "objc-name-hides-class", "text": { "vi": "Nghĩ rằng `@objc(Name)` giấu class đi. Nó đặt tên trong Obj-C runtime mà `RCT_EXTERN_MODULE` tìm tới; thiếu nó, tên class Swift có thể bị mangle.", "en": "Believing `@objc(Name)` hides the class. It sets the Obj-C runtime name that `RCT_EXTERN_MODULE` looks up; without it the Swift class name can be mangled." } }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "`RCT_EXTERN_METHOD` khai báo selector `createEvent:resolver:rejecter:`. Ở dòng 15, tham số đầu có nhãn `title`, nên Swift xuất ra selector `createEventWithTitle:resolver:rejecter:`, và React Native không tìm thấy method khớp khi JS gọi. Sửa bằng `@objc func createEvent(_ title: String, resolver resolve: ..., rejecter reject: ...)`, hoặc ghi rõ `@objc(createEvent:resolver:rejecter:)`. Lỗi này chỉ lộ ra khi method được gọi, nên hãy có ít nhất một lần gọi thử mỗi method khi viết module Swift.",
+      "en": "`RCT_EXTERN_METHOD` declares the selector `createEvent:resolver:rejecter:`. On line 15 the first parameter has the label `title`, so Swift exports `createEventWithTitle:resolver:rejecter:` and React Native finds no matching method when JS calls it. Fix it with `@objc func createEvent(_ title: String, resolver resolve: ..., rejecter reject: ...)`, or spell the selector out with `@objc(createEvent:resolver:rejecter:)`. The mismatch only shows up when the method is called, so call every method at least once when you write a Swift module."
+    }
+  },
+  {
+    "id": "native-modules-ios-008",
+    "type": "spot-bug",
+    "topics": ["native/modules-ios"],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 105,
+    "lessons": ["native-modules-ios-core"],
+    "prompt": {
+      "vi": "Ở bản debug, Main Thread Checker của Xcode báo một lời gọi UIKit từ thread nền trong lúc app khởi động, bên trong `DisplayModule` (module legacy). JS vẫn phải đọc `largeText` dưới dạng constant. Dòng nào cần sửa, và vì sao?",
+      "en": "In a debug build, Xcode's Main Thread Checker reports a UIKit call from a background thread during startup, inside `DisplayModule` (a legacy module). JS must keep reading `largeText` as a constant. Which line has to change, and why?"
+    },
+    "code": "@implementation DisplayModule\n\nRCT_EXPORT_MODULE();\n\n+ (BOOL)requiresMainQueueSetup\n{\n  return NO;\n}\n\n- (NSDictionary *)constantsToExport\n{\n  UIContentSizeCategory category = RCTSharedApplication().preferredContentSizeCategory;\n  return @{\n    @\"largeText\": @(UIContentSizeCategoryIsAccessibilityCategory(category)),\n    @\"appVersion\": [[NSBundle mainBundle] objectForInfoDictionaryKey:@\"CFBundleShortVersionString\"],\n  };\n}\n\n@end",
+    "answerLine": 7,
+    "causeOptions": [
+      { "text": { "vi": "Với `NO`, `constantsToExport` chạy ngoài main thread nhưng lại đọc `UIApplication`", "en": "With `NO`, `constantsToExport` runs off the main thread yet reads `UIApplication`" } },
+      {
+        "text": { "vi": "`RCT_EXPORT_MODULE()` không có tên sẽ đăng ký module trên một queue nền", "en": "`RCT_EXPORT_MODULE()` without a name registers the module on a background queue" },
+        "misconception": { "id": "ios-export-module-name-queue", "text": { "vi": "Nghĩ rằng tên module ảnh hưởng tới thread. `RCT_EXPORT_MODULE()` không có tham số chỉ lấy tên class làm tên phía JS; nó không chọn queue.", "en": "Believing the module name affects threading. `RCT_EXPORT_MODULE()` with no argument just uses the class name as the JS name; it does not pick a queue." } }
+      },
+      {
+        "text": { "vi": "`NSBundle mainBundle` chỉ được đọc trên main thread", "en": "`NSBundle mainBundle` may only be read on the main thread" },
+        "misconception": { "id": "ios-nsbundle-main-only", "text": { "vi": "Nghĩ rằng NSBundle chỉ dùng được trên main thread. Đọc giá trị Info.plist qua NSBundle là thread-safe; các object UIKit như UIApplication thì không.", "en": "Believing NSBundle is main-thread only. Reading Info.plist values through NSBundle is thread-safe; UIKit objects such as UIApplication are not." } }
+      },
+      {
+        "text": { "vi": "Constants phải được export từ `init`, không phải `constantsToExport`", "en": "Constants must be exported from `init`, not from `constantsToExport`" },
+        "misconception": { "id": "ios-constants-in-init", "text": { "vi": "Nghĩ rằng constants thuộc về `init`. `constantsToExport` là hook dành cho chúng ở module legacy; `init` nên nhẹ vì nó có thể chạy trong lúc app khởi động.", "en": "Believing constants belong in `init`. `constantsToExport` is the legacy hook for them; `init` should stay light because it can run during startup." } }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "Ở module legacy, `requiresMainQueueSetup` quyết định module được khởi tạo và `constantsToExport` được gọi trên main thread hay không. Dòng 7 trả `NO`, nên constants được đọc trên thread nền, và dòng 12 đọc `UIApplication`, một object UIKit. React Native có cảnh báo khi bạn override `constantsToExport` mà không implement `requiresMainQueueSetup`, nhưng trả `NO` rõ ràng thì cảnh báo im lặng. Sửa bằng `return YES;`, chấp nhận một chút thời gian main thread lúc khởi động. Nếu giá trị không bắt buộc là constant, một method promise chạy trên main queue sẽ tránh được chi phí đó.",
+      "en": "In a legacy module, `requiresMainQueueSetup` decides whether the module is set up, and `constantsToExport` called, on the main thread. Line 7 returns `NO`, so the constants are read on a background thread, and line 12 reads `UIApplication`, a UIKit object. React Native warns when you override `constantsToExport` without implementing `requiresMainQueueSetup`, but an explicit `NO` silences that warning. Fix it with `return YES;`, accepting a little main-thread time at startup. If the value did not have to be a constant, a promise method on the main queue would avoid that cost."
+    }
+  },
+  {
+    "id": "native-modules-ios-009",
+    "type": "spot-bug",
+    "topics": ["native/modules-ios"],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 150,
+    "lessons": ["native-modules-ios-core"],
+    "prompt": {
+      "vi": "Sau khi màn hình nghe pin unmount, Xcode vẫn log `Sending batteryLevel with no listeners registered` mỗi khi mức pin thay đổi, và memory graph cho thấy các instance `BatteryModule` cũ chồng lên sau mỗi lần reload khi dev. Dòng nào gây lỗi, và vì sao?",
+      "en": "After the screen that listens to the battery unmounts, Xcode logs `Sending batteryLevel with no listeners registered` each time the battery level changes, and the memory graph shows old `BatteryModule` instances piling up after each dev reload. Which line causes it, and why?"
+    },
+    "code": "@implementation BatteryModule { id _observer; }\n\nRCT_EXPORT_MODULE();\n\n- (dispatch_queue_t)methodQueue { return dispatch_get_main_queue(); }\n- (NSArray<NSString *> *)supportedEvents { return @[@\"batteryLevel\"]; }\n\n- (void)startObserving {\n  [UIDevice currentDevice].batteryMonitoringEnabled = YES;\n  _observer = [[NSNotificationCenter defaultCenter]\n    addObserverForName:UIDeviceBatteryLevelDidChangeNotification object:nil\n    queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *note) {\n      [self sendEventWithName:@\"batteryLevel\" body:@([UIDevice currentDevice].batteryLevel)];\n    }];\n}\n\n- (void)stopObserving {\n  _observer = nil;\n}\n@end",
+    "answerLine": 18,
+    "causeOptions": [
+      { "text": { "vi": "Gán token về nil không gỡ đăng ký, nên NotificationCenter vẫn giữ block và `self` bên trong", "en": "Setting the token to nil does not unregister it, so the center keeps the block and its `self`" } },
+      {
+        "text": { "vi": "`startObserving` chạy ở mỗi lần `addListener`, nên mỗi lần lại thêm một observer", "en": "`startObserving` runs on every `addListener`, adding a new observer each time" },
+        "misconception": { "id": "ios-start-observing-each-listener", "text": { "vi": "Nghĩ rằng `startObserving` chạy cho từng listener. `RCTEventEmitter` chỉ gọi nó khi số listener đi từ 0 lên 1.", "en": "Believing `startObserving` runs for every listener. `RCTEventEmitter` calls it only when the listener count goes from 0 to 1." } }
+      },
+      {
+        "text": { "vi": "Trả main queue từ `methodQueue` giữ module sống sau khi reload", "en": "Returning the main queue from `methodQueue` keeps the module alive after reload" },
+        "misconception": { "id": "ios-method-queue-retains-module", "text": { "vi": "Nghĩ rằng `methodQueue` ảnh hưởng tới vòng đời module. Nó chỉ chọn nơi method chạy; leak đến từ tham chiếu mạnh, ví dụ block giữ `self`.", "en": "Believing `methodQueue` affects the module's lifetime. It only picks where methods run; leaks come from strong references such as blocks capturing `self`." } }
+      },
+      {
+        "text": { "vi": "`supportedEvents` phải là class method, nên số listener không bao giờ về 0", "en": "`supportedEvents` must be a class method, so the listener count never reaches zero" },
+        "misconception": { "id": "ios-supported-events-class-method", "text": { "vi": "Nghĩ rằng `supportedEvents` là class method. Nó là instance method của `RCTEventEmitter`, đúng như code đang viết.", "en": "Believing `supportedEvents` is a class method. It is an instance method on `RCTEventEmitter`, as written here." } }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "Với API dạng block, NotificationCenter giữ token và block cho tới khi bạn gọi `removeObserver:`. Dòng 18 chỉ xoá tham chiếu của module, nên observer vẫn bắn sau khi JS gỡ listener cuối, và block giữ `self` mạnh, khiến module cũ không bao giờ được giải phóng sau reload. Sửa: `[[NSNotificationCenter defaultCenter] removeObserver:_observer]; _observer = nil;`, đồng thời tắt `batteryMonitoringEnabled`. Nên bắt `self` qua `__weak` trong block để một lần quên gỡ không thành leak. `RCTEventEmitter` cũng gọi `stopObserving` từ `invalidate` khi còn listener, nên cùng một chỗ sửa này bao luôn trường hợp reload.",
+      "en": "With the block-based API, NotificationCenter keeps the token and the block until you call `removeObserver:`. Line 18 only drops the module's reference, so the observer keeps firing after JS removes its last listener, and the block holds `self` strongly, so old modules are never freed after a reload. Fix: `[[NSNotificationCenter defaultCenter] removeObserver:_observer]; _observer = nil;`, and turn `batteryMonitoringEnabled` back off. Capture `self` through `__weak` in the block too, so one missed removal does not become a leak. `RCTEventEmitter` also calls `stopObserving` from `invalidate` while listeners remain, so the same fix covers reloads."
+    }
+  },
+  {
+    "id": "native-modules-ios-010",
+    "type": "open",
+    "topics": ["native/modules-ios", "maintain/crash"],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 330,
+    "lessons": ["native-modules-ios-core"],
+    "prompt": {
+      "vi": "Crash report cho thấy iOS kill app lúc mở với exception code `0x8badf00d`, chủ yếu trên iPhone đời cũ. Stack đã symbolicate dừng ở một native module nội bộ. Kể lại cách bạn tìm ra nguyên nhân và sửa.",
+      "en": "Crash reports show iOS killing your app at launch with exception code `0x8badf00d`, mostly on older iPhones. The symbolicated stacks end in an in-house native module. Walk me through how you would track it down and fix it."
+    },
+    "keyPoints": [
+      { "vi": "`0x8badf00d` là watchdog: main thread bị chặn quá lâu lúc khởi động, nên cần tìm việc nặng trên main thread chứ không phải một lỗi crash thông thường", "en": "`0x8badf00d` is the watchdog: the main thread was blocked too long during launch, so look for heavy main-thread work rather than an ordinary crash bug" },
+      { "vi": "Kiểm tra các module trả `YES` từ `requiresMainQueueSetup` hoặc trả main queue từ `methodQueue`: phần khởi tạo, constants và method của chúng chạy trên main thread", "en": "Check modules that return `YES` from `requiresMainQueueSetup` or return the main queue from `methodQueue`: their setup, constants and methods run on the main thread" },
+      { "vi": "Đưa việc nặng (keychain, database, đọc file, network) ra khỏi main thread hoặc làm lazy, và trả qua promise thay vì constant", "en": "Move heavy work (keychain, database, file reads, network) off the main thread or make it lazy, and return it through a promise instead of a constant" },
+      { "vi": "Ưu tiên load module lazy: TurboModule chỉ được tạo khi dùng lần đầu, còn module cần main-queue setup có thể bị khởi tạo ngay lúc mở app", "en": "Prefer lazy loading: a TurboModule is created on first use, while a module that needs main-queue setup can be set up during launch" },
+      { "vi": "Tái hiện trên máy chậm bằng bản Release mở từ màn hình chính, không gắn debugger (watchdog không kích hoạt khi chạy dưới debugger của Xcode), và đo bằng Instruments (Time Profiler, Hangs) trước và sau khi sửa", "en": "Reproduce on a slow device with a Release build launched without the debugger attached (the watchdog does not fire under the Xcode debugger), and measure with Instruments (Time Profiler, Hangs) before and after the fix" }
+    ],
+    "modelAnswer": {
+      "vi": "`0x8badf00d` nghĩa là watchdog kill app vì main thread không phản hồi đủ lâu lúc khởi động, nên mình tìm việc chặn main thread chứ không tìm lỗi crash. Stack chỉ vào module nội bộ, nên mình xem nó có trả `YES` từ `requiresMainQueueSetup` không. Thường là có, vì ai đó cần đọc UIKit trong constants, rồi nhét luôn việc đọc keychain và mở database vào `init`. Máy mới làm kịp, máy cũ thì không. Mình tách phần UIKit nhỏ ra giữ trên main, chuyển việc nặng sang queue nền và trả qua promise, hoặc làm lazy khi JS gọi lần đầu. Mình tái hiện trên iPhone cũ với bản Release, đo bằng Time Profiler trước và sau, rồi theo dõi Hangs report trong Xcode Organizer sau khi phát hành.",
+      "en": "`0x8badf00d` means the watchdog killed the app because the main thread stopped responding for too long during launch, so I look for main-thread blocking, not a crash bug. The stack points at the in-house module, so I check whether it returns `YES` from `requiresMainQueueSetup`. It usually does, because someone needed a UIKit value in the constants and then also put keychain reads and a database open in `init`. A new phone gets through it in time; an old one does not. I keep only the small UIKit part on the main thread, move the heavy work to a background queue behind a promise, or make it lazy on the first JS call. I reproduce on an old iPhone with a Release build, compare Time Profiler traces before and after, and watch the Hangs report in Xcode Organizer after the release."
+    },
+    "followUps": [
+      { "vi": "JS cần một giá trị đọc đồng bộ ngay lúc khởi động. Làm sao cung cấp nó mà không chặn main thread?", "en": "JS needs a value synchronously at startup. How do you provide it without blocking the main thread?" },
+      { "vi": "Bạn phát hiện loại vấn đề này trước khi phát hành bằng cách nào?", "en": "How would you catch this class of problem before a release?" }
+    ]
+  },
+  {
+    "id": "native-modules-ios-011",
+    "type": "open",
+    "topics": ["native/modules-ios"],
+    "kind": "hard-issue",
+    "difficulty": 2,
+    "estSeconds": 300,
+    "lessons": ["native-modules-ios-core"],
+    "prompt": {
+      "vi": "Người dùng báo rằng bấm 'Chọn ảnh' trên iOS đôi khi để lại spinner quay mãi. JS `await PhotoPicker.pick()`, một method native present `PHPickerViewController` và resolve từ delegate của nó. Bạn tìm và sửa lỗi thế nào?",
+      "en": "Users report that tapping 'Choose photo' on iOS sometimes leaves a spinner on screen forever. JS awaits `PhotoPicker.pick()`, a native method that presents `PHPickerViewController` and resolves from its delegate. How do you find and fix it?"
+    },
+    "keyPoints": [
+      { "vi": "Promise không bao giờ settle nghĩa là có một nhánh native không gọi `resolve` lẫn `reject`: liệt kê mọi nhánh (huỷ chọn, không có quyền, lỗi load ảnh, bấm lần hai)", "en": "A promise that never settles means some native path calls neither `resolve` nor `reject`: list every path (cancel, no permission, a failed image load, a second tap)" },
+      { "vi": "`delegate` của `PHPickerViewController` là weak, nên một object delegate không ai giữ sẽ bị giải phóng và callback không bao giờ tới", "en": "`PHPickerViewController.delegate` is weak, so a delegate object that nothing else retains is freed and the callback never arrives" },
+      { "vi": "Khi người dùng huỷ, picker vẫn gọi `picker:didFinishPicking:` với mảng rỗng; nhánh đó cũng phải resolve hoặc reject", "en": "When the user cancels, the picker still calls `picker:didFinishPicking:` with an empty array, and that path must settle the promise too" },
+      { "vi": "Lưu cặp `resolve`/`reject` trong module, reject lời gọi thứ hai khi đang có một lời gọi chờ (ví dụ mã `E_IN_PROGRESS`), và xoá cả hai sau khi đã settle đúng một lần", "en": "Store the `resolve`/`reject` pair in the module, reject a second call while one is pending (for example with `E_IN_PROGRESS`), and clear both after settling exactly once" },
+      { "vi": "Present trên main thread từ `RCTPresentedViewController()`, reject khi không có view controller, và log nhánh đã chạy để thấy trường hợp này trong telemetry", "en": "Present on the main thread from `RCTPresentedViewController()`, reject when there is no view controller, and log which branch ran so the case shows up in telemetry" }
+    ],
+    "modelAnswer": {
+      "vi": "Spinner quay mãi nghĩa là promise không bao giờ settle, nên mình liệt kê mọi nhánh native và kiểm tra nhánh nào không gọi `resolve` hay `reject`. Có ba thủ phạm quen thuộc. Một: `delegate` của picker là weak, nếu delegate là object tạm thì nó bị giải phóng và callback không tới. Hai: nhánh huỷ, khi picker trả mảng rỗng mà code chỉ xử lý trường hợp có ảnh. Ba: người dùng bấm hai lần, lời gọi sau ghi đè `resolve` của lời gọi trước. Mình để module làm delegate, giữ một cặp `resolve`/`reject` đang chờ, reject lời gọi thứ hai bằng `E_IN_PROGRESS`, và xoá cặp đó sau khi settle. Phía JS mình thêm log theo nhánh để xác nhận trên production.",
+      "en": "A spinner that never stops means the promise never settles, so I list every native path and check which one calls neither `resolve` nor `reject`. There are three usual suspects. First, the picker's `delegate` is weak, so if the delegate is a temporary object it gets freed and the callback never comes. Second, the cancel path: the picker returns an empty array and the code only handles the case with a photo. Third, a double tap, where the second call overwrites the first call's `resolve`. I make the module itself the delegate, keep one pending `resolve`/`reject` pair, reject a second call with `E_IN_PROGRESS`, and clear the pair once it settles. I also log the branch on the JS side to confirm the fix in production."
+    },
+    "followUps": [
+      { "vi": "Nếu vẫn muốn cho phép gọi song song, bạn sẽ quản lý nhiều promise đang chờ thế nào?", "en": "If you did want to allow concurrent calls, how would you manage several pending promises?" }
+    ]
+  },
+  {
+    "id": "native-modules-ios-012",
+    "type": "open",
+    "topics": ["native/modules-ios", "architecture/new-arch"],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 300,
+    "lessons": ["native-modules-ios-core"],
+    "prompt": {
+      "vi": "Bạn cần ship một view phát video native, dùng từ JS dưới dạng `<VideoView source={...} onProgress={...} />`, và nó phải chạy trên kiến trúc mới. Hãy trình bày cách bạn dựng nó trên iOS và điểm khác so với một view manager legacy.",
+      "en": "You need to ship a native video player view, used from JS as `<VideoView source={...} onProgress={...} />`, and it has to run on the New Architecture. Walk me through how you would build it on iOS and what changes compared with a legacy view manager."
+    },
+    "keyPoints": [
+      { "vi": "Legacy: một subclass `RCTViewManager` trả view mới từ `view`, export prop bằng `RCT_EXPORT_VIEW_PROPERTY`, và event qua property `RCTDirectEventBlock` hoặc `RCTBubblingEventBlock` tên bắt đầu bằng `on`", "en": "Legacy: an `RCTViewManager` subclass returns a new view from `view`, exports props with `RCT_EXPORT_VIEW_PROPERTY`, and sends events through an `RCTDirectEventBlock` or `RCTBubblingEventBlock` property named `on...`" },
+      { "vi": "Fabric: một spec TS dùng `codegenNativeComponent<NativeProps>('VideoView')` với kiểu event của Codegen như `DirectEventHandler`; Codegen sinh props, event emitter và component descriptor", "en": "Fabric: a TS spec with `codegenNativeComponent<NativeProps>('VideoView')` and Codegen event types such as `DirectEventHandler`; Codegen generates the props, event emitters and component descriptor" },
+      { "vi": "Phía iOS là một subclass `RCTViewComponentView` áp thay đổi trong `updateProps:oldProps:` và bọc view player thật", "en": "On iOS it is an `RCTViewComponentView` subclass that applies changes in `updateProps:oldProps:` and wraps the real player view" },
+      { "vi": "Lệnh imperative như `seek` đi qua `codegenNativeCommands`, không phải method của một module", "en": "Imperative calls such as `seek` go through `codegenNativeCommands`, not through methods on a module" },
+      { "vi": "Fabric tái sử dụng (recycle) component view, nên phải reset trạng thái player trong `prepareForRecycle`", "en": "Fabric recycles component views, so reset the player state in `prepareForRecycle`" },
+      { "vi": "Interop layer có thể chạy view manager cũ trong lúc chuyển đổi, nhưng phải test kỹ; component Fabric mới là hướng lâu dài", "en": "The interop layer can host an old view manager during migration, but test it well; a Fabric component is the long-term path" }
+    ],
+    "modelAnswer": {
+      "vi": "Ở kiến trúc cũ, mình viết một `RCTViewManager`: `view` trả một player view mới, prop như `source` export bằng `RCT_EXPORT_VIEW_PROPERTY`, còn `onProgress` là property kiểu `RCTDirectEventBlock`. Với Fabric, mình bắt đầu từ spec TS: `codegenNativeComponent<NativeProps>('VideoView')`, `onProgress` khai báo bằng `DirectEventHandler`. Codegen sinh props C++, event emitter và component descriptor. Phía iOS là một subclass `RCTViewComponentView`, áp prop trong `updateProps:oldProps:` và bọc player thật. `seek` và `pause` là native command qua `codegenNativeCommands`. Vì Fabric recycle view, mình dừng và reset player trong `prepareForRecycle`, nếu không một video cũ có thể tiếp tục phát ở chỗ khác. Interop layer giúp chạy tạm view manager cũ, nhưng mình không coi đó là đích đến.",
+      "en": "On the old architecture I would write an `RCTViewManager`: `view` returns a new player view, props such as `source` are exported with `RCT_EXPORT_VIEW_PROPERTY`, and `onProgress` is an `RCTDirectEventBlock` property. With Fabric I start from a TS spec: `codegenNativeComponent<NativeProps>('VideoView')`, with `onProgress` typed as a `DirectEventHandler`. Codegen generates the C++ props, the event emitter and the component descriptor. On iOS I write an `RCTViewComponentView` subclass that applies props in `updateProps:oldProps:` and wraps the real player. `seek` and `pause` are native commands through `codegenNativeCommands`. Because Fabric recycles views, I stop and reset the player in `prepareForRecycle`, or an old video can keep playing somewhere else. The interop layer can run the old view manager for a while, but I would not treat it as the destination."
+    },
+    "followUps": [
+      { "vi": "Làm sao gửi `onProgress` tần suất cao mà không làm ngập JS thread?", "en": "How do you send high-frequency `onProgress` events without flooding the JS thread?" }
+    ]
+  }
+]

@@ -133,6 +133,7 @@ export function ResultScreen({ service, content, sessionId }: { service: Session
         </div>
       </section>
 
+      {misconceptions.length > 0 || categories.length > 0 ? (
       <section className="two">
         {misconceptions.length > 0 ? (
           <div className="callout stack" style={{ gap: 'var(--space-2)' }}>
@@ -156,18 +157,21 @@ export function ResultScreen({ service, content, sessionId }: { service: Session
             ))}
           </div>
         ) : null}
-        <div className="panel stack" style={{ gap: 'var(--space-2)' }}>
-          <span className="label">{t('wrongTitle')}</span>
-          {report.wrong.length === 0 ? <span className="muted">{t('noneWrong')}</span> : null}
-          {report.wrong.map(({ item, attempt }) => (
-            <details key={attempt.id}>
-              <summary>
-                <span className="down">✗</span> {item.type === 'challenge' ? pick(item.title) : <Rich text={pick(item.prompt)} />}
-              </summary>
-              <ReviewItem item={item} attempt={attempt} content={content} service={service} />
-            </details>
-          ))}
-        </div>
+      </section>
+      ) : null}
+
+      {/* full width, opened by default: the point is to read the code and the answer key side by side */}
+      <section className="panel stack wrong-list">
+        <h2 className="title">{t('wrongTitle')} · {report.wrong.length}</h2>
+        {report.wrong.length === 0 ? <span className="muted">{t('noneWrong')}</span> : null}
+        {report.wrong.map(({ item, attempt }) => (
+          <details key={attempt.id} open>
+            <summary>
+              <span className="down">✗</span> {item.type === 'challenge' ? pick(item.title) : <Rich text={pick(item.prompt)} />}
+            </summary>
+            <ReviewItem item={item} attempt={attempt} content={content} service={service} />
+          </details>
+        ))}
       </section>
 
       <a href={href({ name: 'today' })}>{t('backToday')}</a>

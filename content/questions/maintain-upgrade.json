@@ -1,0 +1,391 @@
+[
+  {
+    "id": "maintain-upgrade-001",
+    "type": "mcq",
+    "topics": ["maintain/upgrade"],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": ["maintain-upgrade-core"],
+    "multi": false,
+    "prompt": {
+      "vi": "Bạn mở React Native Upgrade Helper, chọn version hiện tại và version đích. Công cụ này thực sự cho bạn thấy gì?",
+      "en": "You open React Native Upgrade Helper and pick your current and target versions. What does it actually show you?"
+    },
+    "options": [
+      {
+        "text": { "vi": "Nó chạy codemod trên project của bạn và tự sửa file native", "en": "It runs codemods on your project and edits the native files for you" },
+        "misconception": { "id": "upgrade-helper-automates", "text": { "vi": "Nghĩ rằng Upgrade Helper tự sửa project. Nó chỉ hiển thị diff; bạn tự áp từng thay đổi và tự giải quyết chỗ project đã khác template.", "en": "Believing Upgrade Helper edits your project. It only displays a diff; you apply each change yourself and resolve wherever your project has drifted from the template." } }
+      },
+      { "text": { "vi": "Diff giữa project template mặc định của hai version, gồm file native, config và package.json", "en": "The diff between the default project template of the two versions, including native files, config and package.json" } },
+      {
+        "text": { "vi": "Danh sách breaking change của mọi thư viện bên thứ ba bạn đang dùng", "en": "The breaking changes of every third-party library you depend on" },
+        "misconception": { "id": "upgrade-helper-covers-libs", "text": { "vi": "Nghĩ rằng Upgrade Helper bao cả thư viện bên thứ ba. Nó chỉ so template của React Native; thư viện native phải kiểm tra riêng qua changelog và React Native Directory.", "en": "Believing Upgrade Helper covers third-party libraries. It only compares React Native's template; native libraries must be checked separately through their changelogs and React Native Directory." } }
+      },
+      {
+        "text": { "vi": "Chỉ thay đổi trong JavaScript API, vì phần native do `pod install` và Gradle tự cập nhật", "en": "Only JavaScript API changes, because `pod install` and Gradle update the native side by themselves" },
+        "misconception": { "id": "native-side-self-updates", "text": { "vi": "Nghĩ rằng phần native tự cập nhật khi đổi version trong package.json. File như Podfile, build.gradle, AppDelegate hay MainApplication thuộc project của bạn và phải sửa tay theo diff.", "en": "Believing the native side updates itself when package.json changes. Files like the Podfile, build.gradle, AppDelegate or MainApplication belong to your project and must be edited by hand to match the diff." } }
+      }
+    ],
+    "answer": [1],
+    "explanation": {
+      "vi": "Upgrade Helper so sánh project template mà React Native tạo ra ở hai version và hiển thị diff từng file: `package.json`, `Podfile`, `build.gradle`, `gradle.properties`, AppDelegate, MainApplication, cấu hình Metro và Babel. Bạn tự áp từng hunk vào project, và vì project thật đã khác template, bạn phải hiểu từng thay đổi chứ không copy mù. Bẫy chính là nghĩ rằng diff này bao luôn thư viện bên thứ ba: mỗi thư viện native phải được kiểm tra riêng.",
+      "en": "Upgrade Helper compares the project template React Native generates at the two versions and shows a per-file diff: `package.json`, `Podfile`, `build.gradle`, `gradle.properties`, AppDelegate, MainApplication, the Metro and Babel config. You apply each hunk to your project yourself, and since a real project has drifted from the template you need to understand each change rather than paste it blindly. The main trap is assuming the diff covers third-party libraries: every native library has to be checked on its own."
+    }
+  },
+  {
+    "id": "maintain-upgrade-002",
+    "type": "mcq",
+    "topics": ["maintain/upgrade"],
+    "kind": "core",
+    "difficulty": 2,
+    "estSeconds": 75,
+    "lessons": ["maintain-upgrade-core"],
+    "multi": false,
+    "prompt": {
+      "vi": "App đang ở RN 0.68 và cần lên 0.76. Lý do chính khiến nhiều team nâng theo từng chặng (vài version một lần) thay vì nhảy thẳng là gì?",
+      "en": "An app is on RN 0.68 and needs to reach 0.76. What is the main reason many teams upgrade in hops (a few versions at a time) instead of jumping straight there?"
+    },
+    "options": [
+      {
+        "text": { "vi": "React Native không cho cài nếu bạn bỏ qua một minor version", "en": "React Native refuses to install if you skip a minor version" },
+        "misconception": { "id": "rn-blocks-skipping", "text": { "vi": "Nghĩ rằng React Native cấm nhảy version. Bạn có thể đổi thẳng version trong package.json; nhảy từng chặng là lựa chọn để giảm rủi ro, không phải bắt buộc.", "en": "Believing React Native forbids skipping versions. You can change the version in package.json directly; hopping is a risk-reduction choice, not a requirement." } }
+      },
+      {
+        "text": { "vi": "Upgrade Helper chỉ tạo được diff giữa hai version liền kề", "en": "Upgrade Helper can only diff two adjacent versions" },
+        "misconception": { "id": "upgrade-helper-adjacent-only", "text": { "vi": "Nghĩ rằng Upgrade Helper chỉ so hai version liền kề. Nó so được hai version bất kỳ; diff giữa hai version xa nhau chỉ lớn hơn nhiều.", "en": "Believing Upgrade Helper only diffs adjacent versions. It can diff any two versions; a diff across a wide gap is simply much larger." } }
+      },
+      { "text": { "vi": "Mỗi chặng có diff nhỏ hơn, nên lỗi build hay regression truy được về một bước", "en": "Smaller diffs per hop, so a broken build or regression traces back to one step" } },
+      {
+        "text": { "vi": "Bytecode Hermes của bản cũ phải được migrate dần qua từng version một", "en": "Hermes bytecode from the old version has to be migrated through each version in turn" },
+        "misconception": { "id": "hermes-bytecode-migrates", "text": { "vi": "Nghĩ rằng bytecode Hermes được giữ lại qua các lần nâng. Bundle được compile lại từ source ở mỗi lần build, nên không có gì phải migrate.", "en": "Believing Hermes bytecode carries over between upgrades. The bundle is compiled again from source on every build, so there is nothing to migrate." } }
+      }
+    ],
+    "answer": [2],
+    "explanation": {
+      "vi": "Nhảy thẳng qua nhiều version là hợp lệ, nhưng khi build vỡ hay xuất hiện regression, bạn phải tìm thủ phạm trong một diff khổng lồ cộng với hàng chục thư viện cùng đổi. Nâng theo chặng giữ mỗi bước đủ nhỏ để build cả hai nền tảng, chạy smoke test và merge, nên lỗi luôn truy được về một bước. Đổi lại là tốn nhiều vòng hơn; team thường gộp các version ít thay đổi và tách riêng những bước lớn như bật New Architecture.",
+      "en": "Jumping across several versions is allowed, but when the build breaks or a regression appears you are hunting through one huge diff plus dozens of libraries that changed at the same time. Hopping keeps each step small enough to build both platforms, run smoke tests and merge, so a failure always traces back to one step. The cost is more rounds; teams often combine quiet versions and isolate big steps such as turning on the New Architecture."
+    }
+  },
+  {
+    "id": "maintain-upgrade-003",
+    "type": "mcq",
+    "topics": ["maintain/upgrade", "architecture/new-arch"],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": ["maintain-upgrade-core"],
+    "multi": false,
+    "prompt": {
+      "vi": "App lên RN 0.76, nơi New Architecture bật mặc định. Một thư viện cũ vẫn dùng `NativeModules` và `requireNativeComponent`, chưa có TurboModule hay Fabric component. Nhận định nào chính xác?",
+      "en": "Your app moves to RN 0.76, where the New Architecture is on by default. An old library still uses `NativeModules` and `requireNativeComponent`, with no TurboModule or Fabric component. Which statement is accurate?"
+    },
+    "options": [
+      {
+        "text": { "vi": "Thư viện chắc chắn crash lúc khởi động, nên bạn bắt buộc phải tắt New Architecture", "en": "The library is guaranteed to crash at startup, so you must turn the New Architecture off" },
+        "misconception": { "id": "legacy-lib-always-crashes", "text": { "vi": "Nghĩ rằng mọi thư viện kiến trúc cũ đều vỡ trên New Architecture. Lớp interop chạy được nhiều thư viện cũ; chỉ một phần gặp lỗi, và phải kiểm thử mới biết.", "en": "Believing every legacy library breaks on the New Architecture. The interop layer runs many legacy libraries; only some fail, and testing is the only way to know." } }
+      },
+      {
+        "text": { "vi": "Lớp interop chuyển thư viện thành TurboModule bằng codegen lúc build, nên hiệu năng như thư viện đã migrate", "en": "The interop layer converts the library into a TurboModule with codegen at build time, so it performs like a migrated one" },
+        "misconception": { "id": "interop-is-codegen", "text": { "vi": "Nghĩ rằng lớp interop migrate thư viện giúp bạn. Nó chỉ cho code cũ chạy tiếp trên runtime mới; thư viện không có spec codegen và không nhận được lợi ích như type-safe hay gọi đồng bộ qua JSI.", "en": "Believing the interop layer migrates the library for you. It only lets legacy code keep running on the new runtime; the library gets no codegen spec and none of the benefits such as type safety or synchronous JSI calls." } }
+      },
+      { "text": { "vi": "Lớp interop thường cho thư viện chạy tiếp, nhưng không phải luôn luôn, nên phải kiểm thử từng màn hình dùng nó", "en": "The interop layer usually keeps it working, but not always, so you test every screen that uses it" } },
+      {
+        "text": { "vi": "Module kiến trúc cũ chỉ chạy được khi tắt Hermes và quay về JSC", "en": "Legacy modules only run if you turn Hermes off and go back to JSC" },
+        "misconception": { "id": "legacy-needs-jsc", "text": { "vi": "Nhầm JS engine với kiến trúc. Hermes hay JSC không quyết định thư viện kiến trúc cũ có chạy hay không; đó là việc của lớp interop.", "en": "Confusing the JS engine with the architecture. Hermes or JSC does not decide whether a legacy library runs; the interop layer does." } }
+      }
+    ],
+    "answer": [2],
+    "explanation": {
+      "vi": "Từ RN 0.74 trở đi, lớp interop được bật tự động cho cả Bridgeless, nên nhiều module và view kiến trúc cũ vẫn chạy trên New Architecture. Nhưng interop không phủ hết: thư viện truy cập trực tiếp bridge, gọi API nội bộ hoặc dựa vào timing cũ vẫn có thể vỡ. Hãy tra React Native Directory xem thư viện có hỗ trợ New Architecture chưa, và kiểm thử mọi màn hình dùng nó. Từ 0.76 tới 0.81 bạn còn tắt tạm được New Architecture (`newArchEnabled=false` trong `gradle.properties`, `RCT_NEW_ARCH_ENABLED=0` khi `pod install`); theo release notes của 0.82, từ bản đó kiến trúc cũ không bật lại được nữa.",
+      "en": "From RN 0.74 the interop layer is enabled automatically, including in Bridgeless mode, so many legacy modules and views keep running on the New Architecture. Interop does not cover everything, though: libraries that reach into the bridge directly, call internal APIs or depend on old timing can still break. Check React Native Directory for New Architecture support and test every screen that uses the library. From 0.76 to 0.81 you can still opt out temporarily (`newArchEnabled=false` in `gradle.properties`, `RCT_NEW_ARCH_ENABLED=0` for `pod install`); per the 0.82 release notes, from that version the legacy architecture can no longer be turned back on."
+    }
+  },
+  {
+    "id": "maintain-upgrade-004",
+    "type": "mcq",
+    "topics": ["maintain/upgrade"],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": ["maintain-upgrade-core"],
+    "multi": true,
+    "prompt": {
+      "vi": "Sau khi nâng RN, một thư viện native bị lỗi compile. Bản sửa của upstream chưa có, nên bạn dùng `patch-package`. Những cách làm nào giữ việc này an toàn? (chọn tất cả đáp án đúng)",
+      "en": "After an RN upgrade a native library fails to compile. No upstream fix is out yet, so you reach for `patch-package`. Which practices keep this safe? (select all that apply)"
+    },
+    "options": [
+      { "text": { "vi": "Commit thư mục `patches/` và chạy `patch-package` trong `postinstall`", "en": "Commit the `patches/` folder and run `patch-package` in `postinstall`" } },
+      { "text": { "vi": "Ghim chính xác version của thư viện, vì file patch gắn với version đó", "en": "Pin the library to an exact version, because the patch file is tied to that version" } },
+      {
+        "text": { "vi": "Dùng range `^` để tự nhận bản sửa của upstream, patch sẽ vẫn áp được", "en": "Use a `^` range to pick up the upstream fix automatically; the patch will keep applying" },
+        "misconception": { "id": "patch-with-caret-range", "text": { "vi": "Nghĩ rằng patch sống được qua mọi version. Patch là diff trên đúng một version; version khác có thể làm patch áp thất bại hoặc áp sai chỗ mà không ai để ý.", "en": "Believing a patch survives any version. A patch is a diff against one exact version; a different version can make it fail to apply, or apply somewhere nobody notices." } }
+      },
+      { "text": { "vi": "Mở issue hoặc PR ở upstream, ghi link vào commit, và xem lại patch ở mỗi lần nâng cấp", "en": "Open an upstream issue or PR, link it in the commit, and review the patch on every upgrade" } },
+      {
+        "text": { "vi": "Sửa thẳng trong `node_modules` là đủ, vì CI cache `node_modules` giữa các lần build", "en": "Editing `node_modules` directly is enough, because CI caches `node_modules` between builds" },
+        "misconception": { "id": "edit-node-modules-directly", "text": { "vi": "Nghĩ rằng sửa node_modules là bền. Mọi lần cài sạch, cache hết hạn hay máy mới đều xoá thay đổi đó, và build sẽ vỡ ở nơi khó đoán.", "en": "Believing an edit inside node_modules persists. Any clean install, cache expiry or new machine wipes it, and the build breaks somewhere hard to predict." } }
+      }
+    ],
+    "answer": [0, 1, 3],
+    "explanation": {
+      "vi": "`patch-package` lưu diff vào `patches/<tên>+<version>.patch` và áp lại sau mỗi lần cài qua `postinstall`. Vì diff gắn với một version, hãy ghim version chính xác; khi version cài khác, công cụ cảnh báo, và nếu patch không áp được thì lệnh fail (trên CI nó mặc định thoát với mã lỗi). Patch là nợ kỹ thuật: ghi link issue upstream và xoá patch ngay khi bản sửa chính thức có mặt. Yarn Berry và pnpm có lệnh `patch` tích hợp sẵn theo cùng ý tưởng.",
+      "en": "`patch-package` stores the diff in `patches/<name>+<version>.patch` and reapplies it after every install through `postinstall`. Because the diff is tied to one version, pin the exact version; when the installed version differs the tool warns, and if the patch cannot apply the command fails (on CI it exits with an error by default). A patch is tech debt: link the upstream issue and delete the patch as soon as the official fix lands. Yarn Berry and pnpm ship a built-in `patch` command based on the same idea."
+    }
+  },
+  {
+    "id": "maintain-upgrade-005",
+    "type": "mcq",
+    "topics": ["maintain/upgrade"],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": ["maintain-upgrade-core"],
+    "multi": true,
+    "prompt": {
+      "vi": "Sau khi lên RN 0.78 (React 19), `npm install` fail với `ERESOLVE`, vì một thư viện khai báo peer dependency `\"react\": \"^18.0.0\"`. Những nhận định nào đúng? (chọn tất cả đáp án đúng)",
+      "en": "After moving to RN 0.78 (React 19), `npm install` fails with `ERESOLVE` because a library declares the peer dependency `\"react\": \"^18.0.0\"`. Which statements are correct? (select all that apply)"
+    },
+    "options": [
+      { "text": { "vi": "npm 7 trở lên tự cài peer dependency và fail khi range peer xung đột", "en": "npm 7+ installs peer dependencies itself and fails on a conflicting peer range" } },
+      { "text": { "vi": "`--legacy-peer-deps` bỏ qua peer của cả cây, nên có thể che các xung đột thật khác", "en": "`--legacy-peer-deps` ignores peers for the whole tree, so it can hide real conflicts" } },
+      {
+        "text": { "vi": "Lỗi này nghĩa là bundle sẽ chứa hai bản React, mỗi range một bản", "en": "The error means the bundle will contain two copies of React, one per range" },
+        "misconception": { "id": "peer-conflict-two-copies", "text": { "vi": "Nghĩ rằng xung đột peer tạo ra hai bản React. Peer dependency tồn tại để chỉ có một bản dùng chung; ERESOLVE dừng install chứ không cài thêm bản thứ hai.", "en": "Believing a peer conflict produces two copies of React. Peer dependencies exist so there is one shared copy; ERESOLVE stops the install rather than adding a second one." } }
+      },
+      {
+        "text": { "vi": "Thêm `react@18` vào `devDependencies` sẽ thoả thư viện mà không ảnh hưởng gì tới app", "en": "Adding `react@18` to `devDependencies` satisfies the library with no effect on the app" },
+        "misconception": { "id": "devdeps-isolate-versions", "text": { "vi": "Nghĩ rằng devDependencies tách biệt version. Chỉ có một gói react ở gốc node_modules; cài hai version khiến app chạy sai bản hoặc gặp lỗi Invalid hook call.", "en": "Believing devDependencies isolate versions. There is a single react package at the node_modules root; installing two versions leaves the app on the wrong one or triggers an Invalid hook call error." } }
+      },
+      { "text": { "vi": "Bước đầu tiên là kiểm tra thư viện đã có bản mới khai báo hỗ trợ React 19 hay chưa", "en": "The first step is to check whether a newer version of the library declares React 19 support" } }
+    ],
+    "answer": [0, 1, 4],
+    "explanation": {
+      "vi": "RN 0.78 đi kèm React 19, nên mọi thư viện khai báo peer `react@^18` đều xung đột. npm 7 trở lên tự cài peer và coi xung đột là lỗi. Thứ tự xử lý hợp lý: tìm bản mới của thư viện hỗ trợ React 19; nếu chưa có, kiểm thử xem nó có thật sự chạy được không, và coi mọi workaround là ngoại lệ tạm thời có ghi lại lý do, thay vì lặng lẽ bật `legacy-peer-deps` cho cả repo. Bẫy chính là cài thêm một bản React: React phải là một bản duy nhất trong app.",
+      "en": "RN 0.78 ships React 19, so any library declaring a `react@^18` peer conflicts. npm 7 and later install peers automatically and treat a conflict as an error. A sensible order: look for a newer library release that supports React 19; if there is none, test whether it actually works and treat any workaround as a documented, temporary exception, rather than quietly turning on `legacy-peer-deps` for the whole repo. The main trap is installing a second React: there must be exactly one copy in the app."
+    }
+  },
+  {
+    "id": "maintain-upgrade-006",
+    "type": "spot-bug",
+    "topics": ["maintain/upgrade"],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 105,
+    "lessons": ["maintain-upgrade-core"],
+    "prompt": {
+      "vi": "Trong lúc nâng cấp, bạn chuyển `metro.config.js` sang `@react-native/metro-config` và thêm hỗ trợ SVG. Từ đó Metro báo `Unable to resolve module ./src/App` dù file `src/App.tsx` vẫn ở đó. Dòng nào gây lỗi, và vì sao?",
+      "en": "During an upgrade you move `metro.config.js` to `@react-native/metro-config` and add SVG support. Since then Metro reports `Unable to resolve module ./src/App`, although `src/App.tsx` is still there. Which line causes it, and why?"
+    },
+    "code": "const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');\n\nconst defaultConfig = getDefaultConfig(__dirname);\nconst { assetExts, sourceExts } = defaultConfig.resolver;\n\n/** @type {import('metro-config').MetroConfig} */\nconst config = {\n  transformer: {\n    babelTransformerPath: require.resolve('react-native-svg-transformer/react-native'),\n  },\n  resolver: {\n    assetExts: assetExts.filter((ext) => ext !== 'svg'),\n    sourceExts: ['svg'],\n  },\n};\n\nmodule.exports = mergeConfig(defaultConfig, config);",
+    "answerLine": 13,
+    "causeOptions": [
+      {
+        "text": { "vi": "Bỏ `svg` khỏi `assetExts` khiến Metro không còn đọc được file nào trong `src`", "en": "Removing `svg` from `assetExts` stops Metro from reading any file in `src`" },
+        "misconception": { "id": "assetexts-controls-source", "text": { "vi": "Nhầm assetExts với sourceExts. assetExts chỉ quyết định file nào là asset (ảnh, font); file code được resolve theo sourceExts.", "en": "Confusing assetExts with sourceExts. assetExts only decides which files are assets (images, fonts); code files resolve through sourceExts." } }
+      },
+      { "text": { "vi": "`sourceExts` thay hẳn danh sách mặc định, nên Metro chỉ còn resolve file `.svg`", "en": "`sourceExts` replaces the default list, so Metro now only resolves `.svg` files" } },
+      {
+        "text": { "vi": "`mergeConfig` phải nhận `config` trước rồi mới tới `defaultConfig`", "en": "`mergeConfig` must take `config` first and `defaultConfig` second" },
+        "misconception": { "id": "mergeconfig-order", "text": { "vi": "Hiểu ngược thứ tự của mergeConfig. Config sau ghi đè config trước, nên mặc định đứng đầu và phần tuỳ chỉnh đứng sau là đúng.", "en": "Getting mergeConfig's order backwards. Later configs override earlier ones, so defaults first and your overrides second is correct." } }
+      },
+      {
+        "text": { "vi": "Phải xoá cache Metro sau khi đổi `babelTransformerPath`, nếu không mọi import đều fail", "en": "The Metro cache must be cleared after changing `babelTransformerPath`, or every import fails" },
+        "misconception": { "id": "metro-cache-fixes-resolution", "text": { "vi": "Đổ lỗi cho cache khi config sai. `--reset-cache` chỉ xoá kết quả transform cũ; nó không sửa được một danh sách sourceExts thiếu phần mở rộng.", "en": "Blaming the cache for a wrong config. `--reset-cache` only drops old transform results; it cannot fix a sourceExts list that is missing extensions." } }
+      }
+    ],
+    "answerCause": 1,
+    "explanation": {
+      "vi": "`mergeConfig` merge sâu các object nhưng mảng thì bị thay thế. Dòng 13 vì vậy biến `sourceExts` thành đúng `['svg']`, và Metro không còn resolve `.ts`, `.tsx` hay `.js`. Hướng dẫn của `react-native-svg-transformer` viết `sourceExts: [...sourceExts, 'svg']`, và chính biến `sourceExts` đã destructure ở dòng 4 nhưng không được dùng là dấu hiệu. Bài học khi nâng cấp: khi chép lại phần tuỳ chỉnh vào file config mới, luôn mở rộng danh sách mặc định thay vì thay thế nó.",
+      "en": "`mergeConfig` deep-merges objects but replaces arrays. Line 13 therefore sets `sourceExts` to exactly `['svg']`, and Metro no longer resolves `.ts`, `.tsx` or `.js`. The `react-native-svg-transformer` instructions use `sourceExts: [...sourceExts, 'svg']`, and the `sourceExts` variable destructured on line 4 but never used is the giveaway. The upgrade lesson: when you carry custom settings into a new config file, extend the default lists instead of replacing them."
+    }
+  },
+  {
+    "id": "maintain-upgrade-007",
+    "type": "spot-bug",
+    "topics": ["maintain/upgrade", "native/build"],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 105,
+    "lessons": ["maintain-upgrade-core"],
+    "prompt": {
+      "vi": "Bạn nâng app từ RN 0.72 lên 0.76 theo Upgrade Helper, nhưng ai đó đã bỏ qua một hunk của `Podfile`. Giờ `pod install` fail: `Specs satisfying the React-Core dependency were found, but they required a higher minimum deployment target`. Dòng nào gây lỗi, và vì sao?",
+      "en": "You upgrade an app from RN 0.72 to 0.76 with Upgrade Helper, but someone skipped one `Podfile` hunk. Now `pod install` fails with `Specs satisfying the React-Core dependency were found, but they required a higher minimum deployment target`. Which line causes it, and why?"
+    },
+    "code": "require Pod::Executable.execute_command('node', ['-p',\n  'require.resolve(\n    \"react-native/scripts/react_native_pods.rb\",\n    {paths: [process.argv[1]]},\n  )', __dir__]).strip\n\nplatform :ios, '13.4'\nprepare_react_native_project!\n\ntarget 'ShopApp' do\n  config = use_native_modules!\n  use_react_native!(\n    :path => config[:reactNativePath],\n    :app_path => \"#{Pod::Config.instance.installation_root}/..\"\n  )\n\n  post_install do |installer|\n    react_native_post_install(installer, config[:reactNativePath], :mac_catalyst_enabled => false)\n  end\nend",
+    "answerLine": 7,
+    "causeOptions": [
+      { "text": { "vi": "Deployment target bị ghi cứng thấp hơn mức tối thiểu mà các pod của RN 0.76 yêu cầu", "en": "The deployment target is hardcoded below the minimum the RN 0.76 pods require" } },
+      {
+        "text": { "vi": "`use_native_modules!` phải được gọi sau `use_react_native!`", "en": "`use_native_modules!` must be called after `use_react_native!`" },
+        "misconception": { "id": "podfile-autolink-order", "text": { "vi": "Nghĩ rằng thứ tự này gây lỗi deployment target. Template gọi use_native_modules! trước để lấy config autolinking, và lỗi deployment target không liên quan tới autolinking.", "en": "Believing this order causes a deployment target error. The template calls use_native_modules! first to get the autolinking config, and a deployment target error has nothing to do with autolinking." } }
+      },
+      {
+        "text": { "vi": "`:mac_catalyst_enabled => false` làm CocoaPods loại các pod hỗ trợ iOS mới", "en": "`:mac_catalyst_enabled => false` makes CocoaPods drop pods that support newer iOS" },
+        "misconception": { "id": "catalyst-flag-deployment", "text": { "vi": "Nhầm cờ Mac Catalyst với deployment target. Cờ này chỉ ảnh hưởng tới build cho Mac Catalyst, không đổi version iOS tối thiểu.", "en": "Confusing the Mac Catalyst flag with the deployment target. It only affects Mac Catalyst builds and does not change the minimum iOS version." } }
+      },
+      {
+        "text": { "vi": "`Podfile.lock` cũ còn ghim React-Core 0.72, chỉ cần `pod repo update`", "en": "The old `Podfile.lock` still pins React-Core 0.72; `pod repo update` alone fixes it" },
+        "misconception": { "id": "pod-repo-update-fixes-all", "text": { "vi": "Nghĩ rằng cập nhật spec repo giải quyết mọi lỗi pod install. Pod của React Native được lấy từ node_modules qua :path, và thông báo lỗi nói rõ là do deployment target.", "en": "Believing a spec repo update fixes any pod install error. React Native's pods come from node_modules through :path, and the message explicitly blames the deployment target." } }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "Từ RN 0.76, iOS tối thiểu là 15.1. Template hiện tại viết `platform :ios, min_ios_version_supported`, hàm lấy giá trị đó từ chính React Native, nên mỗi lần nâng cấp con số tự đi theo. Dòng 7 ghi cứng `'13.4'`, nên CocoaPods từ chối các pod đòi target cao hơn. Sửa bằng cách dùng lại `min_ios_version_supported` (hoặc một giá trị không thấp hơn nó), rồi kiểm tra deployment target của target app trong Xcode cũng khớp. Đây cũng là dịp quyết định có ngừng hỗ trợ các bản iOS cũ hay không: đó là quyết định sản phẩm, không chỉ là chuyện build.",
+      "en": "From RN 0.76 the minimum iOS version is 15.1. The current template writes `platform :ios, min_ios_version_supported`, a helper that reads the value from React Native itself, so the number follows each upgrade. Line 7 hardcodes `'13.4'`, so CocoaPods rejects pods that need a higher target. Fix it by going back to `min_ios_version_supported` (or a value no lower than it), then check that the app target's deployment target in Xcode matches. It is also the moment to decide on dropping old iOS versions: that is a product decision, not only a build detail."
+    }
+  },
+  {
+    "id": "maintain-upgrade-008",
+    "type": "spot-bug",
+    "topics": ["maintain/upgrade"],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 135,
+    "lessons": ["maintain-upgrade-core"],
+    "prompt": {
+      "vi": "Bạn nâng app từ RN 0.73 lên 0.76.9 (Yarn classic) và áp đủ diff template. Build iOS và Android đều fail ở bước codegen với lỗi trong các file spec sinh ra, trong khi một app mới tạo ở 0.76.9 build bình thường. Dòng nào gây lỗi, và vì sao?",
+      "en": "You upgrade from RN 0.73 to 0.76.9 (Yarn classic) and apply the full template diff. Both iOS and Android builds fail in the codegen step with errors inside generated spec files, while a fresh 0.76.9 app builds fine. Which line causes it, and why?"
+    },
+    "code": "{\n  \"name\": \"field-app\",\n  \"private\": true,\n  \"scripts\": { \"postinstall\": \"patch-package\" },\n  \"dependencies\": {\n    \"react\": \"18.3.1\",\n    \"react-native\": \"0.76.9\",\n    \"react-native-svg\": \"15.8.0\"\n  },\n  \"devDependencies\": {\n    \"@react-native/babel-preset\": \"0.76.9\",\n    \"@react-native/metro-config\": \"0.76.9\",\n    \"patch-package\": \"^8.0.0\"\n  },\n  \"resolutions\": {\n    \"@react-native/codegen\": \"0.73.2\"\n  }\n}",
+    "answerLine": 16,
+    "causeOptions": [
+      {
+        "text": { "vi": "RN 0.76 cần React 19, nên `react` phải là `19.0.0`", "en": "RN 0.76 needs React 19, so `react` must be `19.0.0`" },
+        "misconception": { "id": "rn076-needs-react19", "text": { "vi": "Nhầm mốc React 19. RN 0.76 và 0.77 vẫn đi kèm React 18.3; React 19 đến từ RN 0.78.", "en": "Getting the React 19 boundary wrong. RN 0.76 and 0.77 still ship React 18.3; React 19 arrives with RN 0.78." } }
+      },
+      { "text": { "vi": "Một `resolutions` cũ còn ghim codegen ở 0.73, nên RN 0.76 chạy với codegen không khớp version", "en": "A stale `resolutions` entry pins codegen at 0.73, so RN 0.76 runs with a mismatched codegen" } },
+      {
+        "text": { "vi": "`postinstall` chạy `patch-package` trước khi codegen kịp sinh file", "en": "`postinstall` runs `patch-package` before codegen has generated its files" },
+        "misconception": { "id": "postinstall-runs-codegen", "text": { "vi": "Nghĩ rằng codegen chạy lúc cài package. Codegen chạy trong lúc build native (pod install và Gradle), sau khi postinstall đã xong từ lâu.", "en": "Believing codegen runs at install time. Codegen runs during the native build (pod install and Gradle), long after postinstall has finished." } }
+      },
+      {
+        "text": { "vi": "`resolutions` chỉ áp dụng cho `devDependencies`, nên `react-native-svg` không được build", "en": "`resolutions` only applies to `devDependencies`, so `react-native-svg` is not built" },
+        "misconception": { "id": "resolutions-devdeps-only", "text": { "vi": "Hiểu sai phạm vi của resolutions. Yarn áp resolutions cho mọi nơi gói đó xuất hiện trong cây dependency, kể cả dependency bắc cầu của react-native.", "en": "Misreading the scope of resolutions. Yarn applies resolutions wherever that package appears in the tree, including react-native's transitive dependencies." } }
+      }
+    ],
+    "answerCause": 1,
+    "explanation": {
+      "vi": "`@react-native/codegen` là dependency của `react-native`, và mỗi bản RN cần codegen cùng version. Dòng 16 là workaround từ thời 0.73 mà không ai xoá: Yarn ép mọi bản codegen trong cây về 0.73.2, nên spec được sinh theo format cũ và build fail. Upgrade Helper không cảnh báo vì `resolutions`, `overrides` hay patch không có trong template. Khi nâng cấp, hãy rà mọi pin ép buộc, xoá cái nào không còn cần, và so `yarn why @react-native/codegen` với một app mới tạo để thấy version thật đang được cài.",
+      "en": "`@react-native/codegen` is a dependency of `react-native`, and each RN release needs the matching codegen version. Line 16 is a workaround from the 0.73 days that nobody removed: Yarn forces every copy of codegen in the tree to 0.73.2, so specs are generated in the old format and the build fails. Upgrade Helper cannot warn you, because `resolutions`, `overrides` and patches are not part of the template. During an upgrade, audit every forced pin, drop the ones you no longer need, and compare `yarn why @react-native/codegen` against a fresh app to see what is really installed."
+    }
+  },
+  {
+    "id": "maintain-upgrade-009",
+    "type": "open",
+    "topics": ["maintain/upgrade", "architecture/new-arch"],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 330,
+    "lessons": ["maintain-upgrade-core"],
+    "prompt": {
+      "vi": "Kể lại cách bạn đã đưa một app production bị tụt nhiều version (ví dụ từ 0.71) lên một bản RN có New Architecture bật mặc định. Bạn lên kế hoạch, thực hiện và phát hành bản nâng cấp đó thế nào?",
+      "en": "Walk me through how you took a production app that was several versions behind (say, on 0.71) up to an RN release with the New Architecture on by default. How did you plan, execute and ship it?"
+    },
+    "keyPoints": [
+      { "vi": "Kiểm kê mọi dependency native và trạng thái hỗ trợ New Architecture (React Native Directory, changelog), đánh dấu thư viện cần nâng, thay thế hoặc patch", "en": "Inventory every native dependency and its New Architecture support (React Native Directory, changelogs), flagging what to upgrade, replace or patch" },
+      { "vi": "Làm trên một branch riêng, nâng theo chặng bằng Upgrade Helper; mỗi chặng build cả hai nền tảng, nâng thư viện tương ứng và merge riêng", "en": "Work on a dedicated branch and upgrade in hops with Upgrade Helper; each hop builds both platforms, bumps the matching libraries and lands on its own" },
+      { "vi": "Tách bước bật New Architecture khỏi bước nâng version khi có thể, và giữ lối lùi tạm thời (`newArchEnabled=false`) trên các bản còn hỗ trợ", "en": "Separate turning on the New Architecture from the version bump where possible, and keep the temporary opt-out (`newArchEnabled=false`) on versions that still allow it" },
+      { "vi": "Dọn sạch build cache (Pods, DerivedData, Gradle), rà toolchain bắt buộc (Xcode, JDK, Android Gradle Plugin) và các pin `resolutions`/`overrides`/patch cũ", "en": "Clean build caches (Pods, DerivedData, Gradle), check required toolchains (Xcode, JDK, Android Gradle Plugin) and old `resolutions`/`overrides`/patches" },
+      { "vi": "Kiểm thử bằng release build trên ma trận thiết bị, phát nội bộ (TestFlight, internal testing), rồi staged rollout có theo dõi crash-free và hiệu năng", "en": "Test release builds on a device matrix, ship internally (TestFlight, internal testing), then a staged rollout watching crash-free rate and performance" },
+      { "vi": "Đổi runtime version của OTA vì native đã đổi, để bundle cũ không bao giờ tới binary mới và ngược lại", "en": "Bump the OTA runtime version because native code changed, so old bundles never reach the new binary and vice versa" }
+    ],
+    "modelAnswer": {
+      "vi": "Mình bắt đầu bằng kiểm kê: mọi thư viện native, version hiện tại, và có hỗ trợ New Architecture chưa theo React Native Directory. Thư viện bỏ hoang thì lên kế hoạch thay thế trước. Sau đó mình nâng theo chặng trên một branch riêng, mỗi chặng áp diff của Upgrade Helper, nâng thư viện tương ứng, build cả iOS lẫn Android và chạy smoke test rồi mới đi tiếp. Mình tách bước bật New Architecture ra riêng và giữ cờ tắt tạm thời trong lúc còn được phép. Khi build vỡ, mình dọn cache và kiểm tra toolchain như Xcode, JDK, AGP trước khi nghi code. Bản cuối được kiểm thử bằng release build trên máy thật, phát nội bộ, rồi staged rollout từ vài phần trăm, theo dõi crash-free và thời gian khởi động. Mình cũng đổi runtime version của OTA vì native đã khác.",
+      "en": "I start with an inventory: every native library, its current version, and whether React Native Directory lists New Architecture support. Abandoned libraries get a replacement plan up front. Then I upgrade in hops on a dedicated branch: each hop applies the Upgrade Helper diff, bumps the matching libraries, builds iOS and Android and passes smoke tests before moving on. I keep turning on the New Architecture as its own step and keep the temporary opt-out while it is still allowed. When a build breaks I clean caches and check toolchains like Xcode, the JDK and AGP before suspecting code. The final build is tested as a release build on real devices, shipped internally, then rolled out in stages from a few percent while I watch crash-free rate and startup time. I also bump the OTA runtime version, since the native side changed."
+    },
+    "followUps": [
+      { "vi": "Bạn làm gì với một thư viện quan trọng đã bị bỏ hoang và không chạy trên New Architecture?", "en": "What do you do about a critical library that is abandoned and does not run on the New Architecture?" },
+      { "vi": "Làm sao giữ được nhịp phát hành tính năng trong lúc branch nâng cấp còn chạy dài?", "en": "How do you keep feature releases flowing while the upgrade branch is still in progress?" }
+    ]
+  },
+  {
+    "id": "maintain-upgrade-010",
+    "type": "open",
+    "topics": ["maintain/upgrade", "maintain/crash"],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 300,
+    "lessons": ["maintain-upgrade-core"],
+    "prompt": {
+      "vi": "Bản nâng cấp RN đã lên 20% người dùng. Crash report cho thấy một crash mới trên màn hình thanh toán, đến từ một thư viện native chưa hỗ trợ New Architecture. Kể lại cách bạn xử lý tình huống này.",
+      "en": "Your RN upgrade has reached 20% of users. Crash reports show a new crash on the checkout screen, coming from a native library without New Architecture support. Walk me through how you handled it."
+    },
+    "keyPoints": [
+      { "vi": "Dừng staged rollout ngay (halt trên Play, pause phased release trên App Store) để giới hạn số người bị ảnh hưởng", "en": "Halt the staged rollout right away (halt on Play, pause the phased release on the App Store) to cap the number of affected users" },
+      { "vi": "Xác nhận phạm vi bằng crash report đã symbolicate: chỉ version mới, nền tảng nào, có tái hiện được trên release build không", "en": "Confirm the scope from symbolicated crash reports: only the new version, which platforms, and whether a release build reproduces it" },
+      { "vi": "Giảm thiệt hại tạm thời bằng feature flag, ví dụ chuyển sang luồng thanh toán dự phòng, nếu luồng đó đã có sẵn trong binary", "en": "Mitigate with a feature flag, for example a fallback checkout path, if that path already exists in the binary" },
+      { "vi": "Chọn cách sửa: nâng thư viện, patch bằng `patch-package`, thay thư viện, hoặc tắt New Architecture tạm thời nếu version còn cho phép", "en": "Choose the fix: upgrade the library, patch it with `patch-package`, replace it, or opt out of the New Architecture temporarily if the version still allows it" },
+      { "vi": "Phát hành binary mới với version code cao hơn, vì store không cho rút binary đã cài về bản cũ", "en": "Ship a new binary with a higher version code, because the stores cannot roll installed users back to the old binary" }
+    ],
+    "modelAnswer": {
+      "vi": "Việc đầu tiên là dừng rollout: halt trên Play Console và pause phased release trên App Store, để con số 20% không tăng thêm. Sau đó mình xác nhận phạm vi bằng stack đã symbolicate: crash chỉ có ở version mới, ở nền tảng nào, và có tái hiện được bằng release build không. Nếu app có flag cho một luồng thanh toán khác đã nằm sẵn trong binary, mình bật nó để giảm thiệt hại. Về cách sửa, mình xem thư viện có bản mới hỗ trợ New Architecture không; nếu không, mình patch bằng `patch-package` hoặc thay thư viện, và chỉ tắt New Architecture tạm thời nếu version còn cho phép. Bản sửa là một binary mới với version code cao hơn, vì store không cho rút bản đã cài. Cuối cùng mình thêm màn hình đó vào checklist kiểm thử nâng cấp.",
+      "en": "First I stop the rollout: halt it in Play Console and pause the phased release on the App Store, so the 20% does not grow. Then I confirm the scope from symbolicated stacks: only the new version, which platforms, and whether a release build reproduces it. If the app has a flag for another checkout path that already ships in the binary, I switch it on to limit the damage. For the fix, I check whether a newer library release supports the New Architecture; if not, I patch it with `patch-package` or replace it, and only opt out of the New Architecture temporarily if the version still allows it. The fix ships as a new binary with a higher version code, because the stores cannot pull back what users installed. Finally I add that screen to the upgrade test checklist."
+    },
+    "followUps": [
+      { "vi": "Vì sao không dùng OTA để sửa crash này?", "en": "Why can you not fix this crash with an OTA update?" },
+      { "vi": "Kiểm thử nào lẽ ra đã bắt được lỗi này trước khi rollout?", "en": "Which test would have caught this before the rollout?" }
+    ]
+  },
+  {
+    "id": "maintain-upgrade-011",
+    "type": "open",
+    "topics": ["maintain/upgrade", "release/ota-ci"],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 270,
+    "lessons": ["maintain-upgrade-core"],
+    "prompt": {
+      "vi": "Bản nâng cấp RN đã build được và qua QA. Bạn kiểm thử và phát hành nó thế nào để một lỗi lọt lưới chỉ ảnh hưởng ít người dùng nhất?",
+      "en": "The RN upgrade builds and has passed QA. How do you test and ship it so that any bug that slips through reaches as few users as possible?"
+    },
+    "keyPoints": [
+      { "vi": "Kiểm thử bằng release build (Hermes bytecode, minify, R8) trên máy thật, gồm cả máy cấu hình thấp và bản OS cũ nhất còn hỗ trợ", "en": "Test release builds (Hermes bytecode, minification, R8) on real devices, including low-end hardware and the oldest supported OS" },
+      { "vi": "Phát nội bộ trước: TestFlight, Play internal testing hoặc closed testing, để team và người dùng thân thiết dùng vài ngày", "en": "Ship internally first: TestFlight, Play internal or closed testing, so the team and friendly users live on it for a few days" },
+      { "vi": "Staged rollout trên Play và phased release trên App Store, với ngưỡng dừng định trước cho crash-free và ANR", "en": "Use a staged rollout on Play and a phased release on the App Store, with predefined stop thresholds for crash-free rate and ANRs" },
+      { "vi": "So sánh số liệu theo version: crash-free, ANR, thời gian khởi động, kích thước bundle, so với bản trước ở cùng giai đoạn rollout", "en": "Compare per-version metrics: crash-free rate, ANRs, startup time, bundle size, against the previous release at the same rollout stage" },
+      { "vi": "Đổi runtime version của OTA, vì bundle build cho native cũ không được phép tới binary mới", "en": "Bump the OTA runtime version, because bundles built for the old native code must not reach the new binary" }
+    ],
+    "modelAnswer": {
+      "vi": "Mình kiểm thử bằng release build, vì Hermes bytecode, minify và R8 chỉ có ở đó, trên máy thật gồm cả máy yếu và bản OS cũ nhất còn hỗ trợ. Sau đó mình phát nội bộ qua TestFlight và Play internal testing để team dùng vài ngày. Khi lên production, mình dùng staged rollout trên Play và phased release trên App Store, bắt đầu từ vài phần trăm, và chốt trước ngưỡng dừng, ví dụ crash-free users giảm quá một mức nhất định so với bản trước. Mình so số liệu theo version ở cùng giai đoạn: crash, ANR, thời gian khởi động. Vì native đã đổi, runtime version của OTA cũng phải đổi, để bundle cũ không tới binary mới. Nếu chạm ngưỡng, mình dừng rollout và sửa bằng binary mới.",
+      "en": "I test release builds, because Hermes bytecode, minification and R8 only exist there, on real devices including low-end ones and the oldest supported OS. Then I ship internally through TestFlight and Play internal testing so the team lives on it for a few days. In production I use a staged rollout on Play and a phased release on the App Store, starting at a few percent, with stop thresholds agreed up front, for example crash-free users dropping more than a set margin below the previous release. I compare per-version metrics at the same stage: crashes, ANRs, startup time. Because native code changed, the OTA runtime version changes too, so old bundles never reach the new binary. If we hit a threshold, I halt the rollout and fix it with a new binary."
+    },
+    "followUps": [
+      { "vi": "Phased release của App Store khác staged rollout của Play ở điểm nào?", "en": "How does the App Store's phased release differ from Play's staged rollout?" }
+    ]
+  },
+  {
+    "id": "maintain-upgrade-012",
+    "type": "mcq",
+    "topics": ["maintain/upgrade", "native/build"],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 75,
+    "lessons": ["maintain-upgrade-core"],
+    "multi": false,
+    "prompt": {
+      "vi": "Sau khi nâng lên một bản RN dùng Android Gradle Plugin 8, build Android fail trong một thư viện cũ: `Namespace not specified. Specify a namespace in the module's build file`. Cách sửa đúng là gì?",
+      "en": "After moving to an RN release that uses Android Gradle Plugin 8, the Android build fails inside an old library: `Namespace not specified. Specify a namespace in the module's build file`. What is the right fix?"
+    },
+    "options": [
+      {
+        "text": { "vi": "Thêm thuộc tính `package` vào `AndroidManifest.xml` của thư viện", "en": "Add a `package` attribute to the library's `AndroidManifest.xml`" },
+        "misconception": { "id": "manifest-package-namespace", "text": { "vi": "Nghĩ rằng AGP 8 vẫn lấy namespace từ manifest. Từ AGP 8, namespace phải khai báo trong build.gradle; thuộc tính package trong manifest không còn dùng cho việc này.", "en": "Believing AGP 8 still reads the namespace from the manifest. From AGP 8 the namespace must be declared in build.gradle; the manifest package attribute is no longer used for it." } }
+      },
+      { "text": { "vi": "Nâng thư viện lên bản có `namespace`, hoặc patch `build.gradle` của nó để thêm vào", "en": "Upgrade the library to a release that declares `namespace`, or patch its `build.gradle` to add one" } },
+      {
+        "text": { "vi": "Bật `android.enableJetifier=true` để AGP tự chuyển thư viện sang cấu trúc mới", "en": "Set `android.enableJetifier=true` so AGP migrates the library to the new structure" },
+        "misconception": { "id": "jetifier-fixes-agp", "text": { "vi": "Nghĩ rằng Jetifier sửa được lỗi AGP. Jetifier chỉ viết lại tham chiếu thư viện support cũ sang AndroidX; nó không thêm namespace.", "en": "Believing Jetifier fixes AGP errors. Jetifier only rewrites old support-library references to AndroidX; it does not add a namespace." } }
+      },
+      {
+        "text": { "vi": "Xoá `node_modules` và cache Metro rồi build lại", "en": "Delete `node_modules` and the Metro cache, then rebuild" },
+        "misconception": { "id": "clean-fixes-config-error", "text": { "vi": "Đổ lỗi cho cache khi build file thiếu cấu hình. Cài lại sẽ tải về đúng file build.gradle cũ, và Metro không tham gia vào build Gradle.", "en": "Blaming caches for a missing build setting. Reinstalling fetches the same old build.gradle, and Metro plays no part in the Gradle build." } }
+      }
+    ],
+    "answer": [1],
+    "explanation": {
+      "vi": "AGP 8 bắt buộc mỗi module khai báo `namespace` trong `build.gradle` (RN 0.73 đã chuyển sang AGP 8). Thư viện viết trước đó chỉ có `package` trong manifest nên fail. Cách sửa là nâng thư viện lên bản đã thêm `namespace`; nếu chưa có, thêm `namespace \"com.vendor.lib\"` vào khối `android { }` bằng `patch-package` và mở PR cho upstream. Một thư viện không ai cập nhật cho AGP 8 cũng là tín hiệu nên tìm thư viện thay thế.",
+      "en": "AGP 8 requires every module to declare `namespace` in `build.gradle` (RN 0.73 moved to AGP 8). Libraries written before that only have `package` in the manifest, so they fail. The fix is to upgrade to a release that adds `namespace`; if there is none, add `namespace \"com.vendor.lib\"` to the `android { }` block with `patch-package` and open an upstream PR. A library nobody updated for AGP 8 is also a signal to look for a replacement."
+    }
+  }
+]

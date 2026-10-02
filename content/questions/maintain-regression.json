@@ -1,0 +1,389 @@
+[
+  {
+    "id": "maintain-regression-001",
+    "type": "mcq",
+    "topics": ["maintain/regression"],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": ["maintain-regression-core"],
+    "multi": false,
+    "prompt": {
+      "vi": "Bạn nghi bản mới làm thời gian khởi động lạnh (cold start) chậm đi. Cách đo nào cho kết quả đáng tin?",
+      "en": "You suspect the new release made cold start slower. Which measurement setup gives a result you can trust?"
+    },
+    "options": [
+      {
+        "text": { "vi": "Debug build nối với Metro, đo vài lần trên máy của bạn", "en": "A debug build connected to Metro, timed a few times on your phone" },
+        "misconception": { "id": "debug-build-perf", "text": { "vi": "Nghĩ rằng số đo trên debug build phản ánh production. Debug build tải JS từ Metro, không có bytecode compile sẵn và chạy thêm các kiểm tra chỉ có khi dev, nên thời gian gần như không nói gì về release.", "en": "Believing debug-build timings reflect production. A debug build loads JS from Metro, has no precompiled bytecode and runs dev-only checks, so its timings say little about release." } }
+      },
+      { "text": { "vi": "Release build của cả hai bản trên một máy Android tầm trung, đo nhiều lần, so median và p90", "en": "Release builds of both versions on one mid-range Android, many runs each, comparing median and p90" } },
+      {
+        "text": { "vi": "Một lần cold start trên iPhone đời mới nhất", "en": "A single cold start on the newest iPhone" },
+        "misconception": { "id": "single-run-flagship", "text": { "vi": "Tin vào một lần đo trên máy mạnh nhất. Thời gian khởi động dao động mạnh giữa các lần chạy, và máy mạnh che mất regression mà người dùng máy yếu cảm nhận rõ.", "en": "Trusting one run on the fastest device. Startup time varies a lot between runs, and a fast device hides regressions that users on slower hardware clearly feel." } }
+      },
+      {
+        "text": { "vi": "Thời gian từ dòng đầu của `index.js` tới lần render đầu, log bằng `Date.now()`", "en": "The time from the first line of `index.js` to the first render, logged with `Date.now()`" },
+        "misconception": { "id": "js-only-startup", "text": { "vi": "Chỉ đo phần JS của quá trình khởi động. Trước dòng JS đầu tiên còn có khởi tạo process, thư viện native và việc nạp bundle; regression nằm ở đó sẽ không hiện ra.", "en": "Measuring only the JS part of startup. Process creation, native library init and bundle loading all happen before the first JS line, so a regression there stays invisible." } }
+      }
+    ],
+    "answer": [1],
+    "explanation": {
+      "vi": "Thời gian khởi động chỉ có ý nghĩa khi đo trên release build (Hermes bytecode, minify, không có Metro), trên thiết bị đại diện cho người dùng, và lặp lại đủ nhiều để so phân phối chứ không so một con số. Cold start thật phải tính từ lúc process bắt đầu, không chỉ từ dòng JS đầu tiên. Ngoài lab, hãy đối chiếu với số liệu người dùng thật (RUM) theo version và nhóm thiết bị, vì đó mới là thứ người dùng cảm nhận.",
+      "en": "Startup time only means something when measured on release builds (Hermes bytecode, minified, no Metro), on devices that represent your users, and repeated enough to compare distributions rather than single numbers. A real cold start counts from process start, not from the first JS line. Beyond the lab, cross-check with real-user metrics (RUM) per version and device tier, because that is what users actually feel."
+    }
+  },
+  {
+    "id": "maintain-regression-002",
+    "type": "mcq",
+    "topics": ["maintain/regression", "release/ota-ci"],
+    "kind": "core",
+    "difficulty": 2,
+    "estSeconds": 75,
+    "lessons": ["maintain-regression-core"],
+    "multi": false,
+    "prompt": {
+      "vi": "Một regression chỉ nằm trong JS đã được phát qua OTA. Hệ thống OTA của bạn (ví dụ EAS Update) phân phối theo runtime version. Cách rollback nhanh và an toàn nhất là gì?",
+      "en": "A JS-only regression went out through an OTA update. Your OTA system (for example EAS Update) delivers by runtime version. What is the fastest safe rollback?"
+    },
+    "options": [
+      { "text": { "vi": "Phát lại bundle tốt gần nhất lên đúng channel và runtime version đó", "en": "Republish the last good bundle to the same channel and runtime version" } },
+      {
+        "text": { "vi": "Gỡ bản release khỏi store để người dùng quay về binary trước", "en": "Pull the release from the store so users fall back to the previous binary" },
+        "misconception": { "id": "store-rollback-binary", "text": { "vi": "Nghĩ rằng store rút được binary đã cài. Gỡ hay dừng một bản release chỉ chặn lượt cài và cập nhật mới; máy đã cài vẫn giữ nguyên bản đó.", "en": "Believing a store can pull back installed binaries. Removing or halting a release only stops new installs and updates; devices that have it keep it." } }
+      },
+      {
+        "text": { "vi": "Phát bundle cũ cho mọi runtime version để ai cũng nhận được", "en": "Publish the old bundle to every runtime version so everyone gets it" },
+        "misconception": { "id": "ota-ignores-runtime", "text": { "vi": "Bỏ qua runtime version. Một bundle build cho một runtime có thể gọi code native mà binary khác không có; runtime version tồn tại để chặn đúng việc đó.", "en": "Ignoring the runtime version. A bundle built for one runtime can call native code another binary lacks; runtime versions exist precisely to prevent that." } }
+      },
+      {
+        "text": { "vi": "OTA thay bundle ngay trong phiên đang chạy, nên người dùng thấy bản sửa sau vài giây", "en": "OTA swaps the bundle inside running sessions, so users see the fix within seconds" },
+        "misconception": { "id": "ota-applies-instantly", "text": { "vi": "Nghĩ rằng OTA áp dụng ngay. Theo mặc định, update được tải về rồi áp dụng ở lần khởi động sau; muốn sớm hơn thì app phải tự gọi reload.", "en": "Believing OTA applies instantly. By default an update is downloaded and applied on the next launch; anything sooner requires the app to trigger a reload itself." } }
+      }
+    ],
+    "answer": [0],
+    "explanation": {
+      "vi": "Với lỗi chỉ ở JS, OTA là đường rollback nhanh nhất: phát lại bundle tốt gần nhất lên đúng channel và runtime version đã nhận bản lỗi. Người dùng nhận nó ở lần kiểm tra update kế tiếp, thường là lần mở app sau, nên rollback vẫn cần thời gian để lan ra. Binary thì không rollback được: store chỉ cho bạn dừng rollout và phát một bản mới có version code cao hơn. Vì vậy hãy luôn biết bundle tốt gần nhất là bản nào, và tập rollback trước khi cần đến nó.",
+      "en": "For a JS-only bug, OTA is the fastest rollback path: republish the last known-good bundle to the same channel and runtime version that received the bad one. Users get it on their next update check, usually their next launch, so a rollback still takes time to spread. Binaries cannot be rolled back: the stores only let you halt a rollout and ship a new release with a higher version code. So always know which bundle is the last good one, and rehearse the rollback before you need it."
+    }
+  },
+  {
+    "id": "maintain-regression-003",
+    "type": "mcq",
+    "topics": ["maintain/regression"],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 75,
+    "lessons": ["maintain-regression-core"],
+    "multi": false,
+    "prompt": {
+      "vi": "Bundle JS của bản 7.0 tăng thêm 1,8 MB so với bản trước. Bạn tìm nguyên nhân thế nào?",
+      "en": "Release 7.0's JS bundle is 1.8 MB larger than the previous one. How do you find the cause?"
+    },
+    "options": [
+      { "text": { "vi": "So kích thước theo module của bundle release qua source map, ví dụ `source-map-explorer`", "en": "Diff a per-module breakdown of the release bundle via its source map, e.g. `source-map-explorer`" } },
+      {
+        "text": { "vi": "Không cần kiểm tra: Metro tự loại export không dùng, nên import thêm thư viện không làm bundle lớn đáng kể", "en": "No need to check: Metro drops unused exports, so importing a library cannot add much" },
+        "misconception": { "id": "metro-tree-shakes", "text": { "vi": "Nghĩ rằng Metro mặc định tree-shake. Metro thông thường không loại export không dùng; import entry point của một thư viện kéo theo mọi thứ nó require. Một số setup có tree shaking bật tuỳ chọn, nhưng không thể mặc định là có.", "en": "Believing Metro tree-shakes by default. Plain Metro does not drop unused exports; importing a library's entry point pulls in everything it requires. Some setups offer opt-in tree shaking, but you cannot assume it." } }
+      },
+      {
+        "text": { "vi": "Với Hermes, kích thước bundle không còn quan trọng vì bytecode được map vào bộ nhớ", "en": "With Hermes, bundle size no longer matters because the bytecode is memory-mapped" },
+        "misconception": { "id": "hermes-size-free", "text": { "vi": "Nghĩ rằng Hermes làm kích thước bundle hết quan trọng. Hermes bỏ được bước parse, nhưng bundle lớn hơn vẫn là app nặng hơn, bản OTA tải lâu hơn và nhiều code phải khởi tạo hơn.", "en": "Believing Hermes makes bundle size irrelevant. Hermes skips parsing, but a bigger bundle still means a heavier app, slower OTA downloads and more code to initialise." } }
+      },
+      {
+        "text": { "vi": "So kích thước APK trên Play Console, vì phần chênh lệch đều là JS", "en": "Compare APK sizes in Play Console, since the whole difference is JS" },
+        "misconception": { "id": "app-size-is-js", "text": { "vi": "Nghĩ rằng kích thước app chỉ là JS. APK hay IPA còn gồm thư viện native, asset và tài nguyên, nên chênh lệch kích thước app không chỉ ra được module JS nào đã tăng.", "en": "Believing app size is all JS. An APK or IPA also holds native libraries, assets and resources, so the size difference cannot tell you which JS module grew." } }
+      }
+    ],
+    "answer": [0],
+    "explanation": {
+      "vi": "Tạo bundle release kèm map, ví dụ `npx react-native bundle --platform android --dev false --entry-file index.js --bundle-output out.js --sourcemap-output out.js.map`, rồi dùng `source-map-explorer` để xem byte thuộc về module nào. So với bản trước sẽ thấy ngay thủ phạm, thường là một thư viện được import cả gói, một locale hay asset nhúng vào JS, hoặc một polyfill trùng lặp. Để không lặp lại, hãy thêm bước kiểm tra kích thước bundle vào CI với ngưỡng cảnh báo.",
+      "en": "Produce a release bundle with its map, for example `npx react-native bundle --platform android --dev false --entry-file index.js --bundle-output out.js --sourcemap-output out.js.map`, then use `source-map-explorer` to see which module owns which bytes. Diffing against the previous release shows the culprit quickly, usually a library imported whole, a locale or asset inlined into JS, or a duplicated polyfill. To stop it recurring, add a bundle size check with a warning threshold to CI."
+    }
+  },
+  {
+    "id": "maintain-regression-004",
+    "type": "mcq",
+    "topics": ["maintain/regression"],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": ["maintain-regression-core"],
+    "multi": true,
+    "prompt": {
+      "vi": "Bộ nhớ của app tăng dần trong các phiên dùng dài và không giảm lại. Những thứ nào có thể gây ra điều này? (chọn tất cả đáp án đúng)",
+      "en": "The app's memory keeps growing over long sessions and never comes back down. Which of these can cause it? (select all that apply)"
+    },
+    "options": [
+      { "text": { "vi": "`setInterval` khởi tạo trong effect mà cleanup không gọi `clearInterval`", "en": "A `setInterval` started in an effect whose cleanup never calls `clearInterval`" } },
+      { "text": { "vi": "Gọi `navigation.push` tới cùng một màn hình mỗi lần bấm, làm stack dài mãi", "en": "Using `navigation.push` to the same screen on every tap, growing the stack" } },
+      { "text": { "vi": "Một slice trong store nối thêm mọi message từ WebSocket mà không bao giờ cắt bớt", "en": "A store slice that appends every WebSocket message and never trims" } },
+      {
+        "text": { "vi": "Một component khai báo rất nhiều lời gọi `useState` riêng lẻ", "en": "A single component that declares a lot of separate `useState` calls" },
+        "misconception": { "id": "many-states-leak", "text": { "vi": "Nghĩ rằng số lượng hook gây rò rỉ. Mỗi hook chiếm một lượng bộ nhớ cố định và được giải phóng khi component unmount; nó không tăng theo thời gian.", "en": "Believing the number of hooks causes leaks. Each hook holds a fixed amount of memory and is released when the component unmounts; it does not grow over time." } }
+      },
+      {
+        "text": { "vi": "Arrow function inline trong JSX làm rò rỉ một closure ở mỗi lần render", "en": "Inline arrow functions in JSX that leak one closure on every single render" },
+        "misconception": { "id": "inline-closures-leak", "text": { "vi": "Nghĩ rằng closure inline bị rò rỉ. Closure của lần render cũ được thu gom khi không còn được tham chiếu; nó chỉ ảnh hưởng tới memoization, không tích tụ bộ nhớ.", "en": "Believing inline closures leak. Closures from old renders are collected once nothing references them; they only affect memoization, they do not accumulate memory." } }
+      }
+    ],
+    "answer": [0, 1, 2],
+    "explanation": {
+      "vi": "Rò rỉ trong app RN hiếm khi do bản thân React, mà do thứ gì đó sống lâu giữ tham chiếu: timer chưa huỷ giữ closure và mọi thứ nó đọc, stack navigator giữ mọi màn hình đã push ở trạng thái mounted, và store toàn cục là một cache không giới hạn nếu bạn chỉ nối thêm. Cách tìm: chụp hai heap snapshot của Hermes cách nhau vài phút dùng app, rồi xem loại object nào tăng. Hãy kiểm tra cả bộ nhớ native, vì ảnh và bitmap không nằm trong heap JS.",
+      "en": "Leaks in RN apps rarely come from React itself; they come from something long-lived holding references: an uncleared timer keeps its closure and everything it reads, a stack navigator keeps every pushed screen mounted, and a global store becomes an unbounded cache if you only append. To find them, take two Hermes heap snapshots a few minutes of use apart and see which object types grew. Check native memory too, because images and bitmaps do not live in the JS heap."
+    }
+  },
+  {
+    "id": "maintain-regression-005",
+    "type": "mcq",
+    "topics": ["maintain/regression"],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": ["maintain-regression-core"],
+    "multi": true,
+    "prompt": {
+      "vi": "Team đưa tính năng thanh toán mới ra sau một kill switch. Những thiết kế nào giúp kill switch thật sự cứu được bạn trong một sự cố? (chọn tất cả đáp án đúng)",
+      "en": "Your team ships a new checkout behind a kill switch. Which design choices make the kill switch actually save you during an incident? (select all that apply)"
+    },
+    "options": [
+      { "text": { "vi": "Flag được đọc lúc runtime từ remote config, có giá trị cache gần nhất và một mặc định an toàn khi tải thất bại", "en": "The flag is read at runtime from remote config, with a cached last value and a safe default when the fetch fails" } },
+      { "text": { "vi": "Luồng cũ vẫn nằm trong binary và vẫn được kiểm thử, nên tắt flag sẽ dẫn tới một luồng chạy được", "en": "The old path stays in the binary and is still tested, so turning the flag off leads somewhere that works" } },
+      { "text": { "vi": "Flag được kiểm tra ở điểm vào của tính năng, nên khi tắt thì code gây lỗi không bao giờ chạy", "en": "The flag is checked at the feature's entry point, so when it is off the failing code never runs" } },
+      {
+        "text": { "vi": "Flag lấy từ biến môi trường lúc build (ví dụ `react-native-config`), nên không ai đổi nhầm từ xa được", "en": "The flag comes from build-time env vars (for example `react-native-config`), so nobody can flip it remotely by mistake" },
+        "misconception": { "id": "build-time-kill-switch", "text": { "vi": "Dùng giá trị lúc build làm kill switch. Giá trị đó bị đóng băng trong binary, nên muốn đổi phải phát binary mới, đúng thứ kill switch phải tránh.", "en": "Using a build-time value as a kill switch. It is frozen into the binary, so changing it needs a new binary, the very thing a kill switch should avoid." } }
+      },
+      {
+        "text": { "vi": "Xoá luồng cũ ngay trong bản thêm flag, để bundle gọn hơn", "en": "Delete the old path in the same release that adds the flag, to keep the bundle small" },
+        "misconception": { "id": "remove-fallback-early", "text": { "vi": "Xoá đường lui trước khi tính năng mới được chứng minh ổn định. Không còn luồng cũ thì tắt flag chỉ còn cách tắt hẳn tính năng, hoặc không làm được gì.", "en": "Removing the fallback before the new feature has proven stable. Without the old path, turning the flag off can only hide the feature entirely, or do nothing at all." } }
+      }
+    ],
+    "answer": [0, 1, 2],
+    "explanation": {
+      "vi": "Kill switch chỉ hữu ích khi đổi được mà không cần phát binary, có tác dụng cả khi mạng chập chờn, và dẫn về một luồng đã được kiểm chứng. Hãy cache giá trị gần nhất, chọn mặc định an toàn khi fetch lỗi, và đặt điểm kiểm tra ở nơi tính năng bắt đầu chứ không rải khắp nơi. Nhớ rằng app chỉ thấy giá trị mới ở lần fetch kế tiếp, nên hãy biết rõ chu kỳ làm mới của remote config. Dọn flag và luồng cũ sau khi tính năng đã ổn định qua vài bản release.",
+      "en": "A kill switch only helps if it changes without a new binary, works when the network is flaky, and leads back to a proven path. Cache the last value, pick a safe default when the fetch fails, and check the flag where the feature starts rather than everywhere. Remember the app sees a new value only on its next fetch, so know your remote config's refresh interval. Clean up the flag and the old path once the feature has been stable for a few releases."
+    }
+  },
+  {
+    "id": "maintain-regression-006",
+    "type": "spot-bug",
+    "topics": ["maintain/regression", "render/effects"],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 105,
+    "lessons": ["maintain-regression-core"],
+    "prompt": {
+      "vi": "Support báo app chậm dần sau một ngày dùng. Network log cho thấy mỗi lần quay lại foreground, app gửi hàng chục request giống hệt nhau, và con số tăng theo số đơn hàng người dùng đã mở. Dòng nào gây lỗi, và vì sao?",
+      "en": "Support says the app gets slower over a day of use. Network logs show that every return to the foreground fires dozens of identical requests, and the count grows with the number of orders the user has opened. Which line causes it, and why?"
+    },
+    "code": "import { useEffect } from 'react';\nimport { AppState, type AppStateStatus } from 'react-native';\n\nexport function useForegroundRefresh(refetch: () => void): void {\n  useEffect(() => {\n    const onChange = (state: AppStateStatus) => {\n      if (state === 'active') refetch();\n    };\n    AppState.addEventListener('change', onChange);\n  }, [refetch]);\n}\n\nfunction OrderScreen({ orderId }: { orderId: string }) {\n  const { refetch } = useOrder(orderId);\n  useForegroundRefresh(refetch);\n  return <OrderDetails orderId={orderId} />;\n}",
+    "answerLine": 9,
+    "causeOptions": [
+      { "text": { "vi": "Subscription trả về không bao giờ được huỷ, nên mỗi lần mount để lại một listener", "en": "The returned subscription is never removed, so each mount leaves a listener behind" } },
+      {
+        "text": { "vi": "`AppState` bắn sự kiện `change` ở mỗi lần render", "en": "`AppState` fires a `change` event on every render" },
+        "misconception": { "id": "appstate-fires-on-render", "text": { "vi": "Nghĩ rằng AppState gắn với render. Nó chỉ bắn khi trạng thái của app đổi, ví dụ sang background rồi active; vấn đề là có quá nhiều listener cùng nghe.", "en": "Believing AppState is tied to rendering. It fires only when the app's state changes, such as background then active; the problem is how many listeners are listening." } }
+      },
+      {
+        "text": { "vi": "Phải bỏ `refetch` khỏi deps để effect chỉ chạy một lần", "en": "`refetch` must be removed from the deps so the effect runs only once" },
+        "misconception": { "id": "drop-deps-to-fix-effect", "text": { "vi": "Sửa effect bằng cách bớt deps. Bớt deps làm listener giữ refetch cũ, và mỗi màn hình mới mount vẫn thêm một listener không bao giờ bị huỷ.", "en": "Fixing an effect by trimming deps. It leaves the listener holding a stale refetch, and every newly mounted screen still adds a listener that is never removed." } }
+      },
+      {
+        "text": { "vi": "Hook không được đăng ký sự kiện native; listener phải đặt ở cấp module", "en": "Hooks cannot subscribe to native events; the listener belongs at module level" },
+        "misconception": { "id": "hooks-cannot-subscribe", "text": { "vi": "Nghĩ rằng hook không đăng ký được sự kiện native. useEffect là chỗ chuẩn để subscribe, miễn là cleanup huỷ đúng subscription đó.", "en": "Believing hooks cannot subscribe to native events. useEffect is the standard place to subscribe, as long as its cleanup removes that subscription." } }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "Từ RN 0.65, `AppState.addEventListener` trả về một subscription; `removeEventListener` cũ bị deprecate từ đó và nay đã bị gỡ. Dòng 9 bỏ qua giá trị trả về và effect không có cleanup, nên mỗi lần `OrderScreen` mount, hoặc mỗi khi `refetch` đổi, thêm một listener mới. Các listener này giữ closure và `refetch` của màn hình đã đóng, nên vừa rò rỉ bộ nhớ vừa nhân số request. Sửa: `const sub = AppState.addEventListener('change', onChange); return () => sub.remove();`.",
+      "en": "Since RN 0.65, `AppState.addEventListener` returns a subscription; the old `removeEventListener` was deprecated then and has since been removed. Line 9 discards the return value and the effect has no cleanup, so every `OrderScreen` mount, or every change of `refetch`, adds another listener. Those listeners keep closed screens' closures and `refetch` alive, so memory leaks and requests multiply. Fix: `const sub = AppState.addEventListener('change', onChange); return () => sub.remove();`."
+    }
+  },
+  {
+    "id": "maintain-regression-007",
+    "type": "spot-bug",
+    "topics": ["maintain/regression", "performance/js-thread"],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 105,
+    "lessons": ["maintain-regression-core"],
+    "prompt": {
+      "vi": "Ở bản 6.3, p50 cold start trên Android tầm trung tăng từ 1,9 s lên 3,1 s. Tính năng tìm kiếm offline được thêm trong bản này, và đây là `index.js` sau thay đổi. Dòng nào gây regression, và vì sao?",
+      "en": "In release 6.3, p50 cold start on mid-range Android went from 1.9 s to 3.1 s. Offline search was added in this release, and this is `index.js` after the change. Which line causes the regression, and why?"
+    },
+    "code": "import { AppRegistry } from 'react-native';\nimport App from './src/App';\nimport { name as appName } from './app.json';\nimport { readCatalogSync } from './src/storage/catalog';\nimport { buildSearchIndex } from './src/search/buildSearchIndex';\nimport { initCrashReporting } from './src/monitoring';\n\ninitCrashReporting();\n\nexport const searchIndex = buildSearchIndex(readCatalogSync());\n\nAppRegistry.registerComponent(appName, () => App);",
+    "answerLine": 10,
+    "causeOptions": [
+      {
+        "text": { "vi": "Khởi tạo crash reporting trước `registerComponent` làm chậm khởi động; nên chuyển nó xuống sau lần render đầu", "en": "Initialising crash reporting before `registerComponent` slows startup; it should move after the first render" },
+        "misconception": { "id": "crash-sdk-init-late", "text": { "vi": "Đẩy crash reporting ra sau để khởi động nhanh hơn. Nó phải được khởi tạo sớm nhất có thể, nếu không crash lúc khởi động sẽ không ai thấy; và nó đã có từ trước regression.", "en": "Pushing crash reporting later to speed up startup. It must start as early as possible or startup crashes go unseen; and it was there before the regression." } }
+      },
+      { "text": { "vi": "Toàn bộ catalog được đọc và đánh index đồng bộ lúc nạp module, trên JS thread, trước khi app kịp render", "en": "The whole catalog is read and indexed synchronously at module load, on the JS thread, before the app can render" } },
+      {
+        "text": { "vi": "Import `App` ở đầu file nạp mọi màn hình ngay lập tức, và đó là thứ làm chậm bản này", "en": "Importing `App` at the top eagerly loads every screen, and that is what slowed this release" },
+        "misconception": { "id": "blame-unchanged-code", "text": { "vi": "Đổ lỗi cho code không thay đổi. Import App đã có từ trước regression; hãy diff bản release trước rồi xem cái gì mới nằm trên đường khởi động.", "en": "Blaming code that did not change. The App import was there before the regression; diff the release first and look at what is new on the startup path." } }
+      },
+      {
+        "text": { "vi": "`registerComponent` phải là lệnh đầu tiên trong file, nếu không RN chờ timeout rồi mới render", "en": "`registerComponent` must be the first statement in the file, or RN waits for a timeout before rendering" },
+        "misconception": { "id": "registercomponent-must-be-first", "text": { "vi": "Nghĩ rằng registerComponent phải đứng đầu. Nó có thể đứng ở bất cứ đâu trong entry file; chỉ cần nó chạy trước khi native yêu cầu chạy app, và không có timeout nào như vậy.", "en": "Believing registerComponent must come first. It can sit anywhere in the entry file as long as it runs before native asks to run the app, and there is no such timeout." } }
+      }
+    ],
+    "answerCause": 1,
+    "explanation": {
+      "vi": "Dòng 10 chạy ngay khi `index.js` được nạp: đọc đồng bộ toàn bộ catalog từ storage rồi dựng index, tất cả trên JS thread và trước khi `registerComponent` chạy. Không có frame nào được vẽ cho tới khi xong, nên cold start chậm đi đúng bằng thời gian đó, và máy yếu chịu nặng nhất. Sửa bằng cách dựng index lười khi người dùng mở tìm kiếm lần đầu, hoặc sau lần render đầu (ví dụ sau khi màn hình chính hiện xong), và cân nhắc lưu index đã dựng sẵn. Diff đường khởi động giữa hai bản release là cách tìm nhanh nhất.",
+      "en": "Line 10 runs as soon as `index.js` loads: it synchronously reads the whole catalog from storage and builds the index, all on the JS thread and before `registerComponent` runs. No frame is drawn until it finishes, so cold start grows by exactly that time, and low-end devices suffer most. Fix it by building the index lazily when the user first opens search, or after the first render (for example once the home screen is up), and consider persisting a prebuilt index. Diffing the startup path between releases is the fastest way to find this."
+    }
+  },
+  {
+    "id": "maintain-regression-008",
+    "type": "spot-bug",
+    "topics": ["maintain/regression"],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 135,
+    "lessons": ["maintain-regression-core"],
+    "prompt": {
+      "vi": "Dashboard cho thấy p90 của trace `home_ready` đứng yên khoảng 900 ms qua ba bản release. Nhưng từ khi API feed chậm đi, người dùng than phải chờ 3 tới 4 giây mới thấy feed. Dòng nào khiến chỉ số này không thấy regression, và vì sao?",
+      "en": "The dashboard shows the `home_ready` trace's p90 flat at about 900 ms across three releases. But since the feed API slowed down, users complain they wait 3 to 4 seconds to see the feed. Which line makes the metric blind to the regression, and why?"
+    },
+    "code": "import { endTrace } from './monitoring/traces';\n\n// The 'home_ready' trace is started natively at process start.\nexport function HomeScreen() {\n  const { data, isLoading } = useFeed();\n  const onReady = useCallback(() => endTrace('home_ready'), []);\n\n  return (\n    <View style={styles.root} onLayout={onReady}>\n      {isLoading ? <FeedSkeleton /> : <Feed items={data ?? []} />}\n    </View>\n  );\n}",
+    "answerLine": 9,
+    "causeOptions": [
+      {
+        "text": { "vi": "`useCallback` với deps rỗng làm `onReady` bị stale, nên `endTrace` không bao giờ chạy", "en": "`useCallback` with empty deps makes `onReady` stale, so `endTrace` never runs" },
+        "misconception": { "id": "empty-deps-always-stale", "text": { "vi": "Nghĩ rằng deps rỗng luôn gây stale closure. Callback này không đọc giá trị nào của render, nên deps rỗng là đúng; và nếu endTrace không chạy, dashboard đã không có số liệu.", "en": "Believing empty deps always mean a stale closure. This callback reads nothing from render, so empty deps are correct; and if endTrace never ran, the dashboard would have no data." } }
+      },
+      { "text": { "vi": "Trace kết thúc ở lần layout đầu của `View` gốc, khi mới chỉ có skeleton", "en": "The trace ends on the root `View`'s first layout, while only the skeleton is showing" } },
+      {
+        "text": { "vi": "`onLayout` chỉ được gọi trong debug build", "en": "`onLayout` only fires in debug builds" },
+        "misconception": { "id": "onlayout-debug-only", "text": { "vi": "Nghĩ rằng onLayout chỉ có khi dev. onLayout chạy ở mọi build mỗi khi layout của view được tính, kể cả release.", "en": "Believing onLayout is dev-only. It fires in every build whenever the view's layout is computed, release included." } }
+      },
+      {
+        "text": { "vi": "p90 che mất người dùng chậm; dùng trung bình sẽ thấy regression", "en": "p90 hides the slow users; an average would reveal the regression" },
+        "misconception": { "id": "average-beats-percentile", "text": { "vi": "Nghĩ rằng trung bình lộ ra phần đuôi tốt hơn percentile. Trung bình còn che phần đuôi nhiều hơn; ở đây vấn đề là trace đo sai mốc, nên chỉ số nào cũng sai.", "en": "Believing an average exposes the tail better than a percentile. An average hides the tail even more; the problem here is that the trace measures the wrong moment, so every statistic is wrong." } }
+      }
+    ],
+    "answerCause": 1,
+    "explanation": {
+      "vi": "Dòng 9 gắn `onLayout` vào `View` gốc, mà view này layout ngay khi skeleton xuất hiện. Trace vì vậy đo tới lúc skeleton hiện, một mốc không phụ thuộc vào API feed, nên nó đứng yên trong khi người dùng chờ lâu hơn. Hãy kết thúc trace khi nội dung thật đã sẵn sàng, ví dụ trong `onLayout` của `Feed` hoặc trong effect khi `isLoading` chuyển thành `false`, và chỉ kết thúc một lần. Bài học: mỗi trace phải định nghĩa đúng khoảnh khắc người dùng thấy giá trị, và nên được kiểm tra lại khi luồng màn hình đổi.",
+      "en": "Line 9 attaches `onLayout` to the root `View`, which lays out as soon as the skeleton appears. The trace therefore measures up to the skeleton, a moment that does not depend on the feed API, so it stays flat while users wait longer. End the trace when real content is ready, for example in the `Feed`'s `onLayout` or in an effect when `isLoading` turns `false`, and end it only once. The lesson: every trace must define the moment the user actually gets value, and should be revisited whenever the screen's flow changes."
+    }
+  },
+  {
+    "id": "maintain-regression-009",
+    "type": "open",
+    "topics": ["maintain/regression"],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 330,
+    "lessons": ["maintain-regression-core"],
+    "prompt": {
+      "vi": "Sau một bản release, p90 cold start trên Android tăng từ 2,1 s lên 3,4 s. Kể lại cách bạn tìm ra nguyên nhân và sửa nó.",
+      "en": "After a release, p90 cold start on Android went from 2.1 s to 3.4 s. Walk me through how you found the cause and fixed it."
+    },
+    "keyPoints": [
+      { "vi": "Xác nhận bằng số liệu người dùng thật theo version và nhóm thiết bị, rồi tái hiện bằng release build trên máy tầm trung", "en": "Confirm with real-user metrics per version and device tier, then reproduce with a release build on a mid-range device" },
+      { "vi": "Diff giữa hai bản: dependency mới hoặc vừa nâng, kích thước bundle, code mới trong `Application`/`AppDelegate`, và code chạy lúc nạp module", "en": "Diff the two releases: new or bumped dependencies, bundle size, new code in `Application`/`AppDelegate`, and code that runs at module load" },
+      { "vi": "Profile đúng tầng: Perfetto hoặc Android Studio profiler cho phần native, profiler của Hermes cho phần JS", "en": "Profile the right layer: Perfetto or the Android Studio profiler for native, the Hermes profiler for JS" },
+      { "vi": "Sửa bằng cách hoãn hoặc nạp lười việc không cần cho frame đầu tiên: SDK khởi tạo muộn, `inlineRequires`, màn hình nạp khi cần", "en": "Fix by deferring or lazy-loading work the first frame does not need: late SDK init, `inlineRequires`, screens loaded on demand" },
+      { "vi": "Chặn tái phát bằng ngân sách hiệu năng trong CI: ngưỡng kích thước bundle và đo khởi động tự động trên máy thật", "en": "Prevent a repeat with a performance budget in CI: a bundle size threshold and automated startup measurement on real devices" }
+    ],
+    "modelAnswer": {
+      "vi": "Trước hết mình xác nhận regression có thật bằng số liệu người dùng theo version và nhóm máy, rồi tái hiện bằng release build trên một máy Android tầm trung, đo nhiều lần. Sau đó mình diff hai bản release: dependency mới, kích thước bundle, code mới trong `Application.onCreate`, và mọi thứ chạy ngay lúc nạp module. Mình profile đúng tầng: Perfetto hoặc Android Studio profiler cho thời gian trước JS, profiler của Hermes cho phần JS. Lần đó thủ phạm là một SDK analytics mới khởi tạo đồng bộ và một thư viện ngày tháng import cả gói. Mình hoãn khởi tạo SDK tới sau frame đầu, đổi sang import theo module, và kiểm tra `inlineRequires` vẫn bật. Cuối cùng mình thêm ngưỡng kích thước bundle và bước đo khởi động vào CI để lần sau bắt được trước khi release.",
+      "en": "First I confirm the regression is real with real-user metrics per version and device tier, then reproduce it with a release build on a mid-range Android device over many runs. Then I diff the two releases: new dependencies, bundle size, new code in `Application.onCreate`, and anything that runs at module load. I profile the right layer: Perfetto or the Android Studio profiler for time before JS, the Hermes profiler for JS. That time the culprits were a new analytics SDK initialised synchronously and a date library imported whole. I deferred the SDK init until after the first frame, switched to per-module imports, and checked that `inlineRequires` was still on. Finally I added a bundle size threshold and a startup measurement step to CI, so the next one gets caught before release."
+    },
+    "followUps": [
+      { "vi": "`inlineRequires` cải thiện khởi động bằng cách nào, và khi nào nó có thể gây lỗi?", "en": "How does `inlineRequires` improve startup, and when can it cause bugs?" },
+      { "vi": "Bạn đặt ngân sách khởi động bao nhiêu và đo nó trong CI ra sao?", "en": "How would you set a startup budget and measure it in CI?" }
+    ]
+  },
+  {
+    "id": "maintain-regression-010",
+    "type": "open",
+    "topics": ["maintain/regression", "performance/js-thread"],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 330,
+    "lessons": ["maintain-regression-core"],
+    "prompt": {
+      "vi": "Một app bán hàng tại quầy chạy cả ngày trên tablet. Tới buổi chiều danh sách bị giật và mỗi lần chạm có độ trễ rõ, nhưng khởi động lại app thì hết. Kể lại cách bạn tìm và sửa vấn đề này.",
+      "en": "A point-of-sale app runs all day on a tablet. By the afternoon lists stutter and every tap lags noticeably, but restarting the app fixes it. Walk me through how you found and fixed it."
+    },
+    "keyPoints": [
+      { "vi": "Nhận ra mẫu \"tệ dần theo thời gian, restart thì hết\" là thứ tích tụ: bộ nhớ, listener, timer, dữ liệu trong store hoặc stack màn hình", "en": "Recognise \"worse over time, fixed by restart\" as accumulation: memory, listeners, timers, store data or the screen stack" },
+      { "vi": "Tái hiện bằng một phiên dài có kịch bản (tự động hoá thao tác bán hàng) và theo dõi bộ nhớ, JS FPS và số listener theo thời gian", "en": "Reproduce with a long scripted session (automated sales flows) while tracking memory, JS FPS and listener counts over time" },
+      { "vi": "So sánh heap snapshot của Hermes đầu và cuối phiên để xem loại object nào tăng, kiểm tra cả bộ nhớ native như ảnh", "en": "Compare Hermes heap snapshots from the start and end of the session to see which object types grew, and check native memory such as images" },
+      { "vi": "Tìm việc tăng theo dữ liệu: selector hoặc render có chi phí tăng theo một mảng chỉ nối thêm, timer bị nhân đôi qua mỗi lần mount", "en": "Look for work that grows with data: selectors or renders whose cost scales with an append-only array, timers duplicated on each mount" },
+      { "vi": "Sửa nguồn tích tụ, rồi chạy thử dài lại để xác nhận đường bộ nhớ và độ trễ đã phẳng", "en": "Fix the accumulation, then rerun the soak test to confirm memory and latency now stay flat" }
+    ],
+    "modelAnswer": {
+      "vi": "Restart mà hết thì gần như chắc chắn là thứ gì đó tích tụ theo thời gian. Mình dựng một phiên dài có kịch bản, lặp lại thao tác bán hàng hàng trăm lần, và ghi bộ nhớ, JS FPS cùng số listener sau mỗi vòng. Mình chụp heap snapshot của Hermes đầu và cuối phiên để xem object nào tăng. Lần đó có hai nguồn: store giữ mọi đơn hàng của ngày trong một mảng chỉ nối thêm, và một selector lọc toàn bộ mảng này ở mỗi lần render, nên mỗi lần chạm tốn hơn trước; ngoài ra màn hình thanh toán đăng ký một interval mỗi lần mount mà không huỷ. Mình giới hạn dữ liệu giữ trong bộ nhớ, memo selector theo đúng input, và thêm cleanup cho interval. Chạy thử tám tiếng lại cho thấy bộ nhớ và độ trễ đều phẳng.",
+      "en": "If a restart fixes it, something is almost certainly accumulating over time. I set up a long scripted session that repeats the sales flow hundreds of times, recording memory, JS FPS and listener counts after each loop. I take Hermes heap snapshots at the start and end to see which objects grew. That time there were two sources: the store kept every order of the day in an append-only array, and a selector filtered the whole array on every render, so each tap cost more than the last; also the checkout screen registered an interval on every mount without clearing it. I capped what stays in memory, memoized the selector on the right inputs, and added the interval cleanup. An eight-hour soak test then showed flat memory and latency."
+    },
+    "followUps": [
+      { "vi": "Bạn đưa kiểm tra kiểu soak test này vào quy trình release thế nào?", "en": "How would you bring this kind of soak test into the release process?" }
+    ]
+  },
+  {
+    "id": "maintain-regression-011",
+    "type": "open",
+    "topics": ["maintain/regression", "maintain/crash"],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 270,
+    "lessons": ["maintain-regression-core"],
+    "prompt": {
+      "vi": "Sự cố của một bản release tệ đã được xử lý xong. Kể lại cách bạn chạy post-mortem, và bạn thêm theo dõi gì để lần sau phát hiện sớm hơn.",
+      "en": "The incident from a bad release is resolved. Walk me through how you ran the post-mortem, and what monitoring you added so the next one is caught sooner."
+    },
+    "keyPoints": [
+      { "vi": "Không đổ lỗi: tập trung vào hệ thống và quy trình, không vào người đã merge code", "en": "Keep it blameless: focus on systems and process, not on whoever merged the code" },
+      { "vi": "Timeline có mốc thời gian: lúc lỗi vào production, lúc phát hiện, lúc giảm thiệt hại và lúc xử lý xong", "en": "A timestamped timeline: when the bug reached production, when it was detected, mitigated and resolved" },
+      { "vi": "Đo tác động bằng con số: số người dùng, phiên, đơn hàng hoặc doanh thu bị ảnh hưởng", "en": "Quantify impact: affected users, sessions, orders or revenue" },
+      { "vi": "Nguyên nhân gốc và các yếu tố góp phần, đặc biệt là vì sao kiểm thử, review và staged rollout không chặn được", "en": "Root cause and contributing factors, especially why testing, review and the staged rollout did not stop it" },
+      { "vi": "Việc cần làm có người phụ trách và hạn chót: alert theo version cho crash-free và trace hiệu năng, ngưỡng dừng rollout, test bổ sung", "en": "Action items with owners and deadlines: per-version alerts on crash-free rate and performance traces, rollout stop thresholds, new tests" }
+    ],
+    "modelAnswer": {
+      "vi": "Mình chạy post-mortem không đổ lỗi trong vòng vài ngày, khi mọi người còn nhớ rõ. Tài liệu bắt đầu bằng timeline có mốc giờ: lúc bản lỗi lên production, lúc alert hay người dùng báo, lúc dừng rollout, lúc bản sửa ra. Khoảng cách giữa lúc lỗi vào và lúc phát hiện thường là bài học lớn nhất. Sau đó là tác động bằng con số, và nguyên nhân gốc cùng các yếu tố góp phần: vì sao test không bắt được, vì sao staged rollout không dừng sớm hơn. Việc cần làm phải cụ thể, có người phụ trách và hạn chót. Về theo dõi, mình thêm alert theo version cho crash-free users và cho các trace quan trọng như cold start, đặt ngưỡng dừng rollout tự động hoặc bán tự động, và dashboard so bản mới với bản trước ở cùng giai đoạn rollout.",
+      "en": "I run a blameless post-mortem within a few days, while memories are fresh. The document opens with a timestamped timeline: when the bad build hit production, when an alert or a user flagged it, when we halted the rollout, when the fix shipped. The gap between introduction and detection is usually the biggest lesson. Then the impact in numbers, and the root cause with contributing factors: why tests missed it, why the staged rollout did not stop earlier. Action items must be concrete, with owners and deadlines. For monitoring, I add per-version alerts on crash-free users and on key traces like cold start, set automatic or semi-automatic rollout stop thresholds, and build a dashboard comparing the new release with the previous one at the same rollout stage."
+    },
+    "followUps": [
+      { "vi": "Làm sao bảo đảm các việc cần làm sau post-mortem thật sự được làm?", "en": "How do you make sure post-mortem action items actually get done?" }
+    ]
+  },
+  {
+    "id": "maintain-regression-012",
+    "type": "mcq",
+    "topics": ["maintain/regression", "performance/js-thread"],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 75,
+    "lessons": ["maintain-regression-core"],
+    "multi": false,
+    "prompt": {
+      "vi": "Sau khi nâng một thư viện biểu đồ, màn hình dashboard bị giật khi cuộn. Trên dev build với Perf Monitor bật, UI giữ khoảng 60 FPS còn JS tụt xuống 5 FPS khi cuộn. Điều này cho bạn biết gì?",
+      "en": "After bumping a charting library, the dashboard screen stutters while scrolling. In a dev build with Perf Monitor open, UI stays around 60 FPS while JS drops to 5 FPS during the scroll. What does this tell you?"
+    },
+    "options": [
+      {
+        "text": { "vi": "UI thread đang bị quá tải, nên phải sửa ở phần render view phía native", "en": "The UI thread is overloaded, so the fix belongs in native view rendering" },
+        "misconception": { "id": "misread-perf-monitor", "text": { "vi": "Đọc nhầm bộ đếm. UI FPS ổn nghĩa là main thread vẫn kịp vẽ; con số tụt là JS FPS, nên nút thắt nằm ở JS thread.", "en": "Reading the wrong counter. A healthy UI FPS means the main thread keeps up; the number that dropped is JS FPS, so the bottleneck is the JS thread." } }
+      },
+      { "text": { "vi": "JS thread là nút thắt; cuộn native vẫn ổn nhưng việc do JS điều khiển bị trễ", "en": "The JS thread is the bottleneck; native scrolling is fine but JS-driven work lags" } },
+      {
+        "text": { "vi": "Metro phục vụ bundle quá chậm trong lúc cuộn", "en": "Metro is serving the bundle too slowly during the scroll" },
+        "misconception": { "id": "metro-serves-during-scroll", "text": { "vi": "Nghĩ rằng Metro tham gia lúc app đang chạy. Metro chỉ gửi bundle khi tải hoặc reload và khi Fast Refresh; nó không làm gì trong lúc bạn cuộn.", "en": "Believing Metro takes part while the app runs. Metro only delivers the bundle on load or reload and for Fast Refresh; it does nothing while you scroll." } }
+      },
+      {
+        "text": { "vi": "Con số này cho biết chính xác release build sẽ giật bao nhiêu", "en": "These numbers show exactly how much the release build will stutter" },
+        "misconception": { "id": "dev-fps-equals-release", "text": { "vi": "Coi số đo ở dev là số release. Dev build chạy thêm kiểm tra và không tối ưu, nên con số tuyệt đối tệ hơn; nó chỉ ra hướng, còn mức độ phải xác nhận bằng release build.", "en": "Treating dev numbers as release numbers. Dev builds run extra checks and are not optimised, so absolute numbers are worse; they point the direction, and the size must be confirmed on a release build." } }
+      }
+    ],
+    "answer": [1],
+    "explanation": {
+      "vi": "Perf Monitor hiển thị hai bộ đếm: UI (main thread) và JS. UI ổn còn JS tụt nghĩa là JS thread bận tới mức không xử lý kịp sự kiện và render, trong khi phần cuộn native vẫn chạy. Sau khi nâng thư viện, nghi phạm đầu tiên là thư viện đó render lại hoặc tính toán trên JS thread ở mỗi sự kiện cuộn. Hãy profile bằng React DevTools Profiler và profiler của Hermes, đọc changelog của thư viện, rồi xác nhận mức độ bằng release build trước khi kết luận.",
+      "en": "Perf Monitor shows two counters: UI (the main thread) and JS. A healthy UI with a dropping JS means the JS thread is too busy to keep up with events and renders, while native scrolling keeps going. After a library bump, the first suspect is that library re-rendering or computing on the JS thread on each scroll event. Profile with the React DevTools Profiler and the Hermes profiler, read the library's changelog, and confirm the size of the problem on a release build before concluding."
+    }
+  }
+]

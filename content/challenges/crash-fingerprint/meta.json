@@ -1,0 +1,15 @@
+{
+  "id": "crash-fingerprint",
+  "type": "challenge",
+  "topics": ["maintain/crash"],
+  "kind": "advanced",
+  "difficulty": 2,
+  "estSeconds": 600,
+  "lessons": ["maintain-crash-core"],
+  "title": { "vi": "Gom nhóm crash theo fingerprint của stack", "en": "Group crashes by stack fingerprint" },
+  "hints": [
+    { "vi": "Viết `normaliseFrame` như một chuỗi `replace` theo đúng thứ tự trong đề: bỏ `at `, xoá địa chỉ `0x…`, xoá query string, xoá `:dòng:cột`, rồi gộp khoảng trắng.", "en": "Write `normaliseFrame` as a chain of `replace` calls in the order the rules give: drop `at `, remove `0x…` addresses, remove the query string, remove `:line:col`, then collapse whitespace." },
+    { "vi": "Một frame là của thư viện khi phần trước `(` hoặc phần bên trong ngoặc bắt đầu bằng một prefix. Nếu không còn frame nào của app, dùng các frame đã normalise mà không lọc.", "en": "A frame belongs to a library when the part before `(` or the part inside the parentheses starts with a prefix. If no app frames remain, use the normalised frames without filtering." },
+    { "vi": "Gom bằng một `Map` theo fingerprint để mỗi report chỉ tốn O(1). `firstSeen` và `lastSeen` là min và max của timestamp, vì report có thể tới không theo thứ tự.", "en": "Group with a `Map` keyed by fingerprint so each report costs O(1). `firstSeen` and `lastSeen` are the min and max timestamps, because reports can arrive out of order." }
+  ]
+}

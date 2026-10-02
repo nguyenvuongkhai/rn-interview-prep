@@ -1,0 +1,390 @@
+[
+  {
+    "id": "maintain-crash-001",
+    "type": "mcq",
+    "topics": ["maintain/crash"],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": ["maintain-crash-core"],
+    "multi": false,
+    "prompt": {
+      "vi": "Trong release build của một app RN không cài handler tuỳ chỉnh nào, tình huống nào làm app crash theo mặc định?",
+      "en": "In a release build of an RN app with no custom handlers installed, which of these crashes the app by default?"
+    },
+    "options": [
+      { "text": { "vi": "Một exception không được bắt, ném ra trong handler `onPress`", "en": "An uncaught exception thrown in an `onPress` handler" } },
+      {
+        "text": { "vi": "Một promise bị reject mà không ai `catch`", "en": "A rejected promise that nobody catches" },
+        "misconception": { "id": "unhandled-rejection-crashes", "text": { "vi": "Nghĩ rằng promise bị reject làm crash app. Trong RN, unhandled rejection chỉ hiện cảnh báo khi dev; ở release nó bị bỏ qua lặng lẽ, nên lỗi thường mất dấu nếu bạn không tự báo cáo.", "en": "Believing an unhandled rejection crashes the app. In RN it only shows a warning in development; in release it is silently dropped, so the error usually vanishes unless you report it yourself." } }
+      },
+      {
+        "text": { "vi": "Một lời gọi `console.error`", "en": "A call to `console.error`" },
+        "misconception": { "id": "console-error-crashes", "text": { "vi": "Nghĩ rằng console.error gây crash. Khi dev nó hiện LogBox; ở release nó chỉ ghi log và app chạy tiếp.", "en": "Believing console.error causes a crash. In development it shows LogBox; in release it only logs and the app keeps running." } }
+      },
+      {
+        "text": { "vi": "Một lỗi ném ra trong lúc render, bên dưới một error boundary", "en": "An error thrown during render, below an error boundary" },
+        "misconception": { "id": "boundary-cannot-catch-render", "text": { "vi": "Nghĩ rằng error boundary không chặn được lỗi render. Lỗi render bên dưới boundary được bắt và boundary hiện UI dự phòng; thứ boundary không bắt là lỗi trong event handler và code bất đồng bộ.", "en": "Believing an error boundary cannot stop a render error. A render error below a boundary is caught and the boundary shows its fallback; what boundaries miss is errors in event handlers and async code." } }
+      }
+    ],
+    "answer": [0],
+    "explanation": {
+      "vi": "Exception không bắt trong JS đi tới global handler của `ErrorUtils`. Ở release, handler mặc định coi nó là lỗi fatal và chuyển sang native, nơi app bị dừng, nên crash reporter ghi nhận như một crash. Error boundary chỉ bắt lỗi trong lúc render và lifecycle, không bắt lỗi trong `onPress`. Bẫy ngược lại là promise bị reject: ở release nó không crash mà biến mất lặng lẽ, nên hãy log nó hoặc gửi về crash reporter như một non-fatal.",
+      "en": "An uncaught JS exception reaches the `ErrorUtils` global handler. In release the default handler treats it as fatal and hands it to native, which stops the app, so crash reporters record it as a crash. Error boundaries only catch errors during render and lifecycle, not inside `onPress`. The opposite trap is a rejected promise: in release it does not crash but disappears silently, so log it or send it to your crash reporter as a non-fatal."
+    }
+  },
+  {
+    "id": "maintain-crash-002",
+    "type": "mcq",
+    "topics": ["maintain/crash"],
+    "kind": "core",
+    "difficulty": 2,
+    "estSeconds": 75,
+    "lessons": ["maintain-crash-core"],
+    "multi": false,
+    "prompt": {
+      "vi": "Một crash JS từ release build Android dùng Hermes có stack dạng `at anonymous (address at index.android.bundle:1:948213)`. Bạn cần gì để biến nó thành file và dòng trong source?",
+      "en": "A JS crash from an Android release build on Hermes has a stack like `at anonymous (address at index.android.bundle:1:948213)`. What do you need to turn it into source files and lines?"
+    },
+    "options": [
+      {
+        "text": { "vi": "Source map từ debug build của cùng commit", "en": "The source map from a debug build of the same commit" },
+        "misconception": { "id": "debug-sourcemap-works", "text": { "vi": "Nghĩ rằng source map của debug build dùng được cho release. Bundle debug không minify và không compile sang bytecode, nên vị trí trong đó không khớp với bundle release.", "en": "Believing a debug build's source map works for release. The debug bundle is not minified or compiled to bytecode, so its positions do not match the release bundle." } }
+      },
+      {
+        "text": { "vi": "Các file dSYM đã upload cho bản build iOS tương ứng", "en": "The dSYM files uploaded for the matching iOS build" },
+        "misconception": { "id": "dsym-for-js", "text": { "vi": "Nhầm dSYM với source map. dSYM chứa symbol của code native iOS; nó không biết gì về bundle JavaScript.", "en": "Confusing a dSYM with a source map. A dSYM holds symbols for native iOS code; it knows nothing about the JavaScript bundle." } }
+      },
+      { "text": { "vi": "Source map Hermes đã ghép của đúng bản build đó", "en": "The composed Hermes source map of that exact build" } },
+      {
+        "text": { "vi": "File `mapping.txt` của R8 cho bản release đó", "en": "The R8 `mapping.txt` file generated for that release" },
+        "misconception": { "id": "r8-mapping-for-js", "text": { "vi": "Nhầm mapping của R8 với source map. mapping.txt chỉ giải mã tên class và method Java/Kotlin bị làm rối; nó không áp dụng cho bundle JS.", "en": "Confusing the R8 mapping with a source map. mapping.txt only decodes obfuscated Java/Kotlin class and method names; it does not apply to the JS bundle." } }
+      }
+    ],
+    "answer": [2],
+    "explanation": {
+      "vi": "Hermes compile bundle thành bytecode, nên vị trí trong stack là offset trong bytecode chứ không phải dòng trong file JS. Để map ngược về source, bạn cần source map ghép từ hai bước: Metro (source sang bundle) và Hermes compiler (bundle sang bytecode). Build script của RN tạo được map ghép này, và crash tool cần nhận đúng map của bản build đó, gắn với release và dist tương ứng. Mỗi nền tảng một loại symbol: source map cho JS, dSYM cho iOS native, `mapping.txt` cho Java/Kotlin đã qua R8.",
+      "en": "Hermes compiles the bundle to bytecode, so the positions in the stack are bytecode offsets, not lines in a JS file. Mapping back to source needs a map composed from two steps: Metro (source to bundle) and the Hermes compiler (bundle to bytecode). RN's build scripts can produce this composed map, and the crash tool must receive the map of that exact build, tied to the matching release and dist. Each layer has its own symbols: source maps for JS, dSYMs for native iOS, `mapping.txt` for Java/Kotlin after R8."
+    }
+  },
+  {
+    "id": "maintain-crash-003",
+    "type": "mcq",
+    "topics": ["maintain/crash", "performance/js-thread"],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 75,
+    "lessons": ["maintain-crash-core"],
+    "multi": false,
+    "prompt": {
+      "vi": "Android vitals báo ANR rate của app tăng. Mô tả nào đúng nhất về thời điểm Android báo một ANR?",
+      "en": "Android vitals shows your ANR rate climbing. Which best describes when Android reports an ANR?"
+    },
+    "options": [
+      {
+        "text": { "vi": "Khi JS thread bận liên tục hơn 5 giây mà không nghỉ", "en": "When the JS thread stays busy for more than 5 seconds in a row" },
+        "misconception": { "id": "js-thread-anr", "text": { "vi": "Nghĩ rằng JS thread bị chặn gây ANR. JS thread bận làm UI do JS điều khiển bị đơ, nhưng main thread vẫn xử lý input, nên tự nó không gây ANR. ANR đến từ main thread bị chặn.", "en": "Believing a blocked JS thread causes an ANR. A busy JS thread freezes JS-driven UI, but the main thread still handles input, so it does not cause an ANR by itself. ANRs come from a blocked main thread." } }
+      },
+      { "text": { "vi": "Khi main thread không xử lý được một input event trong khoảng 5 giây", "en": "When the main thread cannot handle an input event within about 5 seconds" } },
+      {
+        "text": { "vi": "Khi một frame bất kỳ mất hơn 16 ms để render lên màn hình", "en": "When a single frame takes longer than 16 ms to render on screen" },
+        "misconception": { "id": "jank-is-anr", "text": { "vi": "Nhầm jank với ANR. Frame chậm là jank và được đo riêng (slow, frozen frames); ANR là main thread không phản hồi trong vài giây.", "en": "Confusing jank with ANRs. Slow frames are jank and are measured separately (slow and frozen frames); an ANR is the main thread not responding for seconds." } }
+      },
+      {
+        "text": { "vi": "Khi hệ điều hành kill app vì app dùng quá nhiều bộ nhớ", "en": "When the system kills the app for using too much memory" },
+        "misconception": { "id": "oom-is-anr", "text": { "vi": "Nhầm việc bị kill do bộ nhớ với ANR. Low memory killer hay OutOfMemoryError là loại sự cố khác; ANR là chuyện main thread không phản hồi.", "en": "Confusing a memory kill with an ANR. The low memory killer or an OutOfMemoryError is a different failure; an ANR is about the main thread not responding." } }
+      }
+    ],
+    "answer": [1],
+    "explanation": {
+      "vi": "ANR xảy ra khi main thread (UI thread) bị chặn: không xử lý input event trong khoảng 5 giây, hoặc một `BroadcastReceiver` hay service không xong trong giới hạn của nó. Nguyên nhân thường gặp trong app RN là I/O hoặc khởi tạo nặng trong `Application.onCreate`, native module chạy việc nặng trên main thread, hoặc lock chờ một thread khác. JS thread bận làm app đơ nhưng không gây ANR, trừ khi main thread phải chờ đồng bộ vào nó. Ngưỡng của Android vitals và cách tính thay đổi theo thời gian, hãy tra tài liệu hiện hành.",
+      "en": "An ANR happens when the main (UI) thread is blocked: it fails to handle an input event within about 5 seconds, or a `BroadcastReceiver` or service does not finish within its limit. Typical causes in RN apps are I/O or heavy initialisation in `Application.onCreate`, a native module doing heavy work on the main thread, or a lock waiting on another thread. A busy JS thread freezes the app but does not cause an ANR unless the main thread waits on it synchronously. Android vitals thresholds and definitions change over time, so check the current docs."
+    }
+  },
+  {
+    "id": "maintain-crash-004",
+    "type": "mcq",
+    "topics": ["maintain/crash", "release/ota-ci"],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": ["maintain-crash-core"],
+    "multi": true,
+    "prompt": {
+      "vi": "Bạn muốn mọi crash từ production đều đọc được: JS, iOS native và Android native. Những cách làm nào đúng? (chọn tất cả đáp án đúng)",
+      "en": "You want every production crash to be readable: JS, native iOS and native Android. Which practices are correct? (select all that apply)"
+    },
+    "options": [
+      { "text": { "vi": "Upload dSYM của từng bản build iOS từ CI, vì mỗi bản build có UUID riêng", "en": "Upload the dSYMs of every iOS build from CI, because each build has its own UUID" } },
+      { "text": { "vi": "Upload `mapping.txt` của R8 cho mỗi bản release Android", "en": "Upload the R8 `mapping.txt` for every Android release" } },
+      { "text": { "vi": "Upload source map cho mỗi bundle JS phát hành, kể cả từng bản OTA", "en": "Upload a source map for every JS bundle you ship, OTA updates included" } },
+      {
+        "text": { "vi": "Một source map cho mỗi version app là đủ, kể cả khi sau đó phát thêm OTA", "en": "One source map per app version is enough, even after you ship OTA updates" },
+        "misconception": { "id": "ota-reuses-sourcemap", "text": { "vi": "Nghĩ rằng OTA dùng chung source map với binary. Mỗi bản OTA là một bundle JS mới với vị trí khác, nên cần source map riêng.", "en": "Believing an OTA update shares the binary's source map. Each OTA update is a new JS bundle with different positions, so it needs its own source map." } }
+      },
+      {
+        "text": { "vi": "Chỉ cần giữ `mapping.txt` của bản mới nhất, vì R8 đặt tên giống nhau giữa các bản build", "en": "Keeping only the latest `mapping.txt` is enough, because R8 picks the same names across builds" },
+        "misconception": { "id": "r8-mapping-stable", "text": { "vi": "Nghĩ rằng mapping của R8 ổn định. Tên rút gọn phụ thuộc vào code của từng bản build, nên crash từ bản cũ cần đúng mapping của bản đó.", "en": "Believing R8 mappings are stable. The short names depend on each build's code, so a crash from an older build needs that build's mapping." } }
+      }
+    ],
+    "answer": [0, 1, 2],
+    "explanation": {
+      "vi": "Mỗi lớp cần đúng symbol của bản build đã tạo ra crash. dSYM được nhận theo UUID của binary, `mapping.txt` thay đổi mỗi lần code đổi, và source map khớp theo release và dist (hoặc theo debug ID ở các setup mới hơn). Hãy để CI upload cả ba ngay trong pipeline build, vì làm tay thì sớm muộn sẽ quên. Bẫy hay gặp nhất là OTA: mỗi bản update là một bundle mới, nên nếu chỉ upload source map lúc build binary, mọi crash sau bản OTA đầu tiên sẽ không đọc được.",
+      "en": "Each layer needs the exact symbols of the build that crashed. dSYMs are matched by the binary's UUID, `mapping.txt` changes whenever the code changes, and source maps are matched by release and dist (or by debug ID in newer setups). Have CI upload all three as part of the build pipeline, because a manual step gets forgotten sooner or later. The most common trap is OTA: each update is a new bundle, so if you only upload source maps when building the binary, every crash after the first OTA update is unreadable."
+    }
+  },
+  {
+    "id": "maintain-crash-005",
+    "type": "mcq",
+    "topics": ["maintain/crash"],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": ["maintain-crash-core"],
+    "multi": true,
+    "prompt": {
+      "vi": "Sau một bản release, trong Sentry một issue bỗng chứa các crash có nguyên nhân khác nhau, còn một lỗi khác bị tách thành hàng chục issue. Những nhận định nào đúng? (chọn tất cả đáp án đúng)",
+      "en": "After a release, one Sentry issue suddenly holds crashes with different root causes, while another bug is split into dozens of issues. Which statements are correct? (select all that apply)"
+    },
+    "options": [
+      { "text": { "vi": "Khi có stack trace, Sentry gom nhóm chủ yếu theo các frame của app (in-app) trong stack", "en": "When a stack trace is available, Sentry groups mainly by the app's own (in-app) frames" } },
+      { "text": { "vi": "Stack chưa symbolicate khác nhau giữa các bản build, nên một lỗi có thể bị tách ra", "en": "Unsymbolicated frames differ between builds, so one bug can split into new issues" } },
+      { "text": { "vi": "Bạn có thể ghi đè cách gom nhóm bằng fingerprint tuỳ chỉnh, ví dụ `scope.setFingerprint`", "en": "You can override grouping with a custom fingerprint, for example `scope.setFingerprint`" } },
+      {
+        "text": { "vi": "Upload source map sau khi event đã tới sẽ tự gom lại và symbolicate các event cũ", "en": "Uploading source maps after the events arrived regroups and symbolicates the old events" },
+        "misconception": { "id": "sourcemaps-retroactive", "text": { "vi": "Nghĩ rằng source map áp dụng ngược cho event cũ. Event được xử lý lúc nhận; source map phải có trước khi lỗi xảy ra.", "en": "Believing source maps apply retroactively. Events are processed on arrival; the source maps must be there before the errors happen." } }
+      },
+      {
+        "text": { "vi": "Gom nhóm chỉ dựa vào message của lỗi, nên message khác nhau luôn là issue khác nhau", "en": "Grouping uses only the error message, so different messages always mean different issues" },
+        "misconception": { "id": "grouping-by-message", "text": { "vi": "Nghĩ rằng crash được gom theo message. Khi có stack, stack là tín hiệu chính; message chỉ là phương án dự phòng khi không có stack dùng được.", "en": "Believing crashes are grouped by message. When a stack exists it is the main signal; the message is a fallback when no usable stack is present." } }
+      }
+    ],
+    "answer": [0, 1, 2],
+    "explanation": {
+      "vi": "Công cụ crash như Sentry hay Crashlytics tính fingerprint chủ yếu từ các frame của app trong stack, và chỉ dùng loại lỗi và message khi không có stack dùng được. Vì vậy chất lượng symbolication quyết định chất lượng gom nhóm: thiếu source map cho một release thì frame là các offset khác nhau ở mỗi bản build, và một lỗi bị tách thành nhiều issue. Ngược lại, một helper chung như `handleError` nằm trên đỉnh mọi stack có thể gộp các lỗi khác nhau vào một issue; khi đó fingerprint tuỳ chỉnh hoặc rule đánh dấu frame đó là không thuộc app sẽ giúp tách ra.",
+      "en": "Crash tools like Sentry or Crashlytics compute the fingerprint mostly from the app's frames in the stack, and fall back to error type and message only when no usable stack exists. So symbolication quality drives grouping quality: without a source map for a release, frames are offsets that differ in every build, and one bug splits into many issues. Conversely, a shared helper like `handleError` at the top of every stack can merge unrelated errors into one issue; a custom fingerprint, or a rule marking that frame as not in-app, separates them."
+    }
+  },
+  {
+    "id": "maintain-crash-006",
+    "type": "spot-bug",
+    "topics": ["maintain/crash", "native/modules-android"],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 105,
+    "lessons": ["maintain-crash-core"],
+    "prompt": {
+      "vi": "Android vitals báo một cụm ANR mới sau bản release. Đây là stack của main thread trong báo cáo. Đọc từ trên xuống, dòng nào là frame đầu tiên thuộc code của chính app, và vì sao nó gây ANR?",
+      "en": "Android vitals reports a new ANR cluster after a release. This is the main thread stack from the report. Reading top-down, which line is the first frame from your own app code, and why does it cause the ANR?"
+    },
+    "code": "\"main\" tid=1 Native\n  #00  pc 0x000000000009f0e4  /apex/com.android.runtime/lib64/bionic/libc.so (read+4)\n  at libcore.io.Linux.readBytes (Native Method)\n  at libcore.io.ForwardingOs.read (ForwardingOs.java:206)\n  at libcore.io.BlockGuardOs.read (BlockGuardOs.java:418)\n  at libcore.io.IoBridge.read (IoBridge.java:620)\n  at java.io.FileInputStream.read (FileInputStream.java:320)\n  at java.io.BufferedInputStream.read1 (BufferedInputStream.java:290)\n  at java.io.BufferedInputStream.read (BufferedInputStream.java:351)\n  at kotlin.io.ByteStreamsKt.readBytes (IOStreams.kt:136)\n  at com.shop.cache.ProductCache.loadFromDisk (ProductCache.kt:48)\n  at com.shop.cache.ProductCache.warm (ProductCache.kt:31)\n  at com.shop.MainApplication.onCreate (MainApplication.kt:27)\n  at android.app.Instrumentation.callApplicationOnCreate (Instrumentation.java:1316)\n  at android.app.ActivityThread.handleBindApplication (ActivityThread.java:7350)\n  at android.os.Handler.dispatchMessage (Handler.java:106)\n  at android.os.Looper.loop (Looper.java:288)\n  at android.app.ActivityThread.main (ActivityThread.java:8061)",
+    "answerLine": 11,
+    "causeOptions": [
+      { "text": { "vi": "`ProductCache` đọc file đồng bộ trên main thread trong lúc `Application.onCreate` chạy", "en": "`ProductCache` reads a file synchronously on the main thread during `Application.onCreate`" } },
+      {
+        "text": { "vi": "`libcore.io.Linux.readBytes` là lỗi của framework Android, vì frame trên cùng luôn là thủ phạm", "en": "`libcore.io.Linux.readBytes` is an Android framework bug, because the top frame is always the culprit" },
+        "misconception": { "id": "top-frame-is-culprit", "text": { "vi": "Nghĩ rằng frame trên cùng luôn là thủ phạm. Frame trên cùng thường là framework đang làm đúng việc được giao; nguyên nhân nằm ở frame đầu tiên của app đã gọi nó, ở đây là đọc đĩa trên main thread.", "en": "Believing the top frame is always the culprit. The top frame is usually framework code doing what it was asked; the cause is the first app frame that called it, here disk reads on the main thread." } }
+      },
+      {
+        "text": { "vi": "Main thread đang chờ JS thread khởi động xong", "en": "The main thread is waiting for the JS thread to finish starting" },
+        "misconception": { "id": "anr-always-js-wait", "text": { "vi": "Đoán nguyên nhân thay vì đọc stack. Stack cho thấy main thread đang đọc file trong code của app, không có frame nào của React Native hay đang chờ thread khác.", "en": "Guessing the cause instead of reading the stack. It shows the main thread reading a file in app code, with no React Native frames and no wait on another thread." } }
+      },
+      {
+        "text": { "vi": "`BlockGuardOs` cho thấy StrictMode đã chặn lần đọc, nên chỉ cần tắt StrictMode", "en": "`BlockGuardOs` shows StrictMode blocked the read, so turning StrictMode off fixes it" },
+        "misconception": { "id": "strictmode-blocks-io", "text": { "vi": "Hiểu sai BlockGuardOs. Đây là lớp mà StrictMode dùng để phát hiện I/O trên main thread; nó không làm lần đọc chậm đi, và tắt StrictMode không làm I/O nhanh hơn.", "en": "Misreading BlockGuardOs. It is the layer StrictMode uses to detect main-thread I/O; it does not slow the read down, and turning StrictMode off does not make the I/O faster." } }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "Dòng 2 tới 10 là libc, libcore, `java.io` và thư viện Kotlin: chúng chỉ đang đọc file như được yêu cầu. Frame đầu tiên của app là `ProductCache.loadFromDisk` ở dòng 11, được gọi từ `MainApplication.onCreate` qua `warm`. Toàn bộ chuỗi chạy trên main thread lúc bind application, nên một file lớn hoặc ổ đĩa chậm trên máy yếu đủ làm app không phản hồi. Sửa bằng cách chuyển việc nạp cache sang background thread hoặc nạp lười khi cần, rồi bật StrictMode ở debug để bắt sớm I/O trên main thread.",
+      "en": "Lines 2 to 10 are libc, libcore, `java.io` and the Kotlin library: they are just reading a file as asked. The first app frame is `ProductCache.loadFromDisk` on line 11, called from `MainApplication.onCreate` through `warm`. The whole chain runs on the main thread while the application binds, so a large file or slow storage on a low-end device is enough to make the app unresponsive. Fix it by moving the cache load to a background thread or loading it lazily, then enable StrictMode in debug builds to catch main-thread I/O early."
+    }
+  },
+  {
+    "id": "maintain-crash-007",
+    "type": "spot-bug",
+    "topics": ["maintain/crash", "native/build"],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 105,
+    "lessons": ["maintain-crash-core"],
+    "prompt": {
+      "vi": "Crash JS của bản 4.2 trong Crashlytics đọc được, nhưng crash native Android chỉ có frame dạng `at o3.c.a(Unknown Source:12)`. Dòng nào trong `android/app/build.gradle` gây ra điều này, và vì sao?",
+      "en": "Version 4.2's JS crashes in Crashlytics are readable, but native Android crashes only show frames like `at o3.c.a(Unknown Source:12)`. Which line in `android/app/build.gradle` causes this, and why?"
+    },
+    "code": "apply plugin: \"com.android.application\"\napply plugin: \"com.google.firebase.crashlytics\"\n\nandroid {\n    buildTypes {\n        debug {\n            firebaseCrashlytics {\n                mappingFileUploadEnabled false\n            }\n        }\n        release {\n            signingConfig signingConfigs.release\n            minifyEnabled true\n            proguardFiles getDefaultProguardFile(\"proguard-android.txt\"), \"proguard-rules.pro\"\n            firebaseCrashlytics {\n                mappingFileUploadEnabled false\n            }\n        }\n    }\n}",
+    "answerLine": 16,
+    "causeOptions": [
+      {
+        "text": { "vi": "`minifyEnabled true` làm mất hẳn thông tin stack, nên phải tắt R8 ở release", "en": "`minifyEnabled true` destroys the stack information, so R8 must be off in release" },
+        "misconception": { "id": "disable-r8-for-stacks", "text": { "vi": "Nghĩ rằng phải tắt R8 để có stack đọc được. R8 chỉ đổi tên; với đúng mapping file, crash tool dịch ngược được, và bạn vẫn giữ app nhỏ hơn và khó dịch ngược hơn.", "en": "Believing R8 must be off for readable stacks. R8 only renames; with the right mapping file the crash tool decodes it, and you keep a smaller, harder-to-reverse app." } }
+      },
+      {
+        "text": { "vi": "Plugin Crashlytics phải được apply trước `com.android.application`", "en": "The Crashlytics plugin must be applied before `com.android.application`" },
+        "misconception": { "id": "crashlytics-plugin-order", "text": { "vi": "Đổ lỗi cho thứ tự plugin. Thứ tự ở đây giống hướng dẫn của Firebase; lỗi này là do mapping không được upload.", "en": "Blaming plugin order. The order here matches Firebase's instructions; this problem comes from the mapping not being uploaded." } }
+      },
+      { "text": { "vi": "Bản release không upload mapping, nên Crashlytics không giải mã được tên R8 đã đổi", "en": "Release builds skip the mapping upload, so Crashlytics cannot decode R8's renamed frames" } },
+      {
+        "text": { "vi": "Thiếu source map Hermes, nên mọi frame native cũng không đọc được", "en": "The Hermes source map is missing, so native frames cannot be read either" },
+        "misconception": { "id": "sourcemap-for-native", "text": { "vi": "Nhầm source map với mapping native. Source map Hermes chỉ dùng cho frame JS; frame Java/Kotlin cần mapping.txt của R8.", "en": "Confusing source maps with native mappings. A Hermes source map only serves JS frames; Java/Kotlin frames need R8's mapping.txt." } }
+      }
+    ],
+    "answerCause": 2,
+    "explanation": {
+      "vi": "R8 đổi tên class và method khi `minifyEnabled true`, và ghi bảng đối chiếu vào `mapping.txt`. Crashlytics chỉ dịch ngược được nếu file đó được upload cho đúng bản build. Tắt upload ở `debug` là chuyện thường để build nhanh hơn, nhưng dòng 16 tắt cả ở `release`, có lẽ do chép nhầm khối. Xoá dòng đó (mặc định là bật), và kiểm tra trong log build của CI rằng bước upload mapping có chạy. Lưu cả `mapping.txt` làm artifact của CI để upload lại khi cần.",
+      "en": "R8 renames classes and methods when `minifyEnabled true` is set, and writes the lookup table to `mapping.txt`. Crashlytics can only decode it if that file is uploaded for that exact build. Turning the upload off for `debug` is common to speed up builds, but line 16 turns it off for `release` too, probably a copy-pasted block. Remove that line (upload is on by default) and check in the CI build log that the mapping upload step runs. Keep `mapping.txt` as a CI artifact as well, so you can upload it again if needed."
+    }
+  },
+  {
+    "id": "maintain-crash-008",
+    "type": "spot-bug",
+    "topics": ["maintain/crash", "maintain/regression"],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 135,
+    "lessons": ["maintain-crash-core"],
+    "prompt": {
+      "vi": "Một app quét mã cho kho hàng chạy suốt ca làm việc. Sau khoảng một giờ, app bị hệ điều hành kill trên các máy cũ, và iPhone không để lại crash report nào. Memory profiler cho thấy bộ nhớ tăng đều và không bao giờ giảm. Dòng nào gây lỗi, và vì sao?",
+      "en": "A warehouse scanning app runs for a whole shift. After about an hour the OS kills it on older devices, and iPhones leave no crash report at all. The memory profiler shows memory climbing steadily and never dropping. Which line causes it, and why?"
+    },
+    "code": "type Frame = { uri: string; width: number; height: number };\n\nconst decoded = new Map<string, string>();\n\nexport const getDecoded = (uri: string): string | undefined => decoded.get(uri);\n\nexport function useScannerFrames(camera: Camera): Frame | null {\n  const [last, setLast] = useState<Frame | null>(null);\n\n  useEffect(() => {\n    const sub = camera.onFrame(async (frame: Frame) => {\n      const base64 = await readAsBase64(frame.uri);\n      decoded.set(frame.uri, base64);\n      setLast(frame);\n    });\n    return () => sub.remove();\n  }, [camera]);\n\n  return last;\n}",
+    "answerLine": 13,
+    "causeOptions": [
+      { "text": { "vi": "Mỗi frame thêm một chuỗi base64 vào một `Map` cấp module không bao giờ được dọn", "en": "Every frame adds a base64 string to a module-level `Map` that never evicts anything" } },
+      {
+        "text": { "vi": "Subscription không bao giờ được huỷ, nên frame vẫn tới sau khi unmount", "en": "The subscription is never removed, so frames keep arriving after unmount" },
+        "misconception": { "id": "leak-always-listener", "text": { "vi": "Mặc định nghĩ rò rỉ là do listener. Cleanup ở dòng 16 đã huỷ subscription; hãy xem callback đang giữ lại dữ liệu gì, không chỉ xem nó có unsubscribe hay không.", "en": "Assuming every leak is a listener. The cleanup on line 16 removes the subscription; check what the callback retains, not only whether it unsubscribes." } }
+      },
+      {
+        "text": { "vi": "`useState` giữ lại mọi frame cũ trong bộ nhớ", "en": "`useState` keeps every previous frame in memory" },
+        "misconception": { "id": "usestate-keeps-history", "text": { "vi": "Nghĩ rằng useState lưu lịch sử giá trị. React chỉ giữ giá trị hiện tại; giá trị cũ bị thay thế sẽ được thu gom khi không còn ai tham chiếu.", "en": "Believing useState keeps a history of values. React holds only the current value; replaced values are collected once nothing else references them." } }
+      },
+      {
+        "text": { "vi": "Callback `async` tạo một closure mới cho mỗi frame, và closure không bao giờ được thu gom", "en": "The `async` callback creates a closure per frame, and closures are never garbage-collected" },
+        "misconception": { "id": "closures-never-collected", "text": { "vi": "Nghĩ rằng closure không được thu gom. Closure được giải phóng như mọi object khi không còn tham chiếu; nó chỉ gây rò rỉ khi có thứ sống lâu giữ nó lại.", "en": "Believing closures are never collected. A closure is freed like any object once unreferenced; it only leaks when something long-lived holds on to it." } }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "`decoded` sống bằng vòng đời của module, tức cả phiên dùng app. Dòng 13 thêm một chuỗi base64 cỡ vài trăm KB cho mỗi frame và không bao giờ xoá, nên sau một giờ heap JS chiếm hàng trăm MB. Trên iOS, app bị jetsam kill vì bộ nhớ: tiến trình bị dừng từ bên ngoài, nên crash reporter chạy trong app không ghi được gì. Sửa bằng cache có giới hạn (LRU theo số lượng hoặc dung lượng), hoặc chỉ giữ frame cuối. Xác nhận bằng hai heap snapshot của Hermes cách nhau vài phút và chạy thử nhiều giờ trên máy yếu.",
+      "en": "`decoded` lives as long as the module, which means the whole app session. Line 13 adds a base64 string of a few hundred KB per frame and never removes any, so after an hour the JS heap holds hundreds of MB. On iOS the app is killed by jetsam for memory: the process is stopped from outside, so an in-process crash reporter records nothing. Fix it with a bounded cache (an LRU by count or size), or keep only the latest frame. Confirm with two Hermes heap snapshots a few minutes apart and a multi-hour soak test on a low-end device."
+    }
+  },
+  {
+    "id": "maintain-crash-009",
+    "type": "open",
+    "topics": ["maintain/crash", "release/android"],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 330,
+    "lessons": ["maintain-crash-core"],
+    "prompt": {
+      "vi": "Hai giờ sau khi bản mới lên 20% staged rollout, crash-free sessions giảm từ 99,8% xuống 98,9%. Kể lại cách bạn xử lý tình huống này, từ lúc nhận alert tới khi đóng sự cố.",
+      "en": "Two hours after a new release reaches 20% of a staged rollout, crash-free sessions drop from 99.8% to 98.9%. Walk me through how you handled it, from the alert to closing the incident."
+    },
+    "keyPoints": [
+      { "vi": "Dừng rollout trước (halt trên Play, pause phased release trên App Store), rồi mới điều tra", "en": "Stop the rollout first (halt on Play, pause the phased release on the App Store), then investigate" },
+      { "vi": "Lọc theo version mới để tìm issue mới hoặc issue tăng vọt, rồi chia theo nền tảng, OS, model máy và breadcrumb", "en": "Filter by the new version to find new or spiking issues, then split by platform, OS, device model and breadcrumbs" },
+      { "vi": "Bảo đảm stack đã symbolicate (source map, dSYM, mapping) trước khi kết luận nguyên nhân", "en": "Make sure stacks are symbolicated (source maps, dSYMs, mappings) before concluding anything" },
+      { "vi": "Chọn cách giảm thiệt hại: tắt bằng feature flag, OTA nếu lỗi chỉ ở JS và runtime version tương thích, hoặc binary mới với version code cao hơn", "en": "Choose the mitigation: a feature flag kill switch, an OTA update if the bug is JS-only and runtime-compatible, or a new binary with a higher version code" },
+      { "vi": "Xác nhận bản sửa bằng số liệu theo version, rồi tiếp tục rollout từ từ", "en": "Confirm the fix with per-version metrics, then resume the rollout gradually" },
+      { "vi": "Viết post-mortem không đổ lỗi: timeline, thời gian phát hiện, vì sao kiểm thử không bắt được, và việc cần làm có người phụ trách", "en": "Write a blameless post-mortem: timeline, time to detect, why testing missed it, and owned action items" }
+    ],
+    "modelAnswer": {
+      "vi": "Việc đầu tiên là dừng rollout trên cả hai store, vì mỗi giờ chờ là thêm người bị ảnh hưởng. Sau đó mình lọc crash theo version mới để tìm issue mới hoặc tăng vọt, và kiểm tra stack đã symbolicate chưa, vì nếu thiếu map thì một lỗi có thể bị tách thành nhiều issue nhỏ. Mình chia theo nền tảng, OS, model máy và đọc breadcrumb để khoanh vùng màn hình hay luồng gây lỗi. Nếu tính năng nằm sau flag, mình tắt nó để cầm máu ngay. Nếu lỗi chỉ ở JS và runtime version khớp, mình phát OTA; nếu ở native, mình phát binary mới với version code cao hơn. Khi số liệu của bản sửa ổn, mình mở lại rollout từ từ. Cuối cùng là post-mortem không đổ lỗi với timeline và việc cần làm cụ thể.",
+      "en": "First I halt the rollout on both stores, because every hour of waiting adds affected users. Then I filter crashes by the new version to find new or spiking issues, and check that stacks are symbolicated, since a missing map can split one bug into many small issues. I split by platform, OS and device model and read breadcrumbs to narrow down the screen or flow. If the feature sits behind a flag, I switch it off to stop the bleeding. If the bug is JS-only and the runtime version matches, I ship an OTA update; if it is native, a new binary with a higher version code. Once the fix's metrics look healthy, I resume the rollout gradually. Last comes a blameless post-mortem with a timeline and concrete action items."
+    },
+    "followUps": [
+      { "vi": "Crash-free users và crash-free sessions khác nhau thế nào, và bạn dùng số nào làm ngưỡng dừng?", "en": "How do crash-free users and crash-free sessions differ, and which would you use as a stop threshold?" },
+      { "vi": "Nếu crash tăng ở cả bản cũ cùng lúc thì điều đó gợi ý gì?", "en": "What does it suggest if crashes rise on the old version at the same time?" }
+    ]
+  },
+  {
+    "id": "maintain-crash-010",
+    "type": "open",
+    "topics": ["maintain/crash"],
+    "kind": "hard-issue",
+    "difficulty": 2,
+    "estSeconds": 300,
+    "lessons": ["maintain-crash-core"],
+    "prompt": {
+      "vi": "Một crash chỉ xảy ra trên một dòng máy của một hãng với một phiên bản Android, và bạn không có máy đó. Kể lại cách bạn tái hiện và sửa nó.",
+      "en": "A crash only happens on one vendor's device line on one Android version, and you do not own that device. Walk me through how you reproduced and fixed it."
+    },
+    "keyPoints": [
+      { "vi": "Đọc kỹ dữ liệu crash: stack đã symbolicate, là JS hay native, phân bố model, OS, version app, và breadcrumb trước crash", "en": "Read the crash data closely: the symbolicated stack, JS or native, the spread of models, OS and app versions, and breadcrumbs before the crash" },
+      { "vi": "Tìm khác biệt của hãng đó: WebView hoặc thư viện hệ thống, quản lý pin, quyền, font, hoặc API bị hãng sửa", "en": "Look for what that vendor does differently: WebView or system libraries, battery management, permissions, fonts, or APIs the vendor modified" },
+      { "vi": "Tái hiện trên máy thật qua device farm (ví dụ Firebase Test Lab) hoặc mua hay mượn máy, luôn dùng release build", "en": "Reproduce on real hardware through a device farm (for example Firebase Test Lab) or by buying or borrowing the device, always with a release build" },
+      { "vi": "Thu `adb logcat` và tombstone với crash native, rồi viết test hoặc đoạn tái hiện nhỏ nhất", "en": "Collect `adb logcat` and tombstones for native crashes, then write the smallest repro or test" },
+      { "vi": "Sửa có phòng thủ (kiểm tra khả năng, fallback, bắt lỗi quanh API đó) và xác nhận qua số crash của nhóm máy đó sau release", "en": "Fix defensively (capability checks, fallbacks, error handling around that API) and confirm through that device group's crash count after release" }
+    ],
+    "modelAnswer": {
+      "vi": "Mình bắt đầu từ dữ liệu: stack đã symbolicate, là JS hay native, và phân bố theo model, OS, version app. Breadcrumb cho biết người dùng vừa làm gì. Nếu stack nằm trong thư viện hệ thống hay WebView, mình đoán đây là khác biệt của hãng, như WebView cũ, quản lý pin mạnh tay, hay một API bị sửa. Để tái hiện, mình thuê máy trên device farm như Firebase Test Lab, hoặc mua một máy cũ nếu crash đủ quan trọng, và luôn dùng release build vì Hermes bytecode và R8 có thể đổi hành vi. Với crash native, mình lấy `adb logcat` và tombstone. Khi tái hiện được, mình thu nhỏ thành một repro tối thiểu, sửa có phòng thủ như kiểm tra khả năng hay thêm fallback, rồi theo dõi số crash của nhóm máy đó sau release.",
+      "en": "I start from the data: the symbolicated stack, whether it is JS or native, and the spread across models, OS and app versions. Breadcrumbs show what the user just did. If the stack sits in a system library or WebView, I suspect a vendor difference, such as an old WebView, aggressive battery management or a modified API. To reproduce, I rent the device on a device farm like Firebase Test Lab, or buy a used one if the crash matters enough, always with a release build because Hermes bytecode and R8 can change behaviour. For native crashes I pull `adb logcat` and tombstones. Once it reproduces, I shrink it to a minimal repro, fix it defensively with capability checks or a fallback, and watch that device group's crash count after release."
+    },
+    "followUps": [
+      { "vi": "Nếu không tái hiện được dù đã có máy thì bạn làm gì tiếp?", "en": "What do you do if it still will not reproduce on the device?" }
+    ]
+  },
+  {
+    "id": "maintain-crash-011",
+    "type": "open",
+    "topics": ["maintain/crash", "maintain/regression"],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 300,
+    "lessons": ["maintain-crash-core"],
+    "prompt": {
+      "vi": "Người dùng báo app \"tự tắt\" sau khoảng 20 phút trên các iPhone đời cũ, nhưng Crashlytics không có crash nào tương ứng. Kể lại cách bạn điều tra tình huống này.",
+      "en": "Users report the app \"just closes\" after about 20 minutes on older iPhones, but Crashlytics shows no matching crash. Walk me through how you investigated it."
+    },
+    "keyPoints": [
+      { "vi": "Hiểu rằng app bị hệ điều hành kill (jetsam vì bộ nhớ, watchdog vì main thread treo) không để lại crash report trong process", "en": "Understand that an app killed by the OS (jetsam for memory, the watchdog for a hung main thread) leaves no in-process crash report" },
+      { "vi": "Tìm bằng chứng ngoài crash SDK: Xcode Organizer (mục Terminations), MetricKit (`MXAppExitMetric`), JetsamEvent log trên máy, hoặc tính năng phát hiện watchdog termination của SDK như Sentry", "en": "Look for evidence outside the crash SDK: Xcode Organizer (Terminations), MetricKit (`MXAppExitMetric`), JetsamEvent logs on the device, or an SDK's watchdog termination detection such as Sentry's" },
+      { "vi": "Tái hiện bằng phiên dùng dài trên máy yếu, theo dõi bộ nhớ bằng Xcode Instruments (Allocations, Leaks) hoặc memory graph", "en": "Reproduce with a long session on a low-end device and watch memory with Xcode Instruments (Allocations, Leaks) or the memory graph" },
+      { "vi": "Tách bộ nhớ JS và native: so sánh heap snapshot của Hermes theo thời gian, kiểm tra ảnh, bitmap và cache native", "en": "Separate JS from native memory: compare Hermes heap snapshots over time and check images, bitmaps and native caches" },
+      { "vi": "Sửa nguồn rò rỉ hoặc cache không giới hạn, rồi thêm theo dõi bộ nhớ hoặc số lần bị kill vào dashboard theo version", "en": "Fix the leak or unbounded cache, then add memory or termination tracking to the per-version dashboard" }
+    ],
+    "modelAnswer": {
+      "vi": "\"Tự tắt\" mà không có crash report thường là app bị hệ điều hành kill: jetsam khi dùng quá nhiều bộ nhớ, hoặc watchdog khi main thread treo quá lâu. Crash reporter chạy trong process không kịp ghi gì. Mình tìm bằng chứng ở chỗ khác: Xcode Organizer có số liệu termination theo loại, MetricKit báo lý do thoát qua `MXAppExitMetric`, và máy người dùng có log JetsamEvent. Một số SDK như Sentry có tính năng đoán watchdog termination. Sau đó mình tái hiện bằng một phiên dùng 30 phút trên iPhone cũ, mở Instruments để xem bộ nhớ có tăng đều không. Mình tách phần JS và native: so hai heap snapshot của Hermes cách nhau vài phút, và xem ảnh hay cache native. Khi tìm ra nguồn, mình sửa, chạy thử dài lại, và thêm số liệu termination vào dashboard.",
+      "en": "\"Just closes\" with no crash report usually means the OS killed the app: jetsam for using too much memory, or the watchdog for a main thread that hung too long. An in-process crash reporter has no chance to record anything. So I look elsewhere: Xcode Organizer shows terminations by type, MetricKit reports exit reasons through `MXAppExitMetric`, and the device has JetsamEvent logs. Some SDKs, like Sentry, can infer watchdog terminations. Then I reproduce with a 30-minute session on an old iPhone in Instruments to see whether memory climbs steadily. I separate JS from native: compare two Hermes heap snapshots a few minutes apart, and check images and native caches. Once I find the source, I fix it, run a long soak test again, and add termination numbers to the dashboard."
+    },
+    "followUps": [
+      { "vi": "Watchdog termination khi khởi động khác gì một crash thông thường?", "en": "How is a watchdog termination at launch different from a normal crash?" }
+    ]
+  },
+  {
+    "id": "maintain-crash-012",
+    "type": "mcq",
+    "topics": ["maintain/crash"],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": ["maintain-crash-core"],
+    "multi": false,
+    "prompt": {
+      "vi": "Sự kiện nào làm giảm tỉ lệ crash-free users trong Crashlytics hoặc release health của Sentry?",
+      "en": "Which event lowers the crash-free users rate in Crashlytics or Sentry release health?"
+    },
+    "options": [
+      {
+        "text": { "vi": "Một lỗi được gửi bằng `Sentry.captureException` bên trong `try/catch`", "en": "An error sent with `Sentry.captureException` inside a `try/catch`" },
+        "misconception": { "id": "handled-error-counts-as-crash", "text": { "vi": "Nghĩ rằng lỗi đã xử lý cũng tính là crash. Lỗi non-fatal chỉ đánh dấu phiên là có lỗi; crash-free chỉ tính phiên kết thúc bằng crash.", "en": "Believing handled errors count as crashes. A non-fatal error only marks the session as errored; crash-free counts only sessions that ended in a crash." } }
+      },
+      { "text": { "vi": "Một crash native, hoặc một exception JS fatal làm app dừng", "en": "A native crash, or a fatal JS exception that stops the app" } },
+      {
+        "text": { "vi": "Người dùng vuốt tắt app từ app switcher", "en": "The user swipes the app away in the app switcher" },
+        "misconception": { "id": "force-quit-is-crash", "text": { "vi": "Nghĩ rằng người dùng tự tắt app là crash. Đó là kết thúc phiên bình thường, không phải sự cố.", "en": "Believing a user force-quit is a crash. It is a normal end of session, not a failure." } }
+      },
+      {
+        "text": { "vi": "Một màn hình có nhiều frame chậm khi cuộn", "en": "A screen with many slow frames while scrolling" },
+        "misconception": { "id": "slow-frames-count-as-crash", "text": { "vi": "Nhầm chỉ số hiệu năng với độ ổn định. Frame chậm được đo trong số liệu hiệu năng, không làm giảm tỉ lệ crash-free.", "en": "Mixing performance metrics with stability. Slow frames show up in performance data and do not lower the crash-free rate." } }
+      }
+    ],
+    "answer": [1],
+    "explanation": {
+      "vi": "Crash-free users là tỉ lệ người dùng không gặp crash nào trong khoảng thời gian đang xem; crash-free sessions là tỉ lệ phiên không kết thúc bằng crash. Chỉ crash thật, native hoặc JS fatal, mới bị tính. Lỗi đã bắt và gửi đi là non-fatal: chúng quan trọng để debug nhưng không làm giảm chỉ số này. Hai chỉ số kể hai câu chuyện khác nhau: vài người crash mỗi lần mở app làm sessions giảm mạnh hơn users, nên hãy theo dõi cả hai.",
+      "en": "Crash-free users is the share of users who had no crash in the period you are viewing; crash-free sessions is the share of sessions that did not end in a crash. Only real crashes, native or fatal JS, count. Errors you catch and send are non-fatal: they matter for debugging but do not lower this metric. The two numbers tell different stories, since a few users crashing on every launch can hurt sessions more than users, so watch both."
+    }
+  }
+]

@@ -106,3 +106,27 @@ Dùng chính tả Anh–Anh (optimise, behaviour), trừ thuật ngữ React gi�
 1. `node -e "JSON.parse(require('fs').readFileSync('<file>','utf8'))"` cho từng file JSON.
 2. Kiểm tra id không trùng, `lessons` và `topics` được trỏ tới đều tồn tại, và `answerLine` đếm lại đúng.
 3. Đọc lại bản `vi` và bản `en`, bảo đảm chúng cùng nội dung và cùng đáp án.
+
+## Chủ đề vận hành: release, native, bảo trì
+
+Ba nhóm này bù phần kinh nghiệm khó tự có trong thời gian ngắn, nên ưu tiên **sự cố thật** hơn lý thuyết.
+
+- Mỗi chủ đề có ít nhất 3 item dạng tình huống production, ví dụ:
+  - build bị store reject
+  - crash chỉ xảy ra trên một loại máy hoặc một phiên bản OS
+  - một dependency vỡ sau khi nâng RN
+
+  Các item này dùng `kind: hard-issue` hoặc `pitfall`, và câu `open` viết như người phỏng vấn hỏi "kể lại cách bạn xử lý".
+- Quy định của store thay đổi theo năm: target API level của Play, các yêu cầu của App Store review, privacy manifest… Vì vậy hãy viết theo **cơ chế** và **cách tra cứu** (ví dụ: "Play yêu cầu targetSdk tăng hằng năm, kiểm tra trong Play Console › Policy status"). Không khẳng định con số có thể đã cũ. Bắt buộc phải nêu một con số thì ghi kèm thời điểm.
+- `spot-bug` có thể dùng file cấu hình (Gradle, `Podfile`, `Info.plist`, `app.json`, workflow CI) chứ không chỉ TSX. Xuống dòng vẫn escape là `\n`.
+- Challenge chỉ dùng TypeScript thuần, ví dụ:
+  - so sánh semver để bắt buộc cập nhật
+  - gom nhóm crash theo fingerprint của stack trace
+  - chọn bundle OTA tương thích với runtime version
+  - parse và gom nhóm log
+
+## Tên file
+
+- **Câu hỏi:** `content/questions/<topic-slug>.json`, với slug là id chủ đề thay `/` bằng `-`. Ví dụ `release/ios` → `release-ios.json`, item id `release-ios-001`.
+- **Bài học:** `content/lessons/<root>/<leaf>-core.{vi,en}.md` (và `-pitfalls` nếu có). Ví dụ `content/lessons/release/ios-core.vi.md`, lesson id `release-ios-core`.
+- **Challenge:** `content/challenges/<id>/` với id kebab-case, không trùng challenge có sẵn (`debounce`, `map-limit`).

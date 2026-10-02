@@ -1,0 +1,14 @@
+{
+  "id": "force-update",
+  "type": "challenge",
+  "topics": ["release/ota-ci"],
+  "kind": "advanced",
+  "difficulty": 2,
+  "estSeconds": 600,
+  "lessons": ["release-ota-ci-core"],
+  "title": { "vi": "Quyết định bắt buộc cập nhật theo semver", "en": "Decide a force update with semver" },
+  "hints": [
+    { "vi": "Parse mỗi version một lần thành `[major, minor, patch]` và một mảng định danh prerelease. Patch thiếu thì mặc định là 0.", "en": "Parse each version once into `[major, minor, patch]` and an array of prerelease identifiers. Default a missing patch to 0." },
+    { "vi": "Viết một hàm `compare(a, b)` trả về số âm, 0 hoặc số dương. Kiểm tra `minSupported` trước, rồi mới tới `latest`.", "en": "Write one `compare(a, b)` that returns a negative number, zero or a positive number. Check `minSupported` first, then `latest`." }
+  ]
+}

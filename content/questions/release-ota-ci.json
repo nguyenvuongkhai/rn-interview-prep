@@ -1,0 +1,319 @@
+[
+  {
+    "id": "release-ota-ci-001",
+    "type": "mcq",
+    "topics": ["release/ota-ci"],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": ["release-ota-ci-core"],
+    "multi": false,
+    "prompt": { "vi": "App đang dùng EAS Update. Thay đổi nào gửi qua OTA cho binary hiện tại là an toàn?", "en": "The app uses EAS Update. Which change is safe to ship over the air to the current binary?" },
+    "options": [
+      { "text": { "vi": "Sửa logic tính giá trong một reducer và thay một ảnh được import bằng `require`", "en": "Fixing price logic in a reducer and swapping an image imported with `require`" } },
+      {
+        "text": { "vi": "Thêm thư viện quét mã vạch có native module mới", "en": "Adding a barcode scanner library that ships a new native module" },
+        "misconception": { "id": "ota-ships-native-code", "text": { "vi": "Nghĩ rằng OTA mang được native code. Update chỉ thay bundle JS và asset; native module mới phải có sẵn trong binary, nếu không JS sẽ gọi tới một module không tồn tại.", "en": "Believing OTA can carry native code. An update only replaces the JS bundle and assets; a new native module must already be in the binary, or the JS calls a module that does not exist." } }
+      },
+      {
+        "text": { "vi": "Thêm `NSCameraUsageDescription` vào Info.plist cho tính năng chụp ảnh mới", "en": "Adding `NSCameraUsageDescription` to Info.plist for a new photo feature" },
+        "misconception": { "id": "ota-ships-native-config", "text": { "vi": "Nghĩ rằng OTA đổi được cấu hình native. Info.plist, AndroidManifest, quyền và icon nằm trong binary đã ký; đổi chúng cần build mới.", "en": "Believing OTA can change native configuration. Info.plist, AndroidManifest, permissions and icons live in the signed binary; changing them needs a new build." } }
+      },
+      {
+        "text": { "vi": "Nâng React Native lên bản minor tiếp theo", "en": "Upgrading React Native to the next minor version" },
+        "misconception": { "id": "ota-ships-rn-upgrade", "text": { "vi": "Nghĩ rằng nâng RN chỉ là đổi JS. Mỗi bản RN có phần native riêng, nên bundle JS mới chạy trên binary cũ rất dễ crash.", "en": "Believing an RN upgrade is JS-only. Each RN release has its own native side, so a new JS bundle on the old binary is likely to crash." } }
+      }
+    ],
+    "answer": [0],
+    "explanation": { "vi": "OTA thay bundle JS và các asset mà bundle tham chiếu (ảnh, font qua `require`). Mọi thứ nằm trong binary đã ký, như native module, phiên bản RN, Info.plist, AndroidManifest, quyền hay icon, đều cần build mới qua store. Thoả thuận developer của Apple cho phép tải code thông dịch như JS, miễn là không đổi mục đích chính của app và không lách review; chính sách Device and Network Abuse của Google Play miễn trừ code chạy trong trình thông dịch như JavaScript.", "en": "OTA replaces the JS bundle and the assets it references (images and fonts via `require`). Anything inside the signed binary, such as native modules, the RN version, Info.plist, AndroidManifest, permissions or icons, needs a new store build. Apple's developer agreement allows downloaded interpreted code such as JS as long as it does not change the app's primary purpose or bypass review; Google Play's Device and Network Abuse policy exempts code that runs in an interpreter such as JavaScript." }
+  },
+  {
+    "id": "release-ota-ci-002",
+    "type": "mcq",
+    "topics": ["release/ota-ci"],
+    "kind": "core",
+    "difficulty": 2,
+    "estSeconds": 75,
+    "lessons": ["release-ota-ci-core"],
+    "multi": false,
+    "prompt": { "vi": "Trong `app.json`, `runtimeVersion` dùng policy `appVersion`. Bản 3.2 thêm một native module, nhưng team quên tăng `version`, vẫn là 3.1.0. Điều gì xảy ra khi bạn publish update từ code 3.2?", "en": "In `app.json`, `runtimeVersion` uses the `appVersion` policy. Release 3.2 adds a native module, but the team forgot to bump `version`, which is still 3.1.0. What happens when you publish an update from the 3.2 code?" },
+    "options": [
+      { "text": { "vi": "Update đến cả binary cũ cùng runtime 3.1.0, và chúng crash khi JS gọi native module chưa có", "en": "Old binaries on the same 3.1.0 runtime get it too, and crash when the JS calls the missing module" } },
+      {
+        "text": { "vi": "EAS Update phát hiện native khác nhau và không gửi update cho binary cũ", "en": "EAS Update detects the native difference and skips the older binaries" },
+        "misconception": { "id": "runtime-auto-detects-native", "text": { "vi": "Nghĩ rằng EAS tự kiểm tra phần native. Với policy `appVersion`, runtime version chỉ là chuỗi lấy từ `version`; chỉ policy `fingerprint` mới tính từ chính native project.", "en": "Believing EAS checks native compatibility for you. With the `appVersion` policy the runtime version is just the `version` string; only the `fingerprint` policy derives it from the native project itself." } }
+      },
+      {
+        "text": { "vi": "Binary cũ tải update rồi tự quay về bundle nhúng sẵn, nên không ai bị ảnh hưởng", "en": "Older binaries download it, then fall back to their embedded bundle, so nobody is affected" },
+        "misconception": { "id": "ota-recovery-always-saves", "text": { "vi": "Tin rằng cơ chế phục hồi luôn cứu được. Phục hồi của `expo-updates` nhắm vào update lỗi ngay lúc khởi động; crash xảy ra sau đó, khi người dùng mở một màn hình, vẫn đến tay người dùng.", "en": "Trusting recovery to always save you. `expo-updates` recovery targets updates that fail right at launch; a crash later, when the user opens a screen, still reaches users." } }
+      },
+      {
+        "text": { "vi": "Update chỉ đến binary 3.2 vì EAS so khớp theo tên nhánh git", "en": "The update only reaches 3.2 binaries because EAS matches on the git branch name" },
+        "misconception": { "id": "eas-branch-is-git", "text": { "vi": "Nhầm branch của EAS với nhánh git. EAS gửi update theo channel của build và runtime version; branch của EAS là một luồng update, không gắn với git.", "en": "Confusing EAS branches with git branches. EAS delivers by the build's channel and runtime version; an EAS branch is a stream of updates, not tied to git." } }
+      }
+    ],
+    "answer": [0],
+    "explanation": { "vi": "Runtime version là lời cam kết của bạn rằng JS và phần native khớp nhau. EAS chỉ so chuỗi: build và update có cùng channel và cùng runtime version thì update được gửi. Policy `appVersion` chỉ an toàn khi team luôn tăng `version` mỗi lần native đổi. Policy `fingerprint` băm native project và dependency native, nên một thay đổi native tự sinh runtime version mới. Dù dùng policy nào, hãy thêm bước kiểm tra trên CI trước khi publish.", "en": "The runtime version is your promise that the JS and the native side match. EAS only compares strings: a build and an update with the same channel and runtime version get matched. The `appVersion` policy is only safe if the team always bumps `version` when native code changes. The `fingerprint` policy hashes the native project and native dependencies, so a native change produces a new runtime version automatically. Whichever you use, add a CI check before publishing." }
+  },
+  {
+    "id": "release-ota-ci-003",
+    "type": "mcq",
+    "topics": ["release/ota-ci"],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 75,
+    "lessons": ["release-ota-ci-core"],
+    "multi": false,
+    "prompt": { "vi": "Với `react-native-code-push`, một update làm app crash ngay khi khởi động. Điều gì khiến client tự quay về bundle trước?", "en": "With `react-native-code-push`, an update crashes the app right at launch. What makes the client revert to the previous bundle?" },
+    "options": [
+      { "text": { "vi": "Bundle mới chỉ được giữ sau khi app gọi `notifyAppReady()`; restart trước đó thì quay về bản cũ", "en": "A new bundle is kept only once the app calls `notifyAppReady()`; a restart before that reverts to the old bundle" } },
+      {
+        "text": { "vi": "Server CodePush đọc dữ liệu crash từ App Store Connect và Play Console rồi tự rút update", "en": "The CodePush server reads crashes from App Store Connect and Play Console and pulls the update" },
+        "misconception": { "id": "ota-server-reads-store-crashes", "text": { "vi": "Nghĩ rằng server OTA đọc dữ liệu crash của store. Rollback tự động diễn ra ở client; rút update trên server là việc bạn phải làm.", "en": "Believing the OTA server reads store crash data. Automatic rollback happens on the client; pulling an update on the server is your job." } }
+      },
+      {
+        "text": { "vi": "Hệ điều hành phát hiện crash lặp lại và cài lại binary từ store", "en": "The OS detects repeated crashes and reinstalls the binary from the store" },
+        "misconception": { "id": "os-reinstalls-on-crash", "text": { "vi": "Nghĩ rằng hệ điều hành can thiệp. iOS và Android không biết gì về bundle OTA; chỉ thư viện OTA trong app quyết định bundle nào được nạp.", "en": "Believing the OS steps in. iOS and Android know nothing about OTA bundles; only the OTA library inside the app decides which bundle loads." } }
+      },
+      {
+        "text": { "vi": "Mỗi update có hạn 24 giờ; hết hạn mà chưa được xác nhận thì bị xoá", "en": "Each update has a 24-hour lease and is deleted if nobody confirms it" },
+        "misconception": { "id": "ota-update-lease", "text": { "vi": "Bịa ra thời hạn cho update. Không có thời hạn nào; client quay về bản cũ khi bundle mới chưa được xác nhận trước lần khởi động lại kế tiếp.", "en": "Inventing an expiry for updates. There is none; the client reverts when the new bundle is not confirmed before the next restart." } }
+      }
+    ],
+    "answer": [0],
+    "explanation": { "vi": "CodePush cài bundle mới ở trạng thái chờ. `sync()` tự gọi `notifyAppReady()` khi app chạy được; nếu app crash và khởi động lại trước đó, client đánh dấu update lỗi và quay về bundle trước. Vì vậy đừng gọi `notifyAppReady()` quá sớm. Lưu ý: Microsoft đã ngừng App Center, gồm cả CodePush hosted, từ 31/3/2025; nhiều team chuyển sang server CodePush tự host hoặc EAS Update, nhưng khái niệm chờ, xác nhận và rollback vẫn như cũ.", "en": "CodePush installs a new bundle as pending. `sync()` calls `notifyAppReady()` once the app is running; if the app crashes and restarts before that, the client marks the update as failed and reverts to the previous bundle. So never call `notifyAppReady()` too early. Note that Microsoft retired App Center, including hosted CodePush, on 31 March 2025; many teams moved to a self-hosted CodePush server or EAS Update, but the pending, confirm and rollback concepts are the same." }
+  },
+  {
+    "id": "release-ota-ci-004",
+    "type": "mcq",
+    "topics": ["release/ota-ci"],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": ["release-ota-ci-core"],
+    "multi": false,
+    "prompt": { "vi": "Theo Semantic Versioning, dãy nào xếp đúng thứ tự tăng dần?", "en": "Under Semantic Versioning, which sequence is in ascending order?" },
+    "options": [
+      { "text": { "vi": "`2.9.0` < `2.10.0-rc.2` < `2.10.0-rc.10` < `2.10.0`", "en": "`2.9.0` < `2.10.0-rc.2` < `2.10.0-rc.10` < `2.10.0`" } },
+      {
+        "text": { "vi": "`2.10.0` < `2.9.0` < `2.10.0-rc.2` < `2.10.0-rc.10`", "en": "`2.10.0` < `2.9.0` < `2.10.0-rc.2` < `2.10.0-rc.10`" },
+        "misconception": { "id": "semver-lexical-compare", "text": { "vi": "So sánh version như chuỗi. Semver so từng phần theo số, nên 10 lớn hơn 9 dù ký tự 1 đứng trước 9.", "en": "Comparing versions as strings. Semver compares each part as a number, so 10 is greater than 9 even though the character 1 sorts before 9." } }
+      },
+      {
+        "text": { "vi": "`2.9.0` < `2.10.0` < `2.10.0-rc.2` < `2.10.0-rc.10`", "en": "`2.9.0` < `2.10.0` < `2.10.0-rc.2` < `2.10.0-rc.10`" },
+        "misconception": { "id": "prerelease-after-release", "text": { "vi": "Nghĩ rằng bản có hậu tố prerelease đứng sau bản chính thức. `2.10.0-rc.2` là bản trước khi phát hành, nên nhỏ hơn `2.10.0`.", "en": "Believing a prerelease sorts after its release. `2.10.0-rc.2` comes before the release, so it is lower than `2.10.0`." } }
+      },
+      {
+        "text": { "vi": "`2.9.0` < `2.10.0-rc.10` < `2.10.0-rc.2` < `2.10.0`", "en": "`2.9.0` < `2.10.0-rc.10` < `2.10.0-rc.2` < `2.10.0`" },
+        "misconception": { "id": "prerelease-lexical", "text": { "vi": "So sánh định danh prerelease như chuỗi. Định danh chỉ gồm chữ số được so theo số, nên `rc.2` nhỏ hơn `rc.10`.", "en": "Comparing prerelease identifiers as strings. Purely numeric identifiers compare as numbers, so `rc.2` is lower than `rc.10`." } }
+      }
+    ],
+    "answer": [0],
+    "explanation": { "vi": "Semver so `MAJOR`, `MINOR`, `PATCH` theo số. Khi ba phần bằng nhau, bản có prerelease nhỏ hơn bản chính thức, và các định danh prerelease được so lần lượt: định danh số so theo số, định danh chữ so theo chuỗi. Lưu ý `CFBundleShortVersionString` của App Store chỉ nhận tối đa ba số nguyên ngăn bằng dấu chấm, nên hậu tố prerelease thường chỉ xuất hiện ở build nội bộ, config server hay version của package JS.", "en": "Semver compares `MAJOR`, `MINOR` and `PATCH` as numbers. When those are equal, a prerelease is lower than the release, and prerelease identifiers are compared in turn: numeric ones as numbers, alphanumeric ones as strings. Note that the App Store's `CFBundleShortVersionString` only accepts up to three period-separated integers, so prerelease tags usually appear only in internal builds, server config or JS package versions." }
+  },
+  {
+    "id": "release-ota-ci-005",
+    "type": "mcq",
+    "topics": ["release/ota-ci"],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": ["release-ota-ci-core"],
+    "multi": true,
+    "prompt": { "vi": "Pipeline GitHub Actions của bạn ký build iOS và Android. Những cách làm nào giữ an toàn cho thông tin ký? (chọn tất cả đáp án đúng)", "en": "Your GitHub Actions pipeline signs iOS and Android builds. Which practices keep the signing credentials safe? (select all that apply)" },
+    "options": [
+      { "text": { "vi": "Lưu keystore dạng base64 trong secret, giải mã ra file tạm lúc build và không bao giờ commit", "en": "Store the keystore as a base64 secret, decode it to a temp file at build time, and never commit it" } },
+      { "text": { "vi": "Chạy fastlane `match` với `readonly: true` trên CI để CI không tự tạo certificate", "en": "Run fastlane `match` with `readonly: true` on CI so it never creates certificates" } },
+      { "text": { "vi": "Dùng App Store Connect API key thay cho Apple ID có bật 2FA", "en": "Use an App Store Connect API key instead of an Apple ID with 2FA" } },
+      {
+        "text": { "vi": "In secret ra log khi debug cũng không sao, vì GitHub luôn tự che mọi giá trị secret", "en": "Printing secrets to the log while debugging is fine, because GitHub always masks them" },
+        "misconception": { "id": "ci-log-masking-reliable", "text": { "vi": "Tin hoàn toàn vào việc che log. Việc che chỉ khớp đúng chuỗi secret; một giá trị đã base64, cắt bớt hay đổi định dạng vẫn lộ ra.", "en": "Trusting log masking completely. Masking only matches the exact secret string; a value that is base64-encoded, truncated or reformatted still leaks." } }
+      },
+      {
+        "text": { "vi": "Dùng `pull_request_target` để PR từ fork cũng build và ký được như PR nội bộ", "en": "Use `pull_request_target` so pull requests from forks can build and sign like internal ones" },
+        "misconception": { "id": "pull-request-target-safe", "text": { "vi": "Nghĩ rằng `pull_request_target` an toàn cho PR từ fork. Nó chạy với secret của repo gốc; nếu checkout và chạy code của PR, code lạ đọc được secret.", "en": "Believing `pull_request_target` is safe for fork PRs. It runs with the base repo's secrets; if it checks out and runs the PR's code, untrusted code can read them." } }
+      }
+    ],
+    "answer": [0, 1, 2],
+    "explanation": { "vi": "Thông tin ký là thứ khó thay nhất trong pipeline, nên giữ nó trong secret và chỉ giải mã ra file tạm trong job. `match` readonly bảo đảm CI không tự tạo certificate hay profile mới, việc đó chỉ admin làm. API key của App Store Connect không cần 2FA và thu hồi được riêng lẻ. Che log chỉ là lớp bảo vệ cuối, còn `pull_request_target` kèm checkout code của PR là một lỗ hổng phổ biến: chỉ ký build trên nhánh và tag đáng tin.", "en": "Signing material is the hardest thing in the pipeline to replace, so keep it in secrets and decode it only to a temp file inside the job. Read-only `match` ensures CI never creates certificates or profiles; only an admin does that. An App Store Connect API key needs no 2FA and can be revoked on its own. Log masking is a last line of defence, and `pull_request_target` combined with checking out the PR's code is a well-known hole: only sign builds from trusted branches and tags." }
+  },
+  {
+    "id": "release-ota-ci-006",
+    "type": "mcq",
+    "topics": ["release/ota-ci"],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": ["release-ota-ci-core"],
+    "multi": true,
+    "prompt": { "vi": "Build RN trên CI mất 40 phút. Những cách cache nào hợp lý? (chọn tất cả đáp án đúng)", "en": "The RN build on CI takes 40 minutes. Which caching choices are sound? (select all that apply)" },
+    "options": [
+      { "text": { "vi": "Cache thư mục cache của package manager, key là hash của lockfile", "en": "Cache the package manager's cache directory, keyed on the lockfile hash" } },
+      { "text": { "vi": "Cache CocoaPods, key là hash của `Podfile.lock`", "en": "Cache CocoaPods, keyed on the hash of `Podfile.lock`" } },
+      { "text": { "vi": "Cache `~/.gradle/caches` và wrapper, key theo hash các file Gradle", "en": "Cache `~/.gradle/caches` and the wrapper, keyed on the Gradle files' hash" } },
+      {
+        "text": { "vi": "Dùng commit SHA làm cache key để lần chạy nào cũng trúng cache", "en": "Use the commit SHA as the cache key so every run hits the cache" },
+        "misconception": { "id": "cache-key-commit-sha", "text": { "vi": "Hiểu ngược cách cache key hoạt động. Key riêng cho từng commit nghĩa là lần chạy mới hầu như không bao giờ khớp, trừ khi có restore key dự phòng.", "en": "Getting cache keys backwards. A key unique to each commit means a new run almost never matches, unless a fallback restore key catches it." } }
+      },
+      {
+        "text": { "vi": "Key theo `package.json` là đủ, không cần lockfile", "en": "Keying on `package.json` is enough; the lockfile is not needed" },
+        "misconception": { "id": "cache-key-package-json", "text": { "vi": "Nghĩ rằng package.json chốt được dependency. Nó chỉ ghi khoảng version; lockfile mới ghi đúng bản đã cài, nên key theo package.json có thể trả về cache cũ.", "en": "Believing package.json pins dependencies. It holds version ranges; only the lockfile records what was installed, so a package.json key can restore a stale cache." } }
+      }
+    ],
+    "answer": [0, 1, 2],
+    "explanation": { "vi": "Cache key tốt thay đổi đúng khi nội dung được cache thay đổi: lockfile cho dependency JS, `Podfile.lock` cho Pods, file Gradle và wrapper cho Gradle. Thêm restore key theo tiền tố để lần chạy đầu sau khi đổi dependency vẫn dùng lại phần lớn cache cũ. Đo trước khi tối ưu: nhiều pipeline mất thời gian ở bước compile native hay chờ máy macOS hơn là ở bước cài dependency.", "en": "A good cache key changes exactly when the cached content changes: the lockfile for JS dependencies, `Podfile.lock` for Pods, the Gradle files and wrapper for Gradle. Add prefix restore keys so the first run after a dependency change still reuses most of the old cache. Measure before optimising: many pipelines lose more time compiling native code or waiting for a macOS runner than installing dependencies." }
+  },
+  {
+    "id": "release-ota-ci-007",
+    "type": "spot-bug",
+    "topics": ["release/ota-ci"],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 120,
+    "lessons": ["release-ota-ci-core"],
+    "prompt": { "vi": "Bản 3.2.0 thêm `expo-camera`. Sau khi publish một update từ code 3.2, người dùng còn ở binary 3.1 (chưa có `expo-camera`) crash khi mở màn hình quét mã. Dòng nào trong `app.json` gây ra lỗi?", "en": "Release 3.2.0 adds `expo-camera`. After an update is published from the 3.2 code, users still on the 3.1 binary (without `expo-camera`) crash when they open the scanner screen. Which line in `app.json` causes it?" },
+    "code": "{\n  \"expo\": {\n    \"name\": \"Parcel\",\n    \"slug\": \"parcel\",\n    \"version\": \"3.2.0\",\n    \"runtimeVersion\": \"1.0.0\",\n    \"updates\": {\n      \"url\": \"https://u.expo.dev/3f6c1c2e-8f8a-4c47-9d2b-5b8f0f6a1a10\"\n    },\n    \"ios\": { \"bundleIdentifier\": \"com.acme.parcel\" },\n    \"android\": { \"package\": \"com.acme.parcel\" },\n    \"plugins\": [\"expo-camera\", \"expo-notifications\"]\n  }\n}",
+    "answerLine": 6,
+    "causeOptions": [
+      { "text": { "vi": "`runtimeVersion` viết cứng, không đổi theo native, nên binary 3.1 vẫn nhận update của 3.2", "en": "`runtimeVersion` is hard-coded and ignores native changes, so 3.1 binaries get 3.2's updates" } },
+      {
+        "text": { "vi": "`version` phải bằng `runtimeVersion`, nếu không update không bao giờ được gửi", "en": "`version` must equal `runtimeVersion`, or updates are never delivered" },
+        "misconception": { "id": "version-must-match-runtime", "text": { "vi": "Nghĩ rằng hai trường phải bằng nhau. Chúng độc lập; chỉ khi dùng policy `appVersion` thì runtime version mới lấy từ `version`.", "en": "Believing the two fields must match. They are independent; only the `appVersion` policy derives the runtime version from `version`." } }
+      },
+      {
+        "text": { "vi": "`updates.url` phải trỏ tới một server riêng cho từng nền tảng", "en": "`updates.url` must point to a separate server for each platform" },
+        "misconception": { "id": "updates-url-per-platform", "text": { "vi": "Nghĩ rằng mỗi nền tảng cần URL riêng. Một URL của project dùng cho cả iOS và Android; client gửi kèm nền tảng và runtime version khi hỏi update.", "en": "Believing each platform needs its own URL. One project URL serves iOS and Android; the client sends its platform and runtime version when it asks for an update." } }
+      },
+      {
+        "text": { "vi": "Config plugin chỉ chạy khi publish update, nên `expo-camera` chưa bao giờ vào binary", "en": "Config plugins only run when an update is published, so `expo-camera` never reached the binary" },
+        "misconception": { "id": "config-plugins-at-update", "text": { "vi": "Nhầm thời điểm config plugin chạy. Plugin chạy lúc prebuild và build để sửa native project; publish update không đụng tới phần native.", "en": "Confusing when config plugins run. They run at prebuild and build time to modify the native project; publishing an update never touches native code." } }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": { "vi": "Dòng 6 khai runtime version là chuỗi cố định `1.0.0`, nên binary 3.1 và 3.2 có cùng runtime và nhận chung một update. Update từ code 3.2 gọi native module của `expo-camera`, thứ không có trong binary 3.1. Dùng `\"runtimeVersion\": { \"policy\": \"fingerprint\" }` để runtime đổi theo native project, hoặc dùng `appVersion` và luôn tăng `version` khi native đổi. Muốn sửa người dùng 3.1 đang lỗi, republish update tốt gần nhất lên branch của họ.", "en": "Line 6 pins the runtime version to the fixed string `1.0.0`, so 3.1 and 3.2 binaries share a runtime and receive the same updates. An update from the 3.2 code calls the `expo-camera` native module, which the 3.1 binary does not have. Use `\"runtimeVersion\": { \"policy\": \"fingerprint\" }` so the runtime follows the native project, or use `appVersion` and always bump `version` when native code changes. To fix the affected 3.1 users, republish the last good update to their branch." }
+  },
+  {
+    "id": "release-ota-ci-008",
+    "type": "spot-bug",
+    "topics": ["release/ota-ci"],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 120,
+    "lessons": ["release-ota-ci-core"],
+    "prompt": { "vi": "Lane `beta` chạy trên CI. Archive thành công, nhưng bước export báo không có provisioning profile phù hợp để phân phối `com.acme.parcel` qua App Store. Dòng nào trong `Fastfile` gây ra lỗi?", "en": "The `beta` lane runs on CI. The archive succeeds, but export reports no provisioning profile suitable for distributing `com.acme.parcel` through the App Store. Which line in the `Fastfile` causes it?" },
+    "code": "default_platform(:ios)\n\nplatform :ios do\n  lane :beta do\n    setup_ci\n    app_store_connect_api_key(\n      key_id: ENV[\"ASC_KEY_ID\"],\n      issuer_id: ENV[\"ASC_ISSUER_ID\"],\n      key_content: ENV[\"ASC_KEY_P8\"]\n    )\n    match(type: \"development\", readonly: is_ci)\n    increment_build_number(\n      xcodeproj: \"ios/Parcel.xcodeproj\",\n      build_number: latest_testflight_build_number + 1\n    )\n    build_app(workspace: \"ios/Parcel.xcworkspace\", scheme: \"Parcel\", export_method: \"app-store\")\n    upload_to_testflight(skip_waiting_for_build_processing: true)\n  end\nend",
+    "answerLine": 11,
+    "causeOptions": [
+      { "text": { "vi": "`match` lấy profile development, nhưng export cho App Store cần profile `appstore`", "en": "`match` fetches a development profile, but an App Store export needs an `appstore` profile" } },
+      {
+        "text": { "vi": "`setup_ci` phải đứng sau `match`", "en": "`setup_ci` must come after `match`" },
+        "misconception": { "id": "setup-ci-order", "text": { "vi": "Hiểu sai vai trò của `setup_ci`. Nó tạo keychain tạm trên CI để `match` cài certificate vào, nên phải chạy trước `match`.", "en": "Misreading what `setup_ci` does. It creates a temporary keychain on CI for `match` to install certificates into, so it must run before `match`." } }
+      },
+      {
+        "text": { "vi": "`readonly: is_ci` khiến `match` không cài được certificate nào trên máy CI", "en": "`readonly: is_ci` stops `match` from installing certificates on CI" },
+        "misconception": { "id": "match-readonly-no-install", "text": { "vi": "Nghĩ rằng readonly chặn cả việc cài. Readonly chỉ cấm tạo hay sửa certificate và profile trong kho; `match` vẫn tải và cài chúng.", "en": "Believing read-only blocks installation. It only forbids creating or changing certificates and profiles in storage; `match` still downloads and installs them." } }
+      },
+      {
+        "text": { "vi": "`skip_waiting_for_build_processing` làm build không bao giờ được Apple xử lý", "en": "`skip_waiting_for_build_processing` means Apple never processes the uploaded build" },
+        "misconception": { "id": "skip-processing-skips", "text": { "vi": "Hiểu sai tuỳ chọn này. Nó chỉ cho lane kết thúc sớm; Apple vẫn xử lý build như bình thường.", "en": "Misreading the option. It only lets the lane finish early; Apple still processes the build as usual." } }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": { "vi": "TestFlight nhận build ký để phân phối qua App Store. Dòng 11 chỉ cài certificate và profile development, nên `build_app` với `export_method: \"app-store\"` không tìm được profile phù hợp. Sửa thành `match(type: \"appstore\", readonly: is_ci)`. Các bước còn lại đúng thứ tự: `setup_ci` tạo keychain tạm, API key cho phép `match` và `latest_testflight_build_number` gọi App Store Connect mà không cần 2FA.", "en": "TestFlight takes builds signed for App Store distribution. Line 11 installs only a development certificate and profile, so `build_app` with `export_method: \"app-store\"` finds no suitable profile. Change it to `match(type: \"appstore\", readonly: is_ci)`. The other steps are in the right order: `setup_ci` creates a temporary keychain, and the API key lets `match` and `latest_testflight_build_number` call App Store Connect without 2FA." }
+  },
+  {
+    "id": "release-ota-ci-009",
+    "type": "spot-bug",
+    "topics": ["release/ota-ci"],
+    "kind": "hard-issue",
+    "difficulty": 2,
+    "estSeconds": 120,
+    "lessons": ["release-ota-ci-core"],
+    "prompt": { "vi": "Backend sắp bỏ một API cũ, nên bạn nâng `minSupported` lên `2.10.0`. Người dùng 2.9.x không hề bị yêu cầu cập nhật và gặp lỗi khi gọi API. Dòng nào gây ra lỗi?", "en": "The backend is dropping an old API, so you raise `minSupported` to `2.10.0`. Users on 2.9.x are never asked to update and hit errors calling the API. Which line causes it?" },
+    "code": "import DeviceInfo from 'react-native-device-info';\n\ntype Policy = { latest: string; minSupported: string };\nexport type UpdateMode = 'none' | 'soft' | 'force';\n\nfunction isOlder(installed: string, target: string): boolean {\n  return installed < target;\n}\n\nexport async function checkForUpdate(fetchPolicy: () => Promise<Policy>): Promise<UpdateMode> {\n  const installed = DeviceInfo.getVersion();\n  let policy: Policy;\n  try {\n    policy = await fetchPolicy();\n  } catch {\n    return 'none';\n  }\n  if (isOlder(installed, policy.minSupported)) return 'force';\n  return isOlder(installed, policy.latest) ? 'soft' : 'none';\n}",
+    "answerLine": 7,
+    "causeOptions": [
+      { "text": { "vi": "So sánh chuỗi theo từng ký tự, nên `'2.9.5' < '2.10.0'` là `false`", "en": "It compares strings character by character, so `'2.9.5' < '2.10.0'` is `false`" } },
+      {
+        "text": { "vi": "`DeviceInfo.getVersion()` trả về build number chứ không phải version", "en": "`DeviceInfo.getVersion()` returns the build number, not the version" },
+        "misconception": { "id": "getversion-is-build-number", "text": { "vi": "Nhầm hai hàm. `getVersion()` trả về version hiển thị (`versionName` hay `CFBundleShortVersionString`); `getBuildNumber()` mới trả về build number.", "en": "Mixing up the two functions. `getVersion()` returns the display version (`versionName` or `CFBundleShortVersionString`); `getBuildNumber()` returns the build number." } }
+      },
+      {
+        "text": { "vi": "Lỗi mạng trả về `'none'`; phải trả về `'force'` cho an toàn", "en": "A network error returns `'none'`; it should return `'force'` to be safe" },
+        "misconception": { "id": "force-update-fail-closed", "text": { "vi": "Nghĩ rằng chặn người dùng khi lỗi mạng là an toàn hơn. Nếu server cấu hình gặp sự cố, mọi người dùng bị khoá ngoài app; nên bỏ qua lần kiểm tra này và thử lại sau.", "en": "Believing failing closed is safer. If the config server has an outage, every user is locked out of the app; skip this check and try again later." } }
+      },
+      {
+        "text": { "vi": "Kiểm tra `force` phải đứng sau kiểm tra `soft`", "en": "The `force` check must come after the `soft` check" },
+        "misconception": { "id": "soft-before-force", "text": { "vi": "Đảo thứ tự ưu tiên. Bản cũ hơn `minSupported` thì luôn cũ hơn `latest`, nên kiểm tra `soft` trước sẽ không bao giờ trả về `force`.", "en": "Inverting the priority. A version below `minSupported` is always below `latest` too, so checking `soft` first would never return `force`." } }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": { "vi": "Dòng 7 so hai chuỗi theo từng ký tự: tới ký tự thứ ba, `9` lớn hơn `1`, nên `2.9.5` bị xem là mới hơn `2.10.0` và không ai ở 2.9.x bị bắt cập nhật. Hãy tách version thành các phần số rồi so từng phần, coi patch thiếu là 0 và prerelease nhỏ hơn bản chính thức; hoặc dùng `semver.lt` của package `semver`, nhớ `semver.coerce` cho chuỗi như `3.1`. Fail-open khi lỗi mạng là lựa chọn đúng.", "en": "Line 7 compares two strings character by character: at the third character `9` beats `1`, so `2.9.5` counts as newer than `2.10.0` and nobody on 2.9.x is forced to update. Split versions into numeric parts and compare part by part, treating a missing patch as 0 and a prerelease as lower than its release; or use `semver.lt` from the `semver` package, remembering `semver.coerce` for strings such as `3.1`. Failing open on a network error is the right call." }
+  },
+  {
+    "id": "release-ota-ci-010",
+    "type": "open",
+    "topics": ["release/ota-ci"],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 330,
+    "lessons": ["release-ota-ci-core"],
+    "prompt": { "vi": "Bạn vừa publish một update lên channel production, và 15 phút sau crash tăng vọt: app crash khi mở giỏ hàng. Kể lại cách bạn xử lý.", "en": "You have just published an update to the production channel, and 15 minutes later crashes spike: the app crashes when the cart opens. Walk me through how you handle it." },
+    "keyPoints": [
+      { "vi": "Chặn lan rộng ngay: republish update tốt gần nhất lên branch của channel production (ví dụ `eas update:republish`), hoặc rollback trên server OTA đang dùng", "en": "Stop the spread first: republish the last good update to the production channel's branch (for example `eas update:republish`), or roll back on whichever OTA server you use" },
+      { "vi": "Biết ai còn bị ảnh hưởng: client chỉ nhận bản sửa ở lần kiểm tra update kế tiếp, và ID của update trong báo cáo crash cho biết crash đến từ update nào", "en": "Know who is still affected: clients only get the fix on their next update check, and the update ID in crash reports shows which update each crash came from" },
+      { "vi": "Đọc stack trace bằng source map của đúng update đó, nên pipeline phải upload source map ở mỗi lần publish", "en": "Read the stack trace with that update's own source maps, so the pipeline must upload them on every publish" },
+      { "vi": "Publish bản sửa từ từ: thử trên channel staging với binary production trước, rồi rollout theo phần trăm nếu nền tảng hỗ trợ", "en": "Publish the fix gradually: try it on a staging channel with a production binary first, then roll out by percentage if the platform supports it" },
+      { "vi": "Sau sự cố: OTA phải đi qua cùng pipeline, test và review như build store, kèm kiểm tra runtime version tự động", "en": "Afterwards: OTA publishes go through the same pipeline, tests and review as a store build, with an automatic runtime version check" }
+    ],
+    "modelAnswer": { "vi": "Việc đầu tiên là chặn lan rộng: mình republish update tốt gần nhất lên branch của channel production, ví dụ bằng `eas update:republish`, để client kiểm tra update sẽ nhận bundle chạy được. Sau đó mình xác định ai còn bị ảnh hưởng. Client chỉ nhận bản sửa ở lần kiểm tra update kế tiếp, và ID của update trong báo cáo crash cho mình biết crash đến từ update nào. Mình đọc stack trace bằng source map của chính update đó, việc chỉ làm được nếu pipeline upload source map mỗi lần publish. Bản sửa đi lên channel staging với binary production trước, rồi lên production theo kiểu rollout phần trăm. Sau sự cố, mình bắt mọi lần publish OTA đi qua cùng pipeline, test và review như một build store.", "en": "First I stop the spread: I republish the last good update to the production channel's branch, for example with `eas update:republish`, so clients that check for updates get a working bundle. Then I work out who is still affected. Clients only pick up the fix on their next update check, and the update ID in crash reports tells me which update each crash came from. I read the stack trace with that update's own source maps, which only works if the pipeline uploads them on every publish. The fix goes to a staging channel on a production binary first, then to production as a percentage rollout. Afterwards I make every OTA publish go through the same pipeline, tests and review as a store build." },
+    "followUps": [
+      { "vi": "Nếu update crash ngay lúc khởi động thì người dùng có nhận được bản republish không?", "en": "If the update crashes right at launch, will users ever receive the republished one?" },
+      { "vi": "Khi nào bạn chọn ra binary mới thay vì gửi OTA?", "en": "When would you ship a new binary instead of an OTA update?" }
+    ]
+  },
+  {
+    "id": "release-ota-ci-011",
+    "type": "open",
+    "topics": ["release/ota-ci"],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 300,
+    "lessons": ["release-ota-ci-core"],
+    "prompt": { "vi": "Backend sắp bỏ một API cũ, nên mọi bản app dưới 2.10.0 sẽ hỏng. Bạn thiết kế cơ chế bắt buộc cập nhật thế nào?", "en": "The backend is about to drop an old API, so every app version below 2.10.0 will break. How do you design a force-update mechanism?" },
+    "keyPoints": [
+      { "vi": "Server trả về `latest` và `minSupported` theo từng nền tảng; app kiểm tra lúc khởi động và khi trở lại foreground, nên đổi ngưỡng không cần release", "en": "The server returns `latest` and `minSupported` per platform; the app checks at launch and on returning to the foreground, so thresholds change without a release" },
+      { "vi": "So version native của binary, không phải nhãn OTA, theo từng phần số của semver; patch thiếu coi là 0, prerelease nhỏ hơn bản chính thức", "en": "Compare the binary's native version, not an OTA label, part by part as semver numbers; a missing patch is 0 and a prerelease is below its release" },
+      { "vi": "Hai mức: soft là lời nhắc đóng được, force là màn hình chặn có nút mở store; trên Android có thể dùng In-App Updates của Play", "en": "Two levels: soft is a dismissible prompt, force is a blocking screen linking to the store; on Android, Play In-App Updates can drive it" },
+      { "vi": "Chỉ nâng `minSupported` khi bản mới đã đến được mọi người: rollout 100% trên Play, đã được duyệt và phát hành trên App Store", "en": "Only raise `minSupported` once the new version is available to everyone: 100% on Play, approved and released on the App Store" },
+      { "vi": "Lỗi mạng hay config hỏng thì không chặn người dùng; xem phân bố người dùng theo version trước khi nâng ngưỡng", "en": "A network error or bad config never blocks users; check the user split by version before raising the threshold" }
+    ],
+    "modelAnswer": { "vi": "Mình giữ ngưỡng ở server: một endpoint hoặc remote config trả về `latest` và `minSupported` theo từng nền tảng, và app kiểm tra lúc khởi động và khi trở lại foreground. Mình so version native của binary, không phải nhãn OTA, theo từng phần số: thiếu patch thì coi là 0, prerelease nhỏ hơn bản chính thức. Dưới `latest` thì hiện lời nhắc đóng được; dưới `minSupported` thì hiện màn hình chặn có nút mở store, hoặc dùng In-App Updates của Play trên Android. Có hai điều quan trọng khi chạy thật. Mình chỉ nâng `minSupported` khi bản mới đã đến được mọi người, tức là không nâng trong lúc staged rollout. Và lỗi mạng hay config hỏng không bao giờ chặn người dùng; app bỏ qua và kiểm tra lại sau.", "en": "I keep the thresholds on the server: an endpoint or remote config returns `latest` and `minSupported` per platform, and the app checks at launch and when it returns to the foreground. I compare the binary's native version, not an OTA label, part by part as numbers, treating a missing patch as zero and a prerelease as lower than its release. Below `latest` I show a dismissible prompt; below `minSupported` a blocking screen that links to the store, or Play In-App Updates on Android. Two things matter in production. I only raise `minSupported` once the new version is available to everyone, so never during a staged rollout. And a network error or bad config never blocks the user; the app skips the check and tries later." },
+    "followUps": [
+      { "vi": "Nếu app có OTA, một bản sửa chỉ ở JS có cần đổi `minSupported` không?", "en": "If the app has OTA, does a JS-only fix ever need a `minSupported` change?" },
+      { "vi": "Làm sao để các bản cũ đã ship, chưa có cơ chế này, cũng biết phải cập nhật?", "en": "How do you reach old versions that shipped before this mechanism existed?" }
+    ]
+  },
+  {
+    "id": "release-ota-ci-012",
+    "type": "open",
+    "topics": ["release/ota-ci"],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 300,
+    "lessons": ["release-ota-ci-core"],
+    "prompt": { "vi": "Sáng ngày release, job iOS trên CI fail ở bước ký: `match` báo distribution certificate đã hết hạn. Kể lại cách bạn xử lý.", "en": "On release morning the iOS CI job fails at signing: `match` reports the distribution certificate has expired. Walk me through how you handle it." },
+    "keyPoints": [
+      { "vi": "Xác nhận phạm vi: app đang bán không bị ảnh hưởng, chỉ việc ký build mới bị chặn, nên đây là trễ release chứ không phải sự cố production", "en": "Confirm the scope: the live app is fine and only new signing is blocked, so this is a release delay, not a production outage" },
+      { "vi": "Từ máy của admin, nếu `match` vẫn thấy certificate hết hạn trong kho thì gỡ certificate đó cùng profile của nó khỏi kho, rồi chạy `match` không readonly để tạo certificate và profile mới", "en": "From an admin's machine, remove the expired certificate and its profiles from the `match` storage if `match` still finds them, then run `match` without read-only to create a new certificate and profiles" },
+      { "vi": "Không vội chạy `match nuke`: nó revoke mọi certificate cùng loại và làm hỏng profile của các app khác trong team", "en": "Do not reach for `match nuke`: it revokes every certificate of that type and breaks profiles other apps on the team use" },
+      { "vi": "Chạy lại CI ở chế độ readonly và kiểm tra profile mới vẫn đủ capability như Push và Sign in with Apple", "en": "Rerun CI in read-only mode and check the new profile still carries every capability, such as Push and Sign in with Apple" },
+      { "vi": "Phòng ngừa: nhắc lịch trước ngày hết hạn vài tuần (certificate có hạn một năm) và viết runbook", "en": "Prevent it: a calendar reminder weeks before expiry (certificates last a year) and a short runbook" }
+    ],
+    "modelAnswer": { "vi": "Đầu tiên mình xác nhận phạm vi: app đang bán vẫn chạy, chỉ việc ký build mới bị chặn, nên đây là trễ release chứ không phải sự cố. Từ máy của admin, nếu `match` vẫn thấy certificate hết hạn trong kho, mình gỡ nó cùng profile của nó khỏi kho trước, rồi chạy `match` không readonly để tạo distribution certificate và profile mới, mã hoá vào kho dùng chung. Mình cố tình tránh `match nuke`, vì nó revoke mọi certificate cùng loại và làm hỏng profile mà các app khác trong team đang dùng. Sau đó CI chạy lại ở chế độ readonly và sẽ tải được bộ mới. Mình kiểm tra profile mới vẫn có đủ capability như push và Sign in with Apple. Cuối cùng mình đặt lịch nhắc trước ngày hết hạn vài tuần và viết một runbook ngắn, để năm sau việc này chỉ là thủ tục.", "en": "First I confirm the scope: the live app is fine and only new signing is blocked, so this is a release delay, not an outage. From an admin's machine, if `match` still finds the expired certificate in storage, I first remove it and its profiles, then run `match` without read-only so it creates a new distribution certificate and profiles, encrypted into our shared storage. I deliberately avoid `match nuke`, because it revokes every certificate of that type and breaks profiles other apps on the team rely on. Then CI runs again in read-only mode and picks up the new set. I check that the new profile still has every capability we need, such as push and Sign in with Apple. Finally I set a reminder weeks before the next expiry and write a short runbook, so next year it is routine." },
+    "followUps": [
+      { "vi": "EAS Build quản lý credentials khác fastlane `match` thế nào?", "en": "How does EAS Build manage credentials differently from fastlane `match`?" },
+      { "vi": "Push certificate `.p12` hết hạn thì push có ngừng không, và auth key `.p8` thay đổi điều đó ra sao?", "en": "Does push stop when a `.p12` push certificate expires, and how does a `.p8` auth key change that?" }
+    ]
+  }
+]

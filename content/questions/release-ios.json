@@ -1,0 +1,319 @@
+[
+  {
+    "id": "release-ios-001",
+    "type": "mcq",
+    "topics": ["release/ios"],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": ["release-ios-core"],
+    "multi": false,
+    "prompt": { "vi": "Bản 2.3.0 đang ở TestFlight. Bạn sửa một crash rồi upload lại, nhưng App Store Connect từ chối vì trùng build đã có. Bạn cần tăng giá trị nào?", "en": "Version 2.3.0 is in TestFlight. You fix a crash and upload again, but App Store Connect refuses it as a duplicate build. What do you need to bump?" },
+    "options": [
+      { "text": { "vi": "`CFBundleVersion` (build number), giữ nguyên `CFBundleShortVersionString` là 2.3.0", "en": "`CFBundleVersion` (the build number), keeping `CFBundleShortVersionString` at 2.3.0" } },
+      {
+        "text": { "vi": "`CFBundleShortVersionString` lên 2.3.1, vì mỗi lần upload phải có version mới", "en": "`CFBundleShortVersionString` to 2.3.1, because every upload needs a new version" },
+        "misconception": { "id": "ios-version-per-upload", "text": { "vi": "Nghĩ rằng mỗi lần upload cần một marketing version mới. Một version có thể có nhiều build; chỉ build number phải khác nhau. Version chỉ bắt buộc tăng khi bản trước đã được duyệt.", "en": "Believing every upload needs a new marketing version. One version can carry many builds; only the build number must differ. The version has to move on only once the previous one has been approved." } }
+      },
+      {
+        "text": { "vi": "Bundle identifier, thêm hậu tố như `.v2`", "en": "The bundle identifier, adding a suffix such as `.v2`" },
+        "misconception": { "id": "ios-bundle-id-per-build", "text": { "vi": "Nghĩ rằng bundle id đổi theo bản build. Bundle id định danh chính app trên App Store; đổi nó là tạo một app khác.", "en": "Believing the bundle id changes per build. It identifies the app itself on the App Store; changing it creates a different app." } }
+      },
+      {
+        "text": { "vi": "Distribution certificate, bằng cách tạo cái mới để ký lại build", "en": "The distribution certificate, by creating a new one to re-sign the build" },
+        "misconception": { "id": "ios-cert-per-build", "text": { "vi": "Nhầm chữ ký với định danh của build. Certificate chứng minh ai đã ký, không giúp App Store Connect phân biệt hai build.", "en": "Confusing signing with build identity. The certificate proves who signed the build; it does not make two builds distinct." } }
+      }
+    ],
+    "answer": [0],
+    "explanation": { "vi": "App Store Connect gom build theo marketing version (`CFBundleShortVersionString`, trong Xcode là `MARKETING_VERSION`). Trong cùng một version, mỗi build phải có `CFBundleVersion` (`CURRENT_PROJECT_VERSION`) chưa từng dùng. Thực tế nên để CI tự tăng build number, ví dụ lấy build mới nhất trên TestFlight rồi cộng 1. Marketing version chỉ phải tăng khi version hiện tại đã được duyệt: từ lúc đó App Store Connect từ chối mọi bản upload không có version cao hơn (ITMS-90062).", "en": "App Store Connect groups builds under a marketing version (`CFBundleShortVersionString`, `MARKETING_VERSION` in Xcode). Within one version, every build needs a `CFBundleVersion` (`CURRENT_PROJECT_VERSION`) that has not been used. In practice, let CI bump the build number, for example the latest TestFlight build plus one. The marketing version only has to change once the current version has been approved: from then on App Store Connect rejects uploads that do not carry a higher version (ITMS-90062)." }
+  },
+  {
+    "id": "release-ios-002",
+    "type": "mcq",
+    "topics": ["release/ios"],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": ["release-ios-core"],
+    "multi": false,
+    "prompt": { "vi": "Câu nào mô tả đúng một provisioning profile loại App Store?", "en": "Which statement correctly describes an App Store provisioning profile?" },
+    "options": [
+      { "text": { "vi": "Nó gắn App ID với distribution certificate và entitlement, không có danh sách thiết bị", "en": "It ties an App ID to a distribution certificate and the allowed entitlements, with no device list" } },
+      {
+        "text": { "vi": "Nó chứa private key, nên ai có file `.mobileprovision` cũng ký được build", "en": "It contains the private key, so anyone with the `.mobileprovision` file can sign builds" },
+        "misconception": { "id": "ios-profile-has-key", "text": { "vi": "Nghĩ rằng private key nằm trong profile. Key nằm trong keychain của máy đã tạo certificate, hoặc trong file `.p12` export ra. Thiếu key thì có profile cũng không ký được.", "en": "Believing the profile holds the private key. The key lives in the keychain of the machine that created the certificate, or in an exported `.p12`. Without it the profile cannot sign anything." } }
+      },
+      {
+        "text": { "vi": "Nó liệt kê UDID của tester, nên mỗi tester TestFlight mới đều cần tạo lại profile", "en": "It lists tester UDIDs, so every new TestFlight tester means regenerating it" },
+        "misconception": { "id": "ios-testflight-needs-udid", "text": { "vi": "Nhầm TestFlight với bản ad hoc. Chỉ profile development và ad hoc mới liệt kê thiết bị; TestFlight phân phối bản ký App Store, không cần UDID.", "en": "Confusing TestFlight with ad hoc builds. Only development and ad hoc profiles list devices; TestFlight distributes App Store-signed builds and needs no UDIDs." } }
+      },
+      {
+        "text": { "vi": "Khi nó hết hạn, bản đang bán trên App Store sẽ không mở được nữa", "en": "When it expires, the version already on the App Store stops launching" },
+        "misconception": { "id": "ios-expiry-kills-live-app", "text": { "vi": "Nghĩ rằng profile hay certificate hết hạn làm hỏng app đang bán. Apple ký lại bản phát hành qua App Store, nên app đã lên store không bị ảnh hưởng; bạn chỉ không ký được build mới cho tới khi gia hạn.", "en": "Believing an expired profile or certificate breaks the live app. Apple re-signs App Store releases, so the shipped app is unaffected; you just cannot sign new builds until you renew." } }
+      }
+    ],
+    "answer": [0],
+    "explanation": { "vi": "Ký một build cần hai thứ: certificate kèm private key (ai ký), và provisioning profile (ký cho app nào, với entitlement nào, chạy được ở đâu). Profile App Store không có danh sách thiết bị vì build chỉ đi qua App Store Connect. Entitlement như Push Notifications hay Sign in with Apple phải được bật trong capability của App ID; nếu không, profile không chứa chúng và build lỗi ở bước ký hoặc export.", "en": "Signing needs two things: a certificate with its private key (who signs), and a provisioning profile (for which app, with which entitlements, running where). An App Store profile has no device list because the build only travels through App Store Connect. Entitlements such as Push Notifications or Sign in with Apple must be enabled as capabilities on the App ID; otherwise the profile lacks them and the build fails at signing or export." }
+  },
+  {
+    "id": "release-ios-003",
+    "type": "mcq",
+    "topics": ["release/ios"],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 75,
+    "lessons": ["release-ios-core"],
+    "multi": false,
+    "prompt": { "vi": "Khách hàng muốn khoảng 300 nhân viên của họ dùng thử build mới từ ngày mai. Team của bạn có 8 người trong App Store Connect. Câu nào đúng?", "en": "A client wants about 300 of their staff to try the new build from tomorrow. Your team has 8 people in App Store Connect. Which statement is true?" },
+    "options": [
+      { "text": { "vi": "Họ phải là external tester, và build đầu tiên của version gửi cho họ cần qua Beta App Review", "en": "They must be external testers, and a version's first build sent to them needs Beta App Review" } },
+      {
+        "text": { "vi": "Thêm họ làm internal tester để khỏi qua review, vì internal tester không giới hạn", "en": "Add them as internal testers to skip review, since internal testers are unlimited" },
+        "misconception": { "id": "testflight-internal-anyone", "text": { "vi": "Nghĩ rằng ai cũng làm internal tester được. Internal tester phải là thành viên team trong App Store Connect, và số lượng có giới hạn.", "en": "Believing anyone can be an internal tester. Internal testers must be members of your App Store Connect team, and their number is capped." } }
+      },
+      {
+        "text": { "vi": "Gửi public link là họ cài được ngay, vì build đã xử lý xong thì không cần review", "en": "Send a public link and they can install at once, since a processed build needs no review" },
+        "misconception": { "id": "testflight-external-no-review", "text": { "vi": "Nghĩ rằng build xử lý xong là phát cho external tester được. Processing chỉ là bước Apple kiểm tra và chuẩn bị binary; build cho external tester vẫn cần Beta App Review.", "en": "Believing a processed build is ready for external testers. Processing only validates and prepares the binary; external builds still need Beta App Review." } }
+      },
+      {
+        "text": { "vi": "Phải thu UDID của cả 300 máy và tạo một profile ad hoc mới", "en": "You need the UDIDs of all 300 devices and a new ad hoc profile" },
+        "misconception": { "id": "ios-testflight-needs-udid", "text": { "vi": "Nhầm TestFlight với bản ad hoc. Chỉ profile development và ad hoc mới liệt kê thiết bị; TestFlight phân phối bản ký App Store, không cần UDID.", "en": "Confusing TestFlight with ad hoc builds. Only development and ad hoc profiles list devices; TestFlight distributes App Store-signed builds and needs no UDIDs." } }
+      }
+    ],
+    "answer": [0],
+    "explanation": { "vi": "Internal tester là thành viên team trong App Store Connect và nhận build ngay sau khi xử lý xong. Người ngoài team phải là external tester, mời qua email hoặc public link, và build đầu tiên của một version gửi cho họ phải qua Beta App Review. Review này thường nhanh nhưng không có cam kết, nên hãy gửi sớm một ngày. Giới hạn tại thời điểm viết (2025) là 100 internal và 10.000 external tester, và build TestFlight hết hạn sau 90 ngày; kiểm tra lại trong tài liệu TestFlight trước khi hứa với khách.", "en": "Internal testers are members of your App Store Connect team and get a build as soon as it is processed. Anyone outside the team must be an external tester, invited by email or public link, and the first build of a version sent to them needs Beta App Review. That review is usually quick but carries no guarantee, so submit a day early. At the time of writing (2025) the limits were 100 internal and 10,000 external testers, and TestFlight builds expire after 90 days; check the TestFlight docs before promising a client anything." }
+  },
+  {
+    "id": "release-ios-004",
+    "type": "mcq",
+    "topics": ["release/ios"],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 75,
+    "lessons": ["release-ios-core"],
+    "multi": false,
+    "prompt": { "vi": "Bản 4.1.0 đang ở ngày thứ 2 của phased release thì crash tăng mạnh. Bạn pause phased release. Điều gì xảy ra?", "en": "Version 4.1.0 is on day 2 of a phased release and crashes are climbing. You pause the phased release. What happens?" },
+    "options": [
+      { "text": { "vi": "Cập nhật tự động lên 4.1.0 dừng lại, nhưng ai mở App Store vẫn tự cập nhật được", "en": "Automatic updates to 4.1.0 stop, but anyone can still update by hand in the App Store" } },
+      {
+        "text": { "vi": "Người đã cập nhật được đưa về 4.0.x ở lần mở app kế tiếp", "en": "Users who already updated are moved back to 4.0.x on their next launch" },
+        "misconception": { "id": "store-can-rollback-binary", "text": { "vi": "Nghĩ rằng store có thể đưa người dùng về binary cũ. Cả App Store lẫn Google Play đều không hạ phiên bản app đã cài; bạn chỉ dừng được rollout rồi phát hành một build mới hơn.", "en": "Believing a store can roll users back to the previous binary. Neither the App Store nor Google Play downgrades an installed app; you stop the rollout and ship a newer build." } }
+      },
+      {
+        "text": { "vi": "Không ai tải được 4.1.0 nữa, kể cả người cài mới", "en": "Nobody can download 4.1.0 any more, including new installs" },
+        "misconception": { "id": "phased-release-gates-all", "text": { "vi": "Nghĩ rằng phased release kiểm soát mọi lượt tải. Nó chỉ điều tiết cập nhật tự động; người cài mới và người cập nhật thủ công vẫn nhận bản mới nhất.", "en": "Believing phased release gates every download. It only throttles automatic updates; new installs and manual updates still get the latest version." } }
+      },
+      {
+        "text": { "vi": "App Store Connect đưa 4.1.0 về trạng thái chờ review để bạn thay binary đã sửa", "en": "App Store Connect moves 4.1.0 back into review so you can swap in a fixed binary" },
+        "misconception": { "id": "ios-swap-released-binary", "text": { "vi": "Nghĩ rằng thay được binary của một version đã phát hành. Version đã phát hành thì cố định; bạn phải nộp một version mới, ví dụ 4.1.1.", "en": "Believing you can replace the binary of a released version. A released version is fixed; you submit a new one, such as 4.1.1." } }
+      }
+    ],
+    "answer": [0],
+    "explanation": { "vi": "Phased release chỉ chia cập nhật tự động ra trong 7 ngày. Pause làm dừng phần đó, còn người cài mới và người bấm cập nhật trong App Store vẫn nhận 4.1.0. Theo tài liệu App Store Connect (2025), tổng thời gian pause tối đa là 30 ngày. Không có cách đưa người dùng về 4.0.x: hãy giảm thiệt hại bằng remote flag hoặc OTA (nếu lỗi nằm ở JS và runtime tương thích), rồi nộp 4.1.1 và xin expedited review.", "en": "Phased release only spreads automatic updates over seven days. Pausing stops that part; new installs and anyone who taps update in the App Store still get 4.1.0. Per the App Store Connect docs (2025), you can pause for up to 30 days in total. There is no way to move users back to 4.0.x: limit the damage with a remote flag or an OTA update (if the bug is in JS and the runtime matches), then submit 4.1.1 and request an expedited review." }
+  },
+  {
+    "id": "release-ios-005",
+    "type": "mcq",
+    "topics": ["release/ios"],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": ["release-ios-core"],
+    "multi": true,
+    "prompt": { "vi": "Những thay đổi nào trong một bản cập nhật có thể khiến build bị từ chối, ở bước upload hoặc ở App Review? (chọn tất cả đáp án đúng)", "en": "Which of these changes in an update can get the build rejected, at upload or in App Review? (select all that apply)" },
+    "options": [
+      { "text": { "vi": "Thêm tính năng quét QR bằng camera nhưng không có `NSCameraUsageDescription`", "en": "Adding QR scanning with the camera but no `NSCameraUsageDescription`" } },
+      { "text": { "vi": "Thêm đăng nhập Google và Facebook mà không có lựa chọn tương đương như Sign in with Apple", "en": "Adding Google and Facebook login with no equivalent option such as Sign in with Apple" } },
+      { "text": { "vi": "Nâng một SDK dùng `UserDefaults` trong khi không privacy manifest nào khai lý do", "en": "Upgrading an SDK that uses `UserDefaults` while no privacy manifest declares a reason" } },
+      {
+        "text": { "vi": "Tích hợp `expo-updates` để sửa lỗi JavaScript qua OTA sau khi app đã được duyệt", "en": "Integrating `expo-updates` so JavaScript fixes can ship over the air after approval" },
+        "misconception": { "id": "ota-banned-on-ios", "text": { "vi": "Nghĩ rằng App Store cấm mọi OTA. Apple cho phép tải code thông dịch như bundle JS, miễn là nó không đổi mục đích chính của app và không lách review.", "en": "Believing the App Store bans every OTA update. Apple allows downloaded interpreted code such as a JS bundle, as long as it does not change the app's primary purpose or bypass review." } }
+      },
+      {
+        "text": { "vi": "Chuyển engine JS của bản release từ JavaScriptCore sang Hermes", "en": "Switching the release build's JS engine from JavaScriptCore to Hermes" },
+        "misconception": { "id": "hermes-banned-on-ios", "text": { "vi": "Nghĩ rằng App Store chỉ chấp nhận JavaScriptCore. Hermes là engine mặc định của RN và có trong rất nhiều app trên App Store.", "en": "Believing the App Store only accepts JavaScriptCore. Hermes is RN's default engine and ships in a great many App Store apps." } }
+      }
+    ],
+    "answer": [0, 1, 2],
+    "explanation": { "vi": "Thiếu purpose string thì app bị hệ điều hành dừng ngay khi truy cập camera, và Apple còn cảnh báo lúc upload nếu binary (kể cả qua SDK) tham chiếu API cần quyền mà không có chuỗi mô tả. Guideline 4.8 (Login Services, bản sửa từ đầu 2024) yêu cầu có một lựa chọn đăng nhập tương đương, chú trọng quyền riêng tư, khi app dùng đăng nhập của bên thứ ba; Sign in with Apple là cách đơn giản nhất, và có một số trường hợp được miễn. Từ tháng 5/2024, build bị từ chối nếu một required-reason API như `UserDefaults` không có lý do trong privacy manifest của app hoặc của SDK. OTA cho JS và Hermes đều được phép.", "en": "Without a purpose string the OS terminates the app the moment it touches the camera, and Apple also warns at upload when the binary, including an SDK, references a protected API with no description string. Guideline 4.8 (Login Services, revised in early 2024) requires an equivalent privacy-focused login option when the app uses a third-party login; Sign in with Apple is the simplest way to meet it, and a few cases are exempt. Since May 2024 a build is rejected when a required-reason API such as `UserDefaults` has no reason in the app's or the SDK's privacy manifest. JS OTA updates and Hermes are both allowed." }
+  },
+  {
+    "id": "release-ios-006",
+    "type": "mcq",
+    "topics": ["release/ios"],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": ["release-ios-core"],
+    "multi": true,
+    "prompt": { "vi": "Bản cập nhật bị từ chối vào hôm trước ngày chạy chiến dịch marketing. Những cách xử lý nào hợp lý? (chọn tất cả đáp án đúng)", "en": "An update is rejected the day before a marketing launch. Which responses are sound? (select all that apply)" },
+    "options": [
+      { "text": { "vi": "Trả lời trong App Store Connect, kèm tài khoản demo hoặc video nếu reviewer hiểu sai", "en": "Reply in App Store Connect with a demo account or video if the reviewer misunderstood" } },
+      { "text": { "vi": "Sau khi sửa, nộp lại và xin expedited review, biết rằng Apple có thể từ chối yêu cầu đó", "en": "After fixing it, resubmit and request an expedited review, knowing Apple may turn the request down" } },
+      { "text": { "vi": "Nếu tin rằng guideline bị áp dụng sai, gửi appeal lên App Review Board", "en": "If you believe the guideline was misapplied, appeal to the App Review Board" } },
+      {
+        "text": { "vi": "Tăng build number rồi nộp lại nguyên build cũ cho tới khi gặp reviewer khác duyệt", "en": "Bump the build number and resubmit the unchanged build until a different reviewer approves it" },
+        "misconception": { "id": "resubmit-until-approved", "text": { "vi": "Nghĩ rằng nộp lại build y nguyên sẽ được duyệt. Reviewer thấy lịch sử từ chối; nộp lại mà không sửa thường chỉ tốn thêm thời gian và có thể bị xem là cố lách review.", "en": "Believing an unchanged resubmission will pass. Reviewers see the rejection history; resubmitting without changes usually just costs time and can look like gaming review." } }
+      },
+      {
+        "text": { "vi": "Bật phased release ở 1% trong lúc chờ review để chiến dịch vẫn chạy được", "en": "Turn on phased release at 1% while review is pending so the campaign can still run" },
+        "misconception": { "id": "phased-before-approval", "text": { "vi": "Nghĩ rằng phased release chạy được trước khi duyệt. Nó chỉ bắt đầu sau khi version được duyệt và phát hành.", "en": "Believing phased release can start before approval. It only begins once the version is approved and released." } }
+      }
+    ],
+    "answer": [0, 1, 2],
+    "explanation": { "vi": "Rất nhiều lần từ chối đến từ việc reviewer không đăng nhập được hoặc không tìm thấy tính năng, nên trả lời kèm tài khoản demo hay video thường là cách nhanh nhất. Expedited review dành cho trường hợp khẩn cấp như sửa lỗi nghiêm trọng hay sự kiện có ngày cố định; Apple quyết định có nhận hay không. Appeal lên App Review Board khi bạn cho rằng guideline bị hiểu sai. Để không lặp lại, hãy nộp sớm và chọn phát hành thủ công sau khi được duyệt, để ngày ra mắt không phụ thuộc vào thời gian review.", "en": "Many rejections come from a reviewer who could not log in or find the feature, so replying with a demo account or video is often the fastest fix. Expedited review is for urgent cases such as a critical bug fix or a fixed-date event; Apple decides whether to grant it. Appeal to the App Review Board when you think the guideline was misread. To avoid a repeat, submit early and choose manual release after approval, so launch day does not depend on review time." }
+  },
+  {
+    "id": "release-ios-007",
+    "type": "spot-bug",
+    "topics": ["release/ios"],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 120,
+    "lessons": ["release-ios-core"],
+    "prompt": { "vi": "App giao hàng hiện các điểm nhận hàng gần bạn khi app đang mở, và nhận silent push để cập nhật trạng thái đơn. App Review từ chối theo guideline 2.5.4. Dòng nào trong `Info.plist` gây ra lỗi?", "en": "A delivery app shows nearby pickup points while it is open, and receives silent pushes to refresh order status. App Review rejects it under guideline 2.5.4. Which line in `Info.plist` causes it?" },
+    "code": "<key>CFBundleShortVersionString</key>\n<string>$(MARKETING_VERSION)</string>\n<key>CFBundleVersion</key>\n<string>$(CURRENT_PROJECT_VERSION)</string>\n<key>NSCameraUsageDescription</key>\n<string>Scan the QR code on your parcel to track it.</string>\n<key>NSLocationWhenInUseUsageDescription</key>\n<string>Show pickup points near you on the map.</string>\n<key>UIBackgroundModes</key>\n<array>\n  <string>remote-notification</string>\n  <string>location</string>\n</array>\n<key>ITSAppUsesNonExemptEncryption</key>\n<false/>",
+    "answerLine": 12,
+    "causeOptions": [
+      { "text": { "vi": "Khai background mode `location` trong khi app chỉ dùng vị trí lúc đang mở", "en": "It declares the `location` background mode while the app only uses location in the foreground" } },
+      {
+        "text": { "vi": "`NSLocationWhenInUseUsageDescription` luôn phải đi kèm `NSLocationAlwaysAndWhenInUseUsageDescription`", "en": "`NSLocationWhenInUseUsageDescription` must always be paired with `NSLocationAlwaysAndWhenInUseUsageDescription`" },
+        "misconception": { "id": "ios-always-location-key-required", "text": { "vi": "Nghĩ rằng lúc nào cũng phải khai quyền Always. Chỉ app thật sự xin quyền Always mới cần key đó; xin quyền thừa còn dễ bị từ chối hơn.", "en": "Believing the Always key is always required. Only apps that actually request Always access need it; asking for more than you use invites rejection." } }
+      },
+      {
+        "text": { "vi": "`ITSAppUsesNonExemptEncryption` là `false` nên app không được gọi API qua HTTPS", "en": "`ITSAppUsesNonExemptEncryption` is `false`, so the app may not call APIs over HTTPS" },
+        "misconception": { "id": "https-is-non-exempt", "text": { "vi": "Nghĩ rằng dùng HTTPS là mã hoá không được miễn. HTTPS qua API mạng của hệ điều hành thuộc diện miễn; key này chỉ khai báo việc tuân thủ quy định xuất khẩu.", "en": "Believing HTTPS counts as non-exempt encryption. HTTPS through the OS networking APIs is exempt; the key only declares export compliance." } }
+      },
+      {
+        "text": { "vi": "`CFBundleVersion` phải là số viết cứng, không được dùng biến build setting", "en": "`CFBundleVersion` must be a hard-coded number, not a build setting variable" },
+        "misconception": { "id": "plist-no-build-settings", "text": { "vi": "Nghĩ rằng Info.plist không dùng được biến build setting. Xcode thay `$(CURRENT_PROJECT_VERSION)` lúc build, và template mặc định làm đúng như vậy.", "en": "Believing Info.plist cannot use build settings. Xcode substitutes `$(CURRENT_PROJECT_VERSION)` at build time, and the default template does exactly that." } }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": { "vi": "Guideline 2.5.4 chỉ cho dùng background mode đúng mục đích của nó. App chỉ cần vị trí khi đang mở, nên `location` ở dòng 12 là thừa, và reviewer kiểm tra từng mode được khai có thật sự được dùng hay không. `remote-notification` thì hợp lệ vì app dùng silent push. Hãy bỏ `location`, và kiểm tra xem capability trong Xcode hay config plugin của thư viện vị trí có tự thêm lại mode này không.", "en": "Guideline 2.5.4 only allows a background mode for its intended purpose. The app needs location only while it is open, so `location` on line 12 is unjustified, and reviewers check that every declared mode is actually used. `remote-notification` is fine because the app uses silent pushes. Remove `location`, and check whether an Xcode capability or a location library's config plugin adds it back." }
+  },
+  {
+    "id": "release-ios-008",
+    "type": "spot-bug",
+    "topics": ["release/ios"],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 120,
+    "lessons": ["release-ios-core"],
+    "prompt": { "vi": "Bản 5.0 bị từ chối theo guideline 4.8 (Login Services), dù team khẳng định đã làm nút Sign in with Apple. Flag trên remote config đang tắt trong lúc backend hoàn thiện. Dòng nào gây ra lỗi?", "en": "Release 5.0 is rejected under guideline 4.8 (Login Services), although the team insists it built a Sign in with Apple button. The remote config flags are off while the backend is finished. Which line causes it?" },
+    "code": "type Provider = 'google' | 'facebook' | 'apple';\ntype Props = { onLogin: (provider: Provider) => void };\n\nexport function LoginButtons({ onLogin }: Props) {\n  const flags = useRemoteFlags();\n  const showApple = Platform.OS === 'ios' && flags.appleLogin === true;\n\n  return (\n    <View style={styles.stack}>\n      <SocialButton provider=\"google\" onPress={() => onLogin('google')} />\n      <SocialButton provider=\"facebook\" onPress={() => onLogin('facebook')} />\n      {showApple && <SocialButton provider=\"apple\" onPress={() => onLogin('apple')} />}\n    </View>\n  );\n}",
+    "answerLine": 6,
+    "causeOptions": [
+      { "text": { "vi": "Nút Apple bị ẩn sau một remote flag đang tắt, nên reviewer chỉ thấy đăng nhập của bên thứ ba", "en": "The Apple button sits behind a remote flag that is off, so review sees only third-party logins" } },
+      {
+        "text": { "vi": "Nút Apple phải nằm trên cùng, trước Google và Facebook", "en": "The Apple button must come first, above Google and Facebook" },
+        "misconception": { "id": "siwa-must-be-first", "text": { "vi": "Nghĩ rằng guideline quy định thứ tự nút. Guideline chỉ yêu cầu có lựa chọn tương đương; Human Interface Guidelines khuyên nút Apple không kém nổi bật so với các nút khác.", "en": "Believing the guideline dictates button order. It only requires an equivalent option; the Human Interface Guidelines ask that the Apple button be no less prominent than the others." } }
+      },
+      {
+        "text": { "vi": "Nút Apple cũng phải hiện trên Android, nếu không bản iOS sẽ bị từ chối", "en": "The Apple button must also appear on Android, or the iOS build is rejected" },
+        "misconception": { "id": "siwa-android-required", "text": { "vi": "Nghĩ rằng App Review xét cả bản Android. Guideline 4.8 áp dụng cho app trên nền tảng của Apple; có hiện Sign in with Apple trên Android hay không là tuỳ bạn.", "en": "Believing App Review judges the Android build. Guideline 4.8 applies to the app on Apple platforms; offering Sign in with Apple on Android is your choice." } }
+      },
+      {
+        "text": { "vi": "Trên iPad `Platform.OS` không phải `'ios'`, nên reviewer dùng iPad không thấy nút", "en": "On iPad `Platform.OS` is not `'ios'`, so a reviewer on an iPad never sees the button" },
+        "misconception": { "id": "ipad-platform-os", "text": { "vi": "Nghĩ rằng iPad trả về `Platform.OS` khác. Trên iPad nó vẫn là `'ios'`; dùng `Platform.isPad` nếu cần phân biệt.", "en": "Believing iPad reports a different `Platform.OS`. It is still `'ios'` on iPad; use `Platform.isPad` to tell them apart." } }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": { "vi": "Reviewer dùng cấu hình production. Ở dòng 6, `flags.appleLogin` đang tắt nên màn hình chỉ có Google và Facebook, tức là app dùng đăng nhập bên thứ ba mà không có lựa chọn tương đương. Đừng đặt thứ mà review bắt buộc sau một remote flag đang tắt: bật Sign in with Apple mặc định trên iOS, hoặc chỉ nộp khi backend đã sẵn sàng. Nhớ bật capability Sign in with Apple cho App ID, nếu không profile sẽ thiếu entitlement.", "en": "Reviewers see the production configuration. On line 6, `flags.appleLogin` is off, so the screen offers only Google and Facebook: third-party logins with no equivalent option. Never gate something review requires behind a remote flag that is off: enable Sign in with Apple by default on iOS, or submit only once the backend is ready. Also enable the Sign in with Apple capability on the App ID, or the profile will lack the entitlement." }
+  },
+  {
+    "id": "release-ios-009",
+    "type": "spot-bug",
+    "topics": ["release/ios"],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 150,
+    "lessons": ["release-ios-core"],
+    "prompt": { "vi": "Push chạy tốt khi cài app từ Xcode lên máy, nhưng không tester TestFlight nào nhận được push. Server staging (`APP_ENV=staging`) mà bản TestFlight gọi tới log ra `BadDeviceToken`. Dòng nào gây ra lỗi?", "en": "Pushes work when the app is installed from Xcode, but no TestFlight tester receives any. The staging server (`APP_ENV=staging`) that TestFlight builds talk to logs `BadDeviceToken`. Which line causes it?" },
+    "code": "import apn from '@parse/node-apn';\n\ntype PushTarget = { deviceToken: string; title: string; body: string };\n\nconst provider = new apn.Provider({\n  token: {\n    key: process.env.APNS_KEY_PATH!,\n    keyId: process.env.APNS_KEY_ID!,\n    teamId: process.env.APPLE_TEAM_ID!,\n  },\n  production: process.env.APP_ENV === 'production',\n});\n\nexport async function sendPush({ deviceToken, title, body }: PushTarget): Promise<void> {\n  const note = new apn.Notification();\n  note.topic = 'com.acme.parcel';\n  note.alert = { title, body };\n  const result = await provider.send(note, deviceToken);\n  if (result.failed.length > 0) console.error(result.failed[0].response);\n}",
+    "answerLine": 11,
+    "causeOptions": [
+      { "text": { "vi": "Chọn APNs theo môi trường server, nhưng build TestFlight luôn dùng APNs production", "en": "It picks APNs by server environment, but TestFlight builds always use production APNs" } },
+      {
+        "text": { "vi": "Auth key `.p8` chỉ dùng được với sandbox, còn production cần certificate `.p12`", "en": "A `.p8` auth key only works with sandbox; production needs a `.p12` certificate" },
+        "misconception": { "id": "apns-p8-one-environment", "text": { "vi": "Nghĩ rằng key `.p8` vốn chỉ gắn với một môi trường. Một APNs auth key có thể dùng cho cả sandbox lẫn production (mặc định; từ 2025 có thể giới hạn key vào một môi trường), và nó không hết hạn hằng năm như certificate.", "en": "Believing a `.p8` key is tied to one environment by nature. An APNs auth key can serve both sandbox and production (the default; since 2025 a key can also be restricted to one environment), and it does not expire yearly like a certificate." } }
+      },
+      {
+        "text": { "vi": "`topic` phải là bundle id kèm hậu tố `.voip`", "en": "`topic` must be the bundle id with a `.voip` suffix" },
+        "misconception": { "id": "apns-topic-voip", "text": { "vi": "Nhầm push thường với VoIP push. Push thông thường dùng đúng bundle id; hậu tố `.voip` chỉ dành cho PushKit.", "en": "Confusing regular pushes with VoIP pushes. A regular alert uses the plain bundle id; the `.voip` suffix is only for PushKit." } }
+      },
+      {
+        "text": { "vi": "TestFlight chặn push cho tới khi app được duyệt lên App Store", "en": "TestFlight blocks pushes until the app is approved for the App Store" },
+        "misconception": { "id": "testflight-no-push", "text": { "vi": "Nghĩ rằng build TestFlight không nhận được push. Build TestFlight nhận push bình thường qua APNs production.", "en": "Believing TestFlight builds cannot receive pushes. They receive them normally through production APNs." } }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": { "vi": "Build cài từ Xcode được ký bằng profile development, có `aps-environment` là `development`, nên device token thuộc APNs sandbox. Build TestFlight và App Store được ký để phân phối, token thuộc APNs production. Dòng 11 chọn môi trường APNs theo `APP_ENV` của server, nên server staging gửi token production tới sandbox và nhận `BadDeviceToken`. Môi trường APNs phải đi theo cách build được ký: app gửi kèm môi trường đó khi đăng ký token, và server chọn provider tương ứng.", "en": "A build installed from Xcode is signed with a development profile whose `aps-environment` is `development`, so its device token belongs to sandbox APNs. TestFlight and App Store builds are distribution-signed, and their tokens belong to production APNs. Line 11 picks the APNs environment from the server's `APP_ENV`, so the staging server sends production tokens to sandbox and gets `BadDeviceToken`. The APNs environment must follow how the build was signed: the app sends it along with the token, and the server picks the matching provider." }
+  },
+  {
+    "id": "release-ios-010",
+    "type": "open",
+    "topics": ["release/ios"],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 300,
+    "lessons": ["release-ios-core"],
+    "prompt": { "vi": "Sau khi bạn upload bản release, Apple gửi email báo build không hợp lệ với lỗi `ITMS-91053: Missing API declaration`, liệt kê `NSPrivacyAccessedAPICategoryUserDefaults` và `NSPrivacyAccessedAPICategoryFileTimestamp`. Kể lại cách bạn xử lý.", "en": "After you upload a release, Apple emails that the build is invalid with `ITMS-91053: Missing API declaration`, listing `NSPrivacyAccessedAPICategoryUserDefaults` and `NSPrivacyAccessedAPICategoryFileTimestamp`. Walk me through how you handle it." },
+    "keyPoints": [
+      { "vi": "Hiểu lỗi: đây là required-reason API mà binary gọi tới, kể cả qua SDK, và chưa có lý do khai trong privacy manifest nào", "en": "Read the error: these are required-reason APIs the binary calls, including through SDKs, with no reason declared in any privacy manifest" },
+      { "vi": "Tìm nơi gọi: RN core, module Expo hay SDK bên thứ ba; nâng chúng lên bản đã kèm `PrivacyInfo.xcprivacy`", "en": "Find the callers: RN core, Expo modules or third-party SDKs; upgrade them to versions that ship `PrivacyInfo.xcprivacy`" },
+      { "vi": "Với API mà code của app dùng, thêm mục `NSPrivacyAccessedAPITypes` với mã lý do khớp cách dùng thật, không chọn bừa cho hết lỗi", "en": "For APIs the app's own code uses, add an `NSPrivacyAccessedAPITypes` entry with the reason code that matches real usage, not whichever silences the error" },
+      { "vi": "Kiểm chứng trước khi upload lại: tạo privacy report từ archive trong Xcode Organizer và xem mọi category mà email nêu tên đều đã có lý do", "en": "Verify before uploading again: generate the privacy report from the archive in Xcode Organizer and check that every category named in the email now has a reason" },
+      { "vi": "Đưa privacy report vào checklist release, vì mỗi SDK mới đều có thể mang lỗi này quay lại", "en": "Add the privacy report to the release checklist, because every new SDK can bring the problem back" }
+    ],
+    "modelAnswer": { "vi": "Email đã nêu tên các category, nên việc đầu tiên là tìm ai gọi chúng. Thường không phải code của team mà là một SDK, hoặc RN hay Expo bản cũ chưa có privacy manifest. Mình nâng các SDK đó lên bản đã kèm `PrivacyInfo.xcprivacy`. Với API mà chính code của mình dùng, mình thêm mục `NSPrivacyAccessedAPITypes` với mã lý do đúng với cách dùng thật, chứ không chọn mã nào cho hết lỗi, vì lý do khai sai cũng là khai báo sai với Apple. Trước khi upload lại, mình archive, tạo privacy report trong Xcode Organizer và xem mọi category mà email nêu tên đều đã có lý do. Sau đó mình đưa report này vào checklist release, vì mỗi SDK mới đều có thể làm lỗi quay lại.", "en": "The email names the categories, so first I find who calls those APIs. Usually it is not our code but an SDK, or an older RN or Expo version without a privacy manifest. I upgrade those SDKs to versions that ship `PrivacyInfo.xcprivacy`. For anything our own code uses, I add an `NSPrivacyAccessedAPITypes` entry with the reason code that matches how we really use it, not whichever code silences the error, because a wrong reason is still a false declaration to Apple. Before uploading again I archive, generate the privacy report in Xcode Organizer and check that every category named in the email now has a reason. Then I add that report to the release checklist, because each new SDK can bring the problem back." },
+    "followUps": [
+      { "vi": "Privacy manifest khác gì phần App Privacy (nutrition label) khai trên App Store Connect?", "en": "How does the privacy manifest differ from the App Privacy details (the nutrition label) in App Store Connect?" },
+      { "vi": "Nếu SDK gây lỗi đã ngừng bảo trì và không bao giờ có manifest thì sao?", "en": "What if the offending SDK is unmaintained and will never ship a manifest?" }
+    ]
+  },
+  {
+    "id": "release-ios-011",
+    "type": "open",
+    "topics": ["release/ios"],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 270,
+    "lessons": ["release-ios-core"],
+    "prompt": { "vi": "Người duy nhất có distribution certificate trên máy vừa nghỉ việc. Tuần sau phải release, và bạn muốn CI tự ký build từ nay về sau. Bạn thiết lập lại signing thế nào?", "en": "The only person with the distribution certificate on their machine has just left. You release next week, and from now on you want CI to sign builds. How do you rebuild signing?" },
+    "keyPoints": [
+      { "vi": "App đang bán không bị ảnh hưởng khi mất hay revoke certificate; chỉ việc ký build mới bị chặn", "en": "The live app is unaffected by a lost or revoked certificate; only signing new builds is blocked" },
+      { "vi": "Tạo distribution certificate mới (revoke cái cũ nếu private key có thể đã lộ) và tạo lại các profile App Store trỏ tới nó", "en": "Create a new distribution certificate (revoke the old one if its private key may have leaked) and regenerate the App Store profiles against it" },
+      { "vi": "Lưu certificate và profile ở kho dùng chung có mã hoá, như fastlane `match`, hoặc để EAS Build quản lý credentials", "en": "Keep the certificate and profiles in shared encrypted storage such as fastlane `match`, or let EAS Build manage credentials" },
+      { "vi": "CI đăng nhập bằng App Store Connect API key thay cho Apple ID có 2FA, và chạy `match` ở chế độ readonly", "en": "CI authenticates with an App Store Connect API key instead of an Apple ID with 2FA, and runs `match` read-only" },
+      { "vi": "Ghi ngày hết hạn (certificate có hạn một năm) và người có quyền, để việc này không phụ thuộc một người", "en": "Record the expiry date (certificates last a year) and who has access, so this never depends on one person again" }
+    ],
+    "modelAnswer": { "vi": "Trước hết, app đang bán vẫn an toàn: bản phát hành trên App Store không phụ thuộc vào việc certificate của mình còn hạn. Thứ mình mất là khả năng ký build mới. Mình tạo distribution certificate mới, chỉ revoke cái cũ nếu private key có thể đã lộ, rồi tạo lại các profile App Store trỏ tới certificate mới. Phần quan trọng là chỗ lưu: mình đưa chúng vào kho của fastlane `match` có mã hoá, hoặc để EAS Build quản lý credentials, để CI và mọi dev dùng chung một danh tính. CI đăng nhập bằng App Store Connect API key thay cho Apple ID của ai đó, và chạy `match` ở chế độ readonly để không bao giờ tự tạo certificate. Cuối cùng mình ghi ngày hết hạn vào lịch của team, vì certificate hết hạn sau một năm.", "en": "First, the live app is safe: an App Store release does not depend on our certificate staying valid. What we lost is the ability to sign new builds. I create a new distribution certificate, revoking the old one only if its private key might have leaked, then regenerate the App Store profiles against it. The important part is where they live: I put them in encrypted fastlane `match` storage, or let EAS Build manage credentials, so CI and every developer share one identity. CI authenticates with an App Store Connect API key rather than someone's Apple ID, and runs `match` read-only so it never creates certificates on its own. Finally I put the expiry date in the team calendar, because certificates expire after a year." },
+    "followUps": [
+      { "vi": "Apple giới hạn số distribution certificate của một team. Điều đó gây ra chuyện gì nếu mỗi dev tự tạo một cái?", "en": "Apple caps how many distribution certificates a team can have. What goes wrong if every developer creates their own?" },
+      { "vi": "Automatic signing của Xcode có dùng được trên CI không, và đánh đổi là gì?", "en": "Can Xcode's automatic signing work on CI, and what is the trade-off?" }
+    ]
+  },
+  {
+    "id": "release-ios-012",
+    "type": "open",
+    "topics": ["release/ios"],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 330,
+    "lessons": ["release-ios-core"],
+    "prompt": { "vi": "Ngày thứ 2 của phased release bản 4.1.0, crash-free users tụt từ 99,8% xuống 97%, phần lớn trên iOS 16. Kể lại cách bạn xử lý.", "en": "On day 2 of the 4.1.0 phased release, crash-free users drop from 99.8% to 97%, mostly on iOS 16. Walk me through how you handle it." },
+    "keyPoints": [
+      { "vi": "Pause phased release ngay, biết rằng người cài mới và người cập nhật thủ công vẫn nhận 4.1.0", "en": "Pause the phased release at once, knowing new installs and manual updates still get 4.1.0" },
+      { "vi": "Khoanh vùng bằng crash đã symbolicate (dSYM), phân bố theo OS, thiết bị và màn hình, rồi đối chiếu diff 4.0 → 4.1", "en": "Narrow it down with symbolicated crashes (dSYMs), split by OS, device and screen, then compare against the 4.0 to 4.1 diff" },
+      { "vi": "Giảm thiệt hại không cần binary mới: tắt tính năng bằng remote flag, hoặc gửi OTA nếu lỗi ở JS và runtime tương thích", "en": "Limit damage without a new binary: switch the feature off with a remote flag, or ship OTA if the bug is in JS and the runtime matches" },
+      { "vi": "Sửa trong 4.1.1, test trên máy iOS 16, nộp review và xin expedited review kèm dữ liệu crash", "en": "Fix it in 4.1.1, test on an iOS 16 device, submit and request an expedited review with the crash data" },
+      { "vi": "Không thể đưa người dùng về 4.0.x; sau sự cố, thêm bản iOS cũ nhất còn hỗ trợ vào ma trận test và đặt ngưỡng crash để quyết định pause", "en": "There is no going back to 4.0.x; afterwards, add the oldest supported iOS to the test matrix and set a crash threshold that triggers a pause" }
+    ],
+    "modelAnswer": { "vi": "Mình pause phased release trước, và nhớ rằng việc này chỉ dừng cập nhật tự động; người cài mới và người cập nhật thủ công vẫn nhận 4.1.0. Sau đó mình đọc crash đã symbolicate: nếu tập trung ở iOS 16, mình tìm trong diff 4.0 → 4.1 xem chỗ nào đụng tới API có hành vi khác trên bản đó, thường là một SDK mới hoặc một API thiếu kiểm tra availability. Trong lúc sửa, mình giảm thiệt hại mà không cần binary: remote flag để tắt tính năng, hoặc OTA nếu lỗi nằm ở JS và runtime khớp. Bản sửa thật là 4.1.1, test trên máy iOS 16, và mình xin expedited review kèm số liệu crash. Sau sự cố, mình thêm bản iOS cũ nhất còn hỗ trợ vào ma trận test.", "en": "I pause the phased release first, remembering it only stops automatic updates; new installs and manual updates still get 4.1.0. Then I read the symbolicated crashes: if they cluster on iOS 16, I look through the 4.0 to 4.1 diff for anything touching APIs that behave differently there, often a new SDK or a missing availability check. While I work on the fix, I limit damage without a binary: a remote flag to switch the feature off, or an OTA update if the bug is in JS and the runtime matches. The real fix ships as 4.1.1, tested on an iOS 16 device, and I request an expedited review with the crash numbers. Afterwards I add the oldest supported iOS to the test matrix." },
+    "followUps": [
+      { "vi": "Nếu crash nằm trong native code của một SDK bên thứ ba thì bạn làm gì?", "en": "What do you do if the crash is inside a third-party SDK's native code?" },
+      { "vi": "Bạn đặt ngưỡng nào để dừng rollout, và ai được quyền quyết định?", "en": "What threshold stops a rollout, and who gets to make that call?" }
+    ]
+  }
+]

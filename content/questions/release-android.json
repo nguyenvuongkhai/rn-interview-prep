@@ -1,0 +1,316 @@
+[
+  {
+    "id": "release-android-001",
+    "type": "mcq",
+    "topics": ["release/android"],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": ["release-android-core"],
+    "multi": false,
+    "prompt": { "vi": "Bạn build bản hotfix 3.2.1 và upload lên Play Console, nhưng bị từ chối vì `versionCode` 320 đã được dùng. Cách sửa đúng là gì?", "en": "You build hotfix 3.2.1 and upload it to Play Console, but it is refused because `versionCode` 320 is already used. What is the right fix?" },
+    "options": [
+      { "text": { "vi": "Tăng `versionCode` lên một số nguyên chưa dùng và lớn hơn bản trước, ví dụ 321", "en": "Raise `versionCode` to an unused integer above the last one, such as 321" } },
+      {
+        "text": { "vi": "Chỉ cần đổi `versionName` thành 3.2.1, vì Play phân biệt build theo `versionName`", "en": "Change `versionName` to 3.2.1, since Play tells builds apart by `versionName`" },
+        "misconception": { "id": "play-versionname-identity", "text": { "vi": "Nhầm vai trò của hai trường. `versionName` chỉ là chuỗi hiển thị cho người dùng; Play và Android dùng `versionCode` để phân biệt và xếp thứ tự các build.", "en": "Mixing up the two fields. `versionName` is only a display string; Play and Android use `versionCode` to identify and order builds." } }
+      },
+      {
+        "text": { "vi": "Xoá release 320 khỏi track internal để dùng lại `versionCode` đó", "en": "Remove release 320 from the internal track to free that `versionCode`" },
+        "misconception": { "id": "play-versioncode-reusable", "text": { "vi": "Nghĩ rằng versionCode được giải phóng khi gỡ release. Một versionCode đã upload lên app thì không dùng lại được, kể cả khi bản đó chưa từng lên production.", "en": "Believing a versionCode is freed when you remove a release. Once uploaded to the app, a versionCode cannot be reused, even if it never reached production." } }
+      },
+      {
+        "text": { "vi": "Đổi `applicationId` để Play xem đây là một build mới", "en": "Change `applicationId` so Play treats it as a new build" },
+        "misconception": { "id": "play-appid-per-build", "text": { "vi": "Nghĩ rằng applicationId đổi theo build. Nó định danh app trên Play; đổi nó là tạo một app khác, không cập nhật được app cũ.", "en": "Believing applicationId changes per build. It identifies the app on Play; changing it creates a separate app that never updates the old one." } }
+      }
+    ],
+    "answer": [0],
+    "explanation": { "vi": "`versionCode` là số nguyên dương mà Play dùng để định danh và xếp thứ tự build: mỗi lần upload cần một giá trị chưa dùng, và bản cập nhật phải lớn hơn bản đang cài vì Android không cho cài đè một `versionCode` thấp hơn. `versionName` chỉ để hiển thị. Hãy để CI sinh `versionCode`, ví dụ từ số build của pipeline, để hai người không upload trùng số.", "en": "`versionCode` is the positive integer Play uses to identify and order builds: every upload needs an unused value, and an update must be higher than the installed one because Android refuses to install a lower `versionCode` over it. `versionName` is display only. Let CI generate `versionCode`, for example from the pipeline's build number, so two people never upload the same number." }
+  },
+  {
+    "id": "release-android-002",
+    "type": "mcq",
+    "topics": ["release/android"],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": ["release-android-core"],
+    "multi": false,
+    "prompt": { "vi": "App đã bật Play App Signing. Dev giữ upload keystore làm mất file và không ai có bản sao. Chuyện gì xảy ra tiếp theo?", "en": "The app uses Play App Signing. The developer who held the upload keystore lost it, and nobody has a copy. What happens next?" },
+    "options": [
+      { "text": { "vi": "Chủ tài khoản xin reset upload key; người dùng không bị gì vì Google ký bằng app signing key", "en": "The account owner requests an upload key reset; users are unaffected because Google signs with the app signing key" } },
+      {
+        "text": { "vi": "Phải phát hành app mới với package name khác, vì không ai cập nhật được app cũ nữa", "en": "You must publish a new app under a different package name, since the old one can no longer be updated" },
+        "misconception": { "id": "lost-upload-key-new-app", "text": { "vi": "Nhầm upload key với app signing key. Chỉ khi mất app signing key và không dùng Play App Signing mới phải làm app mới; upload key thì reset được.", "en": "Confusing the upload key with the app signing key. Only losing the signing key without Play App Signing forces a new app; an upload key can be reset." } }
+      },
+      {
+        "text": { "vi": "Google gửi lại file upload keystore qua email cho chủ tài khoản", "en": "Google emails the upload keystore back to the account owner" },
+        "misconception": { "id": "google-holds-upload-key", "text": { "vi": "Nghĩ rằng Google giữ upload key. Google chỉ có certificate công khai của upload key; private key chỉ nằm ở phía bạn.", "en": "Believing Google stores the upload key. Google only has the upload key's public certificate; the private key exists only on your side." } }
+      },
+      {
+        "text": { "vi": "Người dùng phải gỡ app rồi cài lại vì chữ ký của app thay đổi", "en": "Users must uninstall and reinstall because the app's signature changes" },
+        "misconception": { "id": "upload-key-reaches-users", "text": { "vi": "Nghĩ rằng chữ ký bằng upload key đến tay người dùng. Play kiểm tra upload key rồi ký lại các APK bằng app signing key, nên người dùng luôn thấy cùng một chữ ký.", "en": "Believing the upload signature reaches users. Play verifies the upload key, then re-signs the APKs with the app signing key, so users always see the same signature." } }
+      }
+    ],
+    "answer": [0],
+    "explanation": { "vi": "Với Play App Signing, Google giữ app signing key và dùng nó ký các APK gửi tới người dùng; upload key chỉ chứng minh bản upload đến từ bạn. Mất upload key thì tạo key mới, export certificate dạng PEM, và chủ tài khoản yêu cầu reset trên trang App integrity của Play Console. Việc reset không có hiệu lực ngay, nên hãy làm sớm chứ đừng đợi tới ngày release.", "en": "With Play App Signing, Google holds the app signing key and uses it to sign the APKs users receive; the upload key only proves an upload came from you. If you lose it, generate a new key, export its certificate as PEM, and have the account owner request a reset on the App integrity page in Play Console. The reset does not take effect instantly, so do it early rather than on release day." }
+  },
+  {
+    "id": "release-android-003",
+    "type": "mcq",
+    "topics": ["release/android"],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 75,
+    "lessons": ["release-android-core"],
+    "multi": false,
+    "prompt": { "vi": "QA muốn cài thử file `app-release.aab` lên máy test trước khi đưa lên production. Câu nào đúng?", "en": "QA wants to install `app-release.aab` on a test device before it goes to production. Which statement is true?" },
+    "options": [
+      { "text": { "vi": "Đây là định dạng publish; Play tạo APK cho từng máy, nên hãy thử bằng `bundletool` hoặc internal testing", "en": "It is a publishing format Play turns into per-device APKs; test with `bundletool` or internal testing" } },
+      {
+        "text": { "vi": "Chạy `adb install app-release.aab` trên máy test, giống hệt cách bạn vẫn cài một file APK", "en": "Run `adb install app-release.aab` on the device, the same way you would install an APK" },
+        "misconception": { "id": "aab-installable", "text": { "vi": "Nghĩ rằng AAB cài trực tiếp được. Thiết bị chỉ cài APK; AAB phải được chuyển thành APK, bởi Play hoặc bởi `bundletool`.", "en": "Believing an AAB installs directly. Devices only install APKs; an AAB must be turned into APKs, by Play or by `bundletool`." } }
+      },
+      {
+        "text": { "vi": "File AAB đã ký bằng upload key chính là file người dùng tải về từ Play", "en": "The AAB you signed with the upload key is exactly the file users download from Play" },
+        "misconception": { "id": "upload-key-reaches-users", "text": { "vi": "Nghĩ rằng chữ ký bằng upload key đến tay người dùng. Play kiểm tra upload key rồi ký lại các APK bằng app signing key, nên người dùng luôn thấy cùng một chữ ký.", "en": "Believing the upload signature reaches users. Play verifies the upload key, then re-signs the APKs with the app signing key, so users always see the same signature." } }
+      },
+      {
+        "text": { "vi": "AAB chỉ chứa code cho `arm64-v8a`, nên máy x86 và emulator cần một APK riêng", "en": "An AAB only holds `arm64-v8a` code, so x86 devices and emulators need a separate APK" },
+        "misconception": { "id": "aab-single-abi", "text": { "vi": "Nghĩ rằng AAB chỉ có một ABI. AAB chứa mọi ABI bạn build; Play tách ra để mỗi máy chỉ tải phần của mình.", "en": "Believing an AAB holds one ABI. It contains every ABI you build; Play splits them so each device downloads only its own." } }
+      }
+    ],
+    "answer": [0],
+    "explanation": { "vi": "Từ tháng 8/2021, app mới trên Play phải publish bằng AAB. Play tách bundle theo ABI, mật độ màn hình và ngôn ngữ, rồi ký các APK đó bằng app signing key. Để thử ở máy, dùng `bundletool build-apks` rồi `bundletool install-apks`, hoặc đưa lên internal testing để nhận đúng bản Play phát. Bản từ Play đáng thử vì việc tách APK đôi khi làm lộ lỗi thiếu resource hoặc thiếu ABI mà APK universal che mất.", "en": "Since August 2021, new apps on Play must publish as AABs. Play splits the bundle by ABI, screen density and language, then signs those APKs with the app signing key. To test locally, use `bundletool build-apks` then `bundletool install-apks`, or push to internal testing to get exactly what Play serves. The Play-delivered build is worth testing because splitting sometimes exposes a missing resource or ABI that a universal APK hides." }
+  },
+  {
+    "id": "release-android-004",
+    "type": "mcq",
+    "topics": ["release/android"],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 75,
+    "lessons": ["release-android-core"],
+    "multi": false,
+    "prompt": { "vi": "Bản 3.2.0 (`versionCode` 320) đang staged rollout 10% thì crash tăng. Bạn halt rollout. Câu nào đúng?", "en": "Release 3.2.0 (`versionCode` 320) is at a 10% staged rollout when crashes rise. You halt the rollout. Which statement is true?" },
+    "options": [
+      { "text": { "vi": "Không thêm ai nhận 320, ai đã cài thì vẫn giữ, và bản sửa cần `versionCode` lớn hơn", "en": "No one else gets 320, those who have it keep it, and the fix needs a higher `versionCode`" } },
+      {
+        "text": { "vi": "Play tự cài lại bản 319 lên những máy đã nhận 320 ở lần mở Play Store kế tiếp", "en": "Play reinstalls 319 on the devices that already got 320 the next time they open the Play Store" },
+        "misconception": { "id": "store-can-rollback-binary", "text": { "vi": "Nghĩ rằng store có thể đưa người dùng về binary cũ. Cả App Store lẫn Google Play đều không hạ phiên bản app đã cài; bạn chỉ dừng được rollout rồi phát hành một build mới hơn.", "en": "Believing a store can roll users back to the previous binary. Neither the App Store nor Google Play downgrades an installed app; you stop the rollout and ship a newer build." } }
+      },
+      {
+        "text": { "vi": "Upload lại build 319 lên production để mọi người đã nhận 320 quay về bản cũ", "en": "Re-upload build 319 to production so everyone who got 320 returns to the old version" },
+        "misconception": { "id": "play-reupload-old-build", "text": { "vi": "Nghĩ rằng phát hành lại được build cũ. versionCode 319 đã dùng rồi, và Android không cho cài đè một versionCode thấp hơn lên bản đang có.", "en": "Believing you can re-release an old build. versionCode 319 is already used, and Android will not install a lower versionCode over the current one." } }
+      },
+      {
+        "text": { "vi": "Chỉ halt được khi rollout dưới 50%; từ 50% trở lên phải để nó chạy tới 100%", "en": "You can only halt below 50%; above that the rollout must continue until it reaches 100%" },
+        "misconception": { "id": "halt-percentage-limit", "text": { "vi": "Nghĩ rằng halt có ngưỡng phần trăm. Bạn halt được staged rollout ở bất kỳ mức nào trước khi nó lên 100%.", "en": "Believing halting has a percentage limit. You can halt a staged rollout at any percentage before it reaches 100%." } }
+      }
+    ],
+    "answer": [0],
+    "explanation": { "vi": "Halt chỉ ngừng phát 320 cho người dùng mới; Play không hạ phiên bản trên máy đã cập nhật. Muốn \"quay lại\", bạn build code của 3.1 (hoặc bản đã sửa) với `versionCode` 321 rồi phát hành như một bản mới. Trong lúc đó, remote flag hoặc OTA (nếu lỗi ở JS và runtime tương thích) giúp giảm thiệt hại cho 10% đã nhận bản lỗi. Khi đã chắc chắn, bạn có thể resume rollout hoặc thay bằng release mới.", "en": "Halting only stops serving 320 to new users; Play does not downgrade devices that already updated. To \"go back\", you build the 3.1 code (or the fixed code) with `versionCode` 321 and release it as a new version. Meanwhile a remote flag, or an OTA update if the bug is in JS and the runtime matches, limits the damage for the 10% who have the bad build. Once you are confident, resume the rollout or replace it with the new release." }
+  },
+  {
+    "id": "release-android-005",
+    "type": "mcq",
+    "topics": ["release/android"],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": ["release-android-core"],
+    "multi": true,
+    "prompt": { "vi": "Bản debug chạy ổn, nhưng bản release crash hoặc không tải được dữ liệu. Những nguyên nhân nào giải thích được việc chỉ bản release mới lỗi? (chọn tất cả đáp án đúng)", "en": "The debug build works, but the release build crashes or loads no data. Which causes can explain a failure only in release? (select all that apply)" },
+    "options": [
+      { "text": { "vi": "R8 xoá hoặc đổi tên một class mà thư viện truy cập bằng reflection", "en": "R8 removed or renamed a class that a library reaches through reflection" } },
+      { "text": { "vi": "Một bước khởi tạo chỉ nằm trong nhánh `if (__DEV__)`", "en": "An initialisation step only runs inside an `if (__DEV__)` branch" } },
+      { "text": { "vi": "Bản release chặn HTTP không mã hoá, còn bản debug cho phép để kết nối Metro", "en": "Release blocks cleartext HTTP, which debug allows so it can reach Metro" } },
+      {
+        "text": { "vi": "Hermes chỉ dùng cho debug, còn bản release chạy JavaScriptCore", "en": "Hermes is only used in debug, while release runs JavaScriptCore" },
+        "misconception": { "id": "hermes-debug-only", "text": { "vi": "Hiểu ngược. Khi bật Hermes, bản release dùng Hermes và còn biên dịch sẵn JS thành bytecode lúc build.", "en": "Getting it backwards. With Hermes enabled, release uses Hermes and even precompiles the JS to bytecode at build time." } }
+      },
+      {
+        "text": { "vi": "Bản release vẫn tải JS từ Metro, nên lỗi khi máy không cùng mạng với máy dev", "en": "Release still loads JS from Metro, so it fails off the developer's network" },
+        "misconception": { "id": "release-loads-metro", "text": { "vi": "Nghĩ rằng bản release tải bundle từ Metro. Release đóng bundle JS vào APK/AAB lúc build và không cần Metro.", "en": "Believing a release build fetches its bundle from Metro. Release embeds the JS bundle in the APK/AAB at build time and never needs Metro." } }
+      }
+    ],
+    "answer": [0, 1, 2],
+    "explanation": { "vi": "Bản release khác debug ở ba chỗ hay gây lỗi: R8 thu gọn và đổi tên code khi `minifyEnabled` bật, `__DEV__` là `false`, và cấu hình debug cho phép cleartext để nói chuyện với Metro trong khi release thì không. Cách điều tra: cài đúng bản release lên máy, xem `adb logcat`, và giải mã stack trace bằng mapping file của R8 cùng source map của Hermes.", "en": "Release differs from debug in three places that often bite: R8 shrinks and renames code when `minifyEnabled` is on, `__DEV__` is `false`, and the debug configuration allows cleartext traffic for Metro while release does not. To investigate, install the actual release build, read `adb logcat`, and decode stack traces with the R8 mapping file and the Hermes source map." }
+  },
+  {
+    "id": "release-android-006",
+    "type": "mcq",
+    "topics": ["release/android"],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": ["release-android-core"],
+    "multi": true,
+    "prompt": { "vi": "Play Console cảnh báo app phải nâng `targetSdkVersion` trước hạn chót. Những câu nào đúng? (chọn tất cả đáp án đúng)", "en": "Play Console warns that the app must raise `targetSdkVersion` before a deadline. Which statements are true? (select all that apply)" },
+    "options": [
+      { "text": { "vi": "Mức bắt buộc tăng gần như hằng năm; trang Policy status trong Play Console cho biết hạn hiện tại", "en": "The required level rises about yearly; Play Console's Policy status page shows the current deadline" } },
+      { "text": { "vi": "Nâng target có thể đổi hành vi lúc chạy, như foreground service phải khai loại khi target Android 14", "en": "Raising it can change runtime behaviour, such as foreground services needing a declared type on Android 14" } },
+      {
+        "text": { "vi": "Phải nâng `minSdkVersion` lên cùng mức đó, nên các máy chạy bản Android cũ hơn sẽ không cài được app nữa", "en": "`minSdkVersion` must be raised to the same level, so devices on older Android versions lose the app" },
+        "misconception": { "id": "minsdk-follows-targetsdk", "text": { "vi": "Nhầm hai thông số. `minSdkVersion` quyết định máy nào cài được; `targetSdkVersion` quyết định app nhận hành vi của bản Android nào. Nâng target không bắt bỏ máy cũ.", "en": "Mixing up the two. `minSdkVersion` decides which devices can install the app; `targetSdkVersion` decides which Android behaviours it opts into. Raising the target does not drop old devices." } }
+      },
+      {
+        "text": { "vi": "Quá hạn thì app bị gỡ khỏi Play với mọi người dùng, kể cả những người đã cài từ trước", "en": "Missing the deadline removes the app from Play for every user, including people who already installed it" },
+        "misconception": { "id": "target-deadline-removes-app", "text": { "vi": "Nghĩ rằng quá hạn là app bị gỡ. Bạn sẽ không phát hành được bản cập nhật, và app tụt quá xa sẽ không hiện với người dùng mới trên các bản Android mới hơn, nhưng người đã cài vẫn dùng được.", "en": "Believing a missed deadline removes the app. You cannot publish updates, and apps that fall too far behind stop being offered to new users on newer Android versions, but existing users keep the app." } }
+      }
+    ],
+    "answer": [0, 1],
+    "explanation": { "vi": "Play đặt hạn hằng năm, thường vào cuối tháng 8; ví dụ, từ 31/8/2025 app mới và bản cập nhật phải target API 35 (Android 15), và mức này tăng tiếp mỗi năm, nên hãy xem mức hiện tại trong Play Console. Mỗi lần nâng target, app nhận thêm hành vi mới của bản Android đó: target Android 14 bắt foreground service phải khai loại, target Android 15 bật edge-to-edge mặc định. Vì vậy hãy nâng target trên một nhánh riêng, đọc trang behaviour changes của bản Android đó và test như một tính năng, đừng để tới ngày release.", "en": "Play sets a yearly deadline, usually at the end of August; for example, from 31 August 2025 new apps and updates had to target API 35 (Android 15), and the level rises again each year, so read the current one in Play Console. Each target bump opts the app into that version's new behaviour: targeting Android 14 requires foreground service types, and targeting Android 15 turns on edge-to-edge by default. So raise the target on its own branch, read that Android version's behaviour changes page and test it like a feature, not on release day." }
+  },
+  {
+    "id": "release-android-007",
+    "type": "spot-bug",
+    "topics": ["release/android"],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 120,
+    "lessons": ["release-android-core"],
+    "prompt": { "vi": "Team vừa tạo upload keystore và khai báo nó trong `android/app/build.gradle`. Upload AAB lên Play Console vẫn bị từ chối vì lỗi chữ ký. Dòng nào gây ra lỗi?", "en": "The team has just created an upload keystore and declared it in `android/app/build.gradle`. Uploading the AAB to Play Console is still refused over its signature. Which line causes it?" },
+    "code": "android {\n    defaultConfig {\n        applicationId \"com.acme.parcel\"\n        versionCode 320\n        versionName \"3.2.0\"\n    }\n    signingConfigs {\n        release {\n            storeFile file(UPLOAD_STORE_FILE)\n            storePassword UPLOAD_STORE_PASSWORD\n            keyAlias UPLOAD_KEY_ALIAS\n            keyPassword UPLOAD_KEY_PASSWORD\n        }\n    }\n    buildTypes {\n        release {\n            signingConfig signingConfigs.debug\n        }\n    }\n}",
+    "answerLine": 17,
+    "causeOptions": [
+      { "text": { "vi": "Build type `release` vẫn dùng signing config debug của template thay vì upload keystore", "en": "The `release` build type still uses the template's debug signing config, not the upload keystore" } },
+      {
+        "text": { "vi": "`versionCode` phải ghép từ `versionName`, ví dụ 30200", "en": "`versionCode` must be derived from `versionName`, such as 30200" },
+        "misconception": { "id": "versioncode-from-name", "text": { "vi": "Nghĩ rằng versionCode phải suy ra từ versionName. Đó chỉ là một quy ước; Play chỉ cần versionCode là số nguyên chưa dùng và tăng dần.", "en": "Believing versionCode must be derived from versionName. That is only a convention; Play just needs an unused, increasing integer." } }
+      },
+      {
+        "text": { "vi": "Đã bật Play App Signing thì phải upload bản chưa ký", "en": "With Play App Signing you must upload an unsigned AAB" },
+        "misconception": { "id": "play-signing-unsigned-upload", "text": { "vi": "Nghĩ rằng Play App Signing nhận bản chưa ký. Bạn vẫn ký bằng upload key; Play kiểm tra chữ ký đó rồi mới ký lại bằng app signing key.", "en": "Believing Play App Signing takes unsigned uploads. You still sign with the upload key; Play verifies it, then re-signs with the app signing key." } }
+      },
+      {
+        "text": { "vi": "Mật khẩu không đọc được từ `gradle.properties`, phải viết thẳng vào file Gradle", "en": "Passwords cannot come from `gradle.properties`; they must be written into the Gradle file" },
+        "misconception": { "id": "gradle-props-secrets", "text": { "vi": "Hiểu sai cách Gradle đọc thuộc tính. Giá trị trong `gradle.properties` (tốt nhất là file ở thư mục home, hoặc biến môi trường trên CI) đọc được như thuộc tính của project, và đó là cách giữ mật khẩu ngoài repo.", "en": "Misreading how Gradle resolves properties. Values in `gradle.properties` (ideally the one in your home directory, or CI environment variables) are readable as project properties, and that is how passwords stay out of the repo." } }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": { "vi": "Template RN để sẵn `signingConfig signingConfigs.debug` trong build type `release` để `assembleRelease` chạy được ngay. Khai `signingConfigs.release` chưa đủ: dòng 17 phải đổi thành `signingConfig signingConfigs.release`. Nếu không, AAB được ký bằng debug keystore và Play từ chối. Thêm một bước kiểm tra trên CI, ví dụ `keytool -printcert -jarfile` với file đã build, để so fingerprint với upload certificate đã đăng ký.", "en": "The RN template ships `signingConfig signingConfigs.debug` in the `release` build type so `assembleRelease` works out of the box. Declaring `signingConfigs.release` is not enough: line 17 must become `signingConfig signingConfigs.release`. Otherwise the AAB is signed with the debug keystore and Play refuses it. Add a CI check, such as `keytool -printcert -jarfile` on the built file, to compare its fingerprint with the registered upload certificate." }
+  },
+  {
+    "id": "release-android-008",
+    "type": "spot-bug",
+    "topics": ["release/android"],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 120,
+    "lessons": ["release-android-core"],
+    "prompt": { "vi": "App giao hàng chỉ dùng ảnh ở một chỗ: người dùng chọn một ảnh làm avatar. Bản cập nhật bị Play từ chối theo chính sách quyền truy cập ảnh và video. Dòng nào trong manifest cần bỏ?", "en": "A delivery app uses photos in one place only: the user picks one as an avatar. Play rejects the update under its photo and video permissions policy. Which manifest line has to go?" },
+    "code": "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\">\n    <uses-permission android:name=\"android.permission.INTERNET\" />\n    <uses-permission android:name=\"android.permission.CAMERA\" />\n    <uses-permission android:name=\"android.permission.POST_NOTIFICATIONS\" />\n    <uses-permission android:name=\"android.permission.READ_MEDIA_IMAGES\" />\n\n    <application\n        android:name=\".MainApplication\"\n        android:allowBackup=\"false\">\n        <activity\n            android:name=\".MainActivity\"\n            android:exported=\"true\"\n            android:launchMode=\"singleTask\">\n            <intent-filter>\n                <action android:name=\"android.intent.action.MAIN\" />\n                <category android:name=\"android.intent.category.LAUNCHER\" />\n            </intent-filter>\n        </activity>\n    </application>\n</manifest>",
+    "answerLine": 5,
+    "causeOptions": [
+      { "text": { "vi": "Xin quyền đọc mọi ảnh chỉ để chọn một avatar, thay vì dùng photo picker của hệ thống", "en": "It requests access to every photo just to pick an avatar, instead of using the system photo picker" } },
+      {
+        "text": { "vi": "`POST_NOTIFICATIONS` chỉ được khai khi target dưới Android 13", "en": "`POST_NOTIFICATIONS` may only be declared when targeting below Android 13" },
+        "misconception": { "id": "post-notifications-reversed", "text": { "vi": "Hiểu ngược. `POST_NOTIFICATIONS` là quyền runtime có từ Android 13; app target 33 trở lên phải khai và xin nó thì mới hiện được thông báo.", "en": "Getting it backwards. `POST_NOTIFICATIONS` is a runtime permission added in Android 13; apps targeting 33 or higher must declare and request it to show notifications." } }
+      },
+      {
+        "text": { "vi": "`android:exported=\"true\"` ở activity launcher bị Play xem là một lỗ hổng bảo mật cần sửa", "en": "`android:exported=\"true\"` on the launcher activity is flagged by Play as a security hole" },
+        "misconception": { "id": "exported-launcher-insecure", "text": { "vi": "Nghĩ rằng activity launcher không được exported. Từ Android 12, activity có intent filter phải khai `android:exported` rõ ràng, và activity launcher phải là `true` thì launcher mới mở được.", "en": "Believing the launcher activity must not be exported. Since Android 12, activities with intent filters must declare `android:exported`, and the launcher activity must be `true` for the launcher to open it." } }
+      },
+      {
+        "text": { "vi": "`android:allowBackup=\"false\"` mâu thuẫn với khai báo Data safety", "en": "`android:allowBackup=\"false\"` conflicts with the Data safety declaration" },
+        "misconception": { "id": "allowbackup-data-safety", "text": { "vi": "Nhầm cấu hình backup với Data safety. Form Data safety khai việc thu thập và chia sẻ dữ liệu; tắt backup không làm form đó sai.", "en": "Confusing backup settings with Data safety. The form declares data collection and sharing; turning backup off does not make it inaccurate." } }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": { "vi": "Chính sách quyền ảnh và video của Play (áp dụng dần trong 2024–2025) chỉ cho khai `READ_MEDIA_IMAGES` khi truy cập rộng thư viện ảnh là tính năng cốt lõi. Chọn avatar thì dùng photo picker của hệ thống, không cần quyền này, và Google Play services đưa picker xuống cả các bản Android cũ hơn. Nếu quyền đến từ một thư viện qua manifest merge, gỡ nó bằng `tools:node=\"remove\"`. Đọc lại chính sách hiện hành trong Play Console trước khi khai báo ngoại lệ.", "en": "Play's photo and video permissions policy (phased in through 2024–2025) only allows `READ_MEDIA_IMAGES` when broad access to the photo library is a core feature. An avatar pick should use the system photo picker, which needs no permission, and Google Play services brings the picker to older Android versions too. If a library merges the permission in, remove it with `tools:node=\"remove\"`. Re-read the current policy in Play Console before declaring an exception." }
+  },
+  {
+    "id": "release-android-009",
+    "type": "spot-bug",
+    "topics": ["release/android"],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 150,
+    "lessons": ["release-android-core"],
+    "prompt": { "vi": "Bạn bật `minifyEnabled true` cho release để giảm kích thước. Bản release crash ngay khi nhận push với `NullPointerException` khi đọc `payload.orderId`; bản debug vẫn đúng. `PushPayload` là data class Kotlin được Gson parse. Dòng nào trong `proguard-rules.pro` gây ra lỗi?", "en": "You turn on `minifyEnabled true` for release to cut its size. The release build now crashes as soon as a push arrives, with a `NullPointerException` reading `payload.orderId`; debug still works. `PushPayload` is a Kotlin data class parsed by Gson. Which line in `proguard-rules.pro` causes it?" },
+    "code": "# Keep file names and line numbers for readable crash reports\n-keepattributes SourceFile,LineNumberTable\n\n# Gson reads generic types and annotations at runtime\n-keepattributes Signature\n-keepattributes *Annotation*\n\n# Push payloads are parsed with Gson in PushService.kt\n-keep class com.acme.parcel.push.PushPayload\n\n# The payments SDK loads its providers by reflection\n-keep class com.paysdk.provider.** { *; }\n-dontwarn com.paysdk.**",
+    "answerLine": 9,
+    "causeOptions": [
+      { "text": { "vi": "Rule chỉ giữ tên class, không giữ field; R8 đổi tên field nên Gson không khớp được key JSON", "en": "The rule keeps the class name but not its fields; R8 renames them, so Gson cannot match the JSON keys" } },
+      {
+        "text": { "vi": "`-keepattributes SourceFile,LineNumberTable` khiến R8 bỏ phần thân hàm", "en": "`-keepattributes SourceFile,LineNumberTable` makes R8 drop method bodies" },
+        "misconception": { "id": "keepattributes-strips-code", "text": { "vi": "Hiểu sai `-keepattributes`. Nó chỉ giữ thêm metadata, ở đây là tên file và số dòng cho stack trace; nó không xoá code.", "en": "Misreading `-keepattributes`. It only keeps extra metadata, here file names and line numbers for stack traces; it never removes code." } }
+      },
+      {
+        "text": { "vi": "`-dontwarn` làm R8 bỏ các class của SDK thanh toán, kéo theo crash", "en": "`-dontwarn` makes R8 remove the payments SDK classes, causing the crash" },
+        "misconception": { "id": "dontwarn-removes-code", "text": { "vi": "Nghĩ rằng `-dontwarn` thay đổi những gì R8 giữ lại. Nó chỉ tắt cảnh báo lúc build về tham chiếu bị thiếu; không xoá hay đổi tên gì.", "en": "Believing `-dontwarn` changes what R8 keeps. It only silences build-time warnings about missing references; it removes and renames nothing." } }
+      },
+      {
+        "text": { "vi": "R8 chỉ xử lý code khi `shrinkResources true` cũng bật, nên rule này bị bỏ qua", "en": "R8 only processes code when `shrinkResources true` is also on, so the rule is ignored" },
+        "misconception": { "id": "minify-needs-shrinkresources", "text": { "vi": "Hiểu ngược quan hệ hai cờ. `shrinkResources` cần `minifyEnabled`, không phải ngược lại; chỉ bật `minifyEnabled` là R8 đã thu gọn và làm rối code.", "en": "Getting the dependency backwards. `shrinkResources` requires `minifyEnabled`, not the reverse; `minifyEnabled` alone already makes R8 shrink and obfuscate code." } }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": { "vi": "`-keep class X` ở dòng 9 giữ class và tên của nó, nhưng không giữ member. R8 đổi `orderId` thành tên ngắn như `a`, nên Gson, vốn ghép key JSON với tên field bằng reflection, không tìm thấy field nào và để chúng là `null`. Gson tạo object mà không chạy constructor Kotlin, nên kiểu non-null không chặn được, và app crash khi dùng giá trị đó. Sửa bằng `-keep class com.acme.parcel.push.PushPayload { *; }`, hoặc thêm `@SerializedName` cho từng field (Gson 2.11+ đã kèm rule R8 giữ các field này; bản cũ hơn cần thêm rule `-keepclassmembers`), hoặc chuyển sang thư viện sinh code lúc build. Nhớ giữ mapping file để đọc được stack trace của bản release.", "en": "`-keep class X` on line 9 keeps the class and its name, but not its members. R8 renames `orderId` to something like `a`, so Gson, which matches JSON keys to field names by reflection, finds no fields and leaves them `null`. Gson builds the object without running the Kotlin constructor, so the non-null types do not protect you, and the app crashes when it uses the value. Fix it with `-keep class com.acme.parcel.push.PushPayload { *; }`, or add `@SerializedName` to each field (Gson 2.11+ bundles R8 rules that keep such fields; older versions need a `-keepclassmembers` rule), or move to a library that generates code at build time. Keep the mapping file so release stack traces stay readable." }
+  },
+  {
+    "id": "release-android-010",
+    "type": "open",
+    "topics": ["release/android"],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 330,
+    "lessons": ["release-android-core"],
+    "prompt": { "vi": "Bản 3.4.0 đang staged rollout 20%. Android vitals cho thấy tỉ lệ ANR tăng gấp ba, gần như toàn bộ trên máy Android 14 của một hãng. Kể lại cách bạn xử lý.", "en": "Release 3.4.0 is at a 20% staged rollout. Android vitals shows the ANR rate has tripled, almost entirely on one manufacturer's Android 14 devices. Walk me through how you handle it." },
+    "keyPoints": [
+      { "vi": "Halt rollout ngay để không thêm người nhận; 20% đã cài vẫn giữ 3.4.0", "en": "Halt the rollout at once so no one else gets it; the 20% who installed 3.4.0 keep it" },
+      { "vi": "Đọc ANR trace: main thread đang chờ gì, lọc theo thiết bị và OS, rồi đối chiếu diff 3.3 → 3.4 (SDK vừa nâng, code native, targetSdk)", "en": "Read the ANR traces: what the main thread waits on, filtered by device and OS, then compare with the 3.3 to 3.4 diff (upgraded SDKs, native code, targetSdk)" },
+      { "vi": "Tái hiện bằng bản release thật trên cùng dòng máy, ở máy thật hoặc qua Firebase Test Lab", "en": "Reproduce with the real release build on the same device family, locally or in Firebase Test Lab" },
+      { "vi": "Giảm thiệt hại bằng remote flag nếu được; sửa trong bản mới với `versionCode` cao hơn rồi rollout từng bước lại", "en": "Mitigate with a remote flag where possible; ship the fix with a higher `versionCode` and roll it out in stages again" },
+      { "vi": "Theo dõi bad behaviour threshold của Play vì vượt ngưỡng ảnh hưởng tới khả năng hiển thị app; sau đó đặt ngưỡng tự động halt", "en": "Watch Play's bad behaviour thresholds, since staying above them hurts the app's visibility; afterwards set thresholds that halt automatically" }
+    ],
+    "modelAnswer": { "vi": "Mình halt rollout ngay. Việc đó ngừng phát 3.4.0 cho người mới, còn 20% đã cài vẫn giữ nó. Tiếp theo mình đọc ANR trace trong Android vitals: main thread đang chờ gì, và có đúng chỉ một hãng trên Android 14 không. Mình đối chiếu với diff 3.3 → 3.4, nhất là SDK vừa nâng và thay đổi native. Mình tái hiện bằng bản release thật trên cùng dòng máy, ở máy thật hoặc Firebase Test Lab. Nếu tắt được nguyên nhân bằng remote flag thì mình tắt ngay; nếu không, mình ra bản sửa với `versionCode` cao hơn và rollout từng bước lại. Mình cũng theo dõi bad behaviour threshold của Play, vì ở trên ngưỡng lâu sẽ ảnh hưởng tới khả năng hiển thị của app.", "en": "I halt the rollout straight away. That stops new users getting 3.4.0, though the 20% who have it keep it. Next I read the ANR traces in Android vitals: what the main thread was waiting on, and whether it really is one manufacturer on Android 14 only. I compare that with the 3.3 to 3.4 diff, especially SDK upgrades and native changes. I reproduce on the same device family with a real release build, on hardware or in Firebase Test Lab. If a remote flag can switch the cause off, I do that immediately; otherwise I ship a fix with a higher `versionCode` and roll it out in stages again. I also watch Play's bad behaviour thresholds, because staying above them hurts the app's visibility." },
+    "followUps": [
+      { "vi": "ANR khác crash thế nào, và vì sao JS thread bị kẹt thường không gây ANR?", "en": "How does an ANR differ from a crash, and why does a stuck JS thread usually not cause one?" },
+      { "vi": "Bạn dựa vào số liệu nào để resume rollout?", "en": "Which numbers would you need to see before resuming the rollout?" }
+    ]
+  },
+  {
+    "id": "release-android-011",
+    "type": "open",
+    "topics": ["release/android"],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 300,
+    "lessons": ["release-android-core"],
+    "prompt": { "vi": "Bạn nhận lại một app từ team cũ. Không ai biết keystore ở đâu, và tuần sau phải phát hành bản cập nhật. Bạn làm gì?", "en": "You inherit an app from a previous team. Nobody knows where the keystore is, and an update is due next week. What do you do?" },
+    "keyPoints": [
+      { "vi": "Xem trang App integrity của Play Console để biết app có dùng Play App Signing không, và certificate của upload key là gì", "en": "Check the App integrity page in Play Console to see whether the app uses Play App Signing, and what the upload certificate is" },
+      { "vi": "Nếu có: tạo upload key mới, export certificate dạng PEM, nhờ chủ tài khoản yêu cầu reset, và tính trước thời gian chờ", "en": "If it does: generate a new upload key, export its certificate as PEM, have the account owner request a reset, and allow for the waiting time" },
+      { "vi": "Nếu không dùng Play App Signing và mất app signing key: app đó không cập nhật được nữa, chỉ còn cách ra app mới với package name khác", "en": "If it does not and the signing key is gone: that app can never be updated, and the only path is a new app with a new package name" },
+      { "vi": "Lưu keystore và mật khẩu trong secret manager hoặc credential store của CI, có bản sao lưu và quyền truy cập rõ ràng", "en": "Keep the keystore and passwords in a secret manager or the CI credential store, with a backup and clear access rights" },
+      { "vi": "Ghi lại alias và fingerprint SHA-1/SHA-256 của các key, cùng những dịch vụ dùng fingerprint như Google Sign-In hay API key của Maps", "en": "Document the aliases and SHA-1/SHA-256 fingerprints, and which services depend on them, such as Google Sign-In or Maps API keys" }
+    ],
+    "modelAnswer": { "vi": "Mình bắt đầu ở trang App integrity của Play Console để xem app có dùng Play App Signing không. Nếu có, keystore bị mất chỉ là upload key, và việc này cứu được: mình tạo upload key mới, export certificate dạng PEM và nhờ chủ tài khoản yêu cầu reset upload key. Việc reset không có hiệu lực ngay, nên mình làm ngay hôm nay chứ không đợi tới hôm trước ngày release. Nếu app chưa dùng Play App Signing và app signing key thật sự đã mất, app đó không bao giờ cập nhật được nữa; con đường duy nhất là package name mới và chuyển người dùng sang. Dù trường hợp nào, key mới phải vào secret store có bản sao lưu, và mình ghi lại alias cùng fingerprint, vì các dịch vụ như Google Sign-In phụ thuộc vào chúng.", "en": "I start on the App integrity page in Play Console to see whether the app uses Play App Signing. If it does, the missing keystore is only the upload key, which is recoverable: I generate a new upload key, export its certificate as PEM and ask the account owner to request an upload key reset. The reset does not take effect instantly, so I do it today, not the day before release. If the app is not enrolled and the signing key is truly gone, that app can never be updated again; the only path is a new package name and moving users across. Either way, the new key goes into a secret store with a backup, and I document the alias and fingerprints, because services such as Google Sign-In depend on them." },
+    "followUps": [
+      { "vi": "Vì sao fingerprint đăng ký cho Google Sign-In của bản trên Play phải là của app signing key chứ không phải upload key?", "en": "Why must the fingerprint registered for Google Sign-In on Play builds be the app signing key's, not the upload key's?" }
+    ]
+  },
+  {
+    "id": "release-android-012",
+    "type": "open",
+    "topics": ["release/android"],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 300,
+    "lessons": ["release-android-core"],
+    "prompt": { "vi": "Bản cập nhật bị Play từ chối: form Data safety khai app không thu thập dữ liệu, nhưng review phát hiện app gửi Advertising ID và vị trí gần đúng. Team khẳng định code của mình không làm việc đó. Kể lại cách bạn xử lý.", "en": "Play rejects an update: the Data safety form says the app collects no data, but review found it sending the Advertising ID and approximate location. The team insists their code does neither. Walk me through how you handle it." },
+    "keyPoints": [
+      { "vi": "Dữ liệu SDK thu thập vẫn tính là app thu thập; liệt kê mọi SDK (analytics, ads, crash, attribution) và đọc hướng dẫn Data safety của từng cái", "en": "Data an SDK collects counts as the app collecting it; list every SDK (analytics, ads, crash, attribution) and read each one's Data safety guidance" },
+      { "vi": "Kiểm chứng thay vì đoán: xem merged manifest để thấy quyền như `AD_ID` hay location do thư viện thêm, và bắt traffic của bản release qua proxy", "en": "Verify instead of guessing: check the merged manifest for permissions such as `AD_ID` or location that libraries add, and capture the release build's traffic through a proxy" },
+      { "vi": "Quyết định theo từng SDK: cấu hình để không thu thứ không cần, gỡ quyền thừa bằng `tools:node=\"remove\"`, hoặc khai báo trung thực", "en": "Decide per SDK: configure it to stop collecting what you do not need, remove unneeded permissions with `tools:node=\"remove\"`, or declare it honestly" },
+      { "vi": "Cập nhật form Data safety trên trang App content cùng privacy policy cho khớp, rồi gửi lại", "en": "Update the Data safety form on the App content page and the privacy policy together, then resubmit" },
+      { "vi": "Theo dõi trang Policy status; nếu tin Play sai thì appeal; thêm bước rà Data safety vào checklist mỗi khi thêm SDK", "en": "Watch the Policy status page; appeal if you believe Play is wrong; add a Data safety review to the checklist for every new SDK" }
+    ],
+    "modelAnswer": { "vi": "Form Data safety mô tả mọi thứ app thu thập, kể cả phần do SDK thu thập, nên code của team mới là một nửa câu chuyện. Mình liệt kê mọi SDK trong bản release và đọc hướng dẫn Data safety của từng cái. Sau đó mình kiểm chứng chứ không tin tài liệu: xem merged manifest để tìm quyền như `AD_ID` hay location do thư viện thêm vào, và bắt traffic của bản release qua proxy. Từ đó mình quyết định theo từng SDK: cấu hình để nó không thu thứ mình không cần, gỡ quyền thừa bằng `tools:node=\"remove\"`, hoặc khai báo trung thực trong form. Mình cập nhật form Data safety và privacy policy cùng lúc, gửi lại, và thêm bước rà Data safety vào checklist mỗi khi thêm SDK.", "en": "The form describes everything the app collects, including what its SDKs collect, so the team's own code is only half the story. I list every SDK in the release build and read each one's Data safety guidance. Then I verify instead of trusting the docs: I check the merged manifest for permissions such as `AD_ID` or location that a library added, and capture the release build's traffic through a proxy. With that, I decide per SDK: configure it to stop collecting what we do not need, remove an unneeded permission with `tools:node=\"remove\"`, or declare it honestly in the form. I update the Data safety form and the privacy policy together, resubmit, and add a Data safety review to the checklist for every new SDK." },
+    "followUps": [
+      { "vi": "Data safety của Play khác gì phần App Privacy của Apple, và có nên dùng chung một nguồn dữ liệu để khai cả hai không?", "en": "How does Play's Data safety differ from Apple's App Privacy details, and should one source of truth feed both?" }
+    ]
+  }
+]

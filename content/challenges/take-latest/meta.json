@@ -1,0 +1,14 @@
+{
+  "id": "take-latest",
+  "type": "challenge",
+  "topics": ["state/redux-saga", "state/async"],
+  "kind": "advanced",
+  "difficulty": 2,
+  "estSeconds": 600,
+  "lessons": ["state-redux-saga-core"],
+  "title": { "vi": "Chỉ giữ kết quả của lần chạy mới nhất", "en": "Keep only the latest run" },
+  "hints": [
+    { "vi": "Giữ một biến `current` cho lần chạy đang chờ: `AbortController` của nó và hàm `resolve` của promise trả về. `run` mới thì huỷ `current` trước, rồi mới bắt đầu.", "en": "Keep one `current` slot for the pending run: its `AbortController` and the `resolve` of the promise you returned. A new `run` cancels `current` first, then starts." },
+    { "vi": "Lần chạy cũ phải resolve `cancelled` ngay khi bị thay, không đợi worker xong. Khi worker cũ settle muộn, so sánh entry của nó với `current`; khác nhau thì bỏ qua cả kết quả lẫn lỗi.", "en": "A superseded run must resolve `cancelled` right away, without waiting for its worker. When an old worker settles late, compare its entry with `current`; if they differ, ignore both the value and the error." }
+  ]
+}

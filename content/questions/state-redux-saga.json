@@ -1,0 +1,834 @@
+[
+  {
+    "id": "state-redux-saga-001",
+    "type": "mcq",
+    "topics": [
+      "state/redux-saga"
+    ],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": [
+      "state-redux-saga-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Khi một saga chạy `yield call(api.fetchUser, id)`, giá trị được yield ra cho middleware là gì?",
+      "en": "When a saga runs `yield call(api.fetchUser, id)`, what value is yielded to the middleware?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Promise do `api.fetchUser(id)` trả về, vì `call` gọi hàm ngay lập tức",
+          "en": "The promise from `api.fetchUser(id)`, because `call` invokes the function immediately"
+        },
+        "misconception": {
+          "id": "saga-call-invokes-immediately",
+          "text": {
+            "vi": "Nghĩ rằng `call` gọi hàm ngay. `call` chỉ tạo một object mô tả lời gọi; middleware mới là bên gọi hàm, sau khi nhận object đó.",
+            "en": "Believing `call` invokes the function right away. `call` only builds an object describing the call; the middleware invokes the function after it receives that object."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Một object thuần mô tả lời gọi (hàm và tham số), middleware sẽ thực thi nó",
+          "en": "A plain object describing the call (function and arguments) that the middleware executes"
+        }
+      },
+      {
+        "text": {
+          "vi": "Dữ liệu user đã resolve, vì `yield` trong saga chờ giống hệt `await`",
+          "en": "The resolved user data, because `yield` in a saga waits exactly like `await`"
+        },
+        "misconception": {
+          "id": "saga-yield-is-await",
+          "text": {
+            "vi": "Nghĩ rằng `yield` tự chờ promise như `await`. Generator chỉ đưa giá trị ra ngoài rồi dừng; middleware chờ kết quả và đưa nó trở lại qua `next()`.",
+            "en": "Believing `yield` waits for a promise like `await`. A generator just hands a value out and pauses; the middleware waits for the result and passes it back in through `next()`."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Một thunk mà store sẽ dispatch sau, giống `createAsyncThunk`",
+          "en": "A thunk that the store dispatches later, like `createAsyncThunk`"
+        },
+        "misconception": {
+          "id": "saga-effect-is-thunk",
+          "text": {
+            "vi": "Nhầm effect với thunk. Effect không đi qua `dispatch` và không tới reducer; nó là dữ liệu mà saga middleware đọc và thực thi.",
+            "en": "Confusing an effect with a thunk. An effect never goes through `dispatch` or reaches a reducer; it is data the saga middleware reads and executes."
+          }
+        }
+      }
+    ],
+    "answer": [
+      1
+    ],
+    "explanation": {
+      "vi": "`call` trả về một effect: object thuần có `type: 'CALL'` và `payload` chứa `fn` cùng `args`. Middleware nhận object đó, gọi hàm, chờ promise resolve rồi đưa kết quả trở lại generator qua `next()`. Vì effect chỉ là dữ liệu, test có thể gọi `gen.next()` và so sánh với `call(api.fetchUser, id)` mà không cần mock network. Bẫy chính là nghĩ `yield` tự chờ như `await`: chính middleware mới chờ.",
+      "en": "`call` returns an effect: a plain object with `type: 'CALL'` and a `payload` holding `fn` and `args`. The middleware receives it, invokes the function, waits for the promise and passes the result back into the generator through `next()`. Because effects are just data, a test can call `gen.next()` and compare against `call(api.fetchUser, id)` without mocking the network. The main trap is thinking `yield` waits on its own like `await`: the middleware does the waiting."
+    }
+  },
+  {
+    "id": "state-redux-saga-002",
+    "type": "mcq",
+    "topics": [
+      "state/redux-saga"
+    ],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": [
+      "state-redux-saga-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Người dùng hay bấm đúp nút Thanh toán. Bạn muốn lần bấm đầu tiên bắt đầu charge ngay, và mọi lần bấm trong lúc request đó đang chạy đều bị bỏ qua. Bạn dùng helper nào cho watcher?",
+      "en": "Users often double-tap the Pay button. You want the first tap to start the charge at once and every tap while that request is in flight to be ignored. Which helper do you use for the watcher?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "`takeEvery(payPressed.type, charge)`",
+          "en": "`takeEvery(payPressed.type, charge)`"
+        },
+        "misconception": {
+          "id": "saga-takeevery-dedupes",
+          "text": {
+            "vi": "Nghĩ rằng `takeEvery` tự bỏ action trùng. Nó chạy worker cho mọi action, nên bấm đúp tạo ra hai lần charge.",
+            "en": "Believing `takeEvery` drops duplicate actions. It runs the worker for every action, so a double tap creates two charges."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`takeLatest(payPressed.type, charge)`",
+          "en": "`takeLatest(payPressed.type, charge)`"
+        },
+        "misconception": {
+          "id": "saga-cancel-undoes-request",
+          "text": {
+            "vi": "Nghĩ rằng cancel task phía client cũng huỷ request đã gửi. `takeLatest` chỉ dừng generator cũ; request charge đầu tiên vẫn có thể tới server, và lần bấm thứ hai gửi thêm một request nữa.",
+            "en": "Believing that cancelling a task on the client undoes a request already sent. `takeLatest` only stops the old generator; the first charge request can still reach the server, and the second tap sends another one."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`takeLeading(payPressed.type, charge)`",
+          "en": "`takeLeading(payPressed.type, charge)`"
+        }
+      },
+      {
+        "text": {
+          "vi": "`debounce(500, payPressed.type, charge)`",
+          "en": "`debounce(500, payPressed.type, charge)`"
+        },
+        "misconception": {
+          "id": "saga-debounce-runs-first",
+          "text": {
+            "vi": "Nghĩ rằng `debounce` chạy ngay ở action đầu tiên. Nó chờ cho tới khi không còn action mới trong khoảng thời gian đã cho, nên lần charge luôn bị trễ.",
+            "en": "Believing `debounce` runs on the first action. It waits until no new action arrives for the given time, so the charge always starts late."
+          }
+        }
+      }
+    ],
+    "answer": [
+      2
+    ],
+    "explanation": {
+      "vi": "`takeLeading` chạy worker cho action đầu tiên rồi block: nó không nhận action mới cho tới khi task đó xong, nên các lần bấm thêm bị bỏ qua. `takeLatest` làm ngược lại: huỷ task cũ và chạy task mới, nhưng request đầu tiên đã đi rồi. Dù vậy, server vẫn nên có idempotency key, vì saga không chặn được hai lần bấm từ hai lần mở app.",
+      "en": "`takeLeading` runs the worker for the first action and then blocks: it takes no new action until that task finishes, so extra taps are ignored. `takeLatest` does the opposite: it cancels the old task and starts a new one, but the first request has already gone out. The server should still use an idempotency key, because a saga cannot stop duplicates across two app sessions."
+    }
+  },
+  {
+    "id": "state-redux-saga-003",
+    "type": "mcq",
+    "topics": [
+      "state/redux-saga"
+    ],
+    "kind": "advanced",
+    "difficulty": 3,
+    "estSeconds": 90,
+    "lessons": [
+      "state-redux-saga-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Trong saga `checkout`, lệnh `yield fork(sendReceipt)` nằm trong một khối `try/catch`. Ngay sau đó `checkout` chạy `yield call(chargeCard)`. Trong lúc `chargeCard` còn chạy, `sendReceipt` ném lỗi. Điều gì xảy ra?",
+      "en": "In a `checkout` saga, `yield fork(sendReceipt)` sits inside a `try/catch` block. Right after it, `checkout` runs `yield call(chargeCard)`. While `chargeCard` is still running, `sendReceipt` throws. What happens?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Khối `catch` bắt lỗi của `sendReceipt`, còn `chargeCard` vẫn chạy tiếp",
+          "en": "The `catch` block catches the `sendReceipt` error and `chargeCard` keeps running"
+        },
+        "misconception": {
+          "id": "saga-catch-around-fork",
+          "text": {
+            "vi": "Nghĩ rằng `try/catch` quanh `yield fork(...)` bắt được lỗi của task con. `fork` trả về ngay; lỗi của task attached đi lên task cha, làm task cha abort, và `catch` quanh lệnh `fork` không bao giờ chạy.",
+            "en": "Believing a `try/catch` around `yield fork(...)` catches the child's error. `fork` returns at once; an attached child's error travels up to the parent and aborts it, and the `catch` around the `fork` never runs."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Chỉ `sendReceipt` dừng lại, còn `checkout` không bao giờ biết có lỗi",
+          "en": "Only `sendReceipt` stops, and `checkout` never learns about the error"
+        },
+        "misconception": {
+          "id": "saga-fork-isolated",
+          "text": {
+            "vi": "Nhầm `fork` với `spawn`. Task tạo bằng `fork` gắn với task cha, nên lỗi của nó đi lên task cha. Chỉ `spawn` mới tạo task tách rời, có lỗi riêng.",
+            "en": "Confusing `fork` with `spawn`. A task created with `fork` is attached to its parent, so its error travels up to the parent. Only `spawn` creates a detached task with its own errors."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`checkout` chờ `chargeCard` xong rồi mới ném lại lỗi của `sendReceipt`",
+          "en": "`checkout` waits for `chargeCard` to finish, then rethrows the `sendReceipt` error"
+        },
+        "misconception": {
+          "id": "saga-fork-error-deferred",
+          "text": {
+            "vi": "Nghĩ rằng lỗi của task con được giữ lại cho tới khi task cha xong việc. Lỗi làm task cha abort ngay lúc nó xảy ra, và effect đang chạy của task cha bị cancel.",
+            "en": "Believing a child's error is held until the parent finishes its work. The error aborts the parent as soon as it happens, and the parent's running effect is cancelled."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`checkout` abort, `chargeCard` bị cancel, và `catch` quanh `fork` không chạy",
+          "en": "`checkout` aborts, `chargeCard` is cancelled, and the `catch` around `fork` does not run"
+        }
+      }
+    ],
+    "answer": [
+      3
+    ],
+    "explanation": {
+      "vi": "Task tạo bằng `fork` là task attached. Khi nó ném lỗi không bắt, task cha abort: effect đang chạy (`call(chargeCard)`) và các fork khác bị cancel, rồi lỗi ném ra khỏi task cha. `fork` đã trả về từ trước, nên `catch` quanh nó không có gì để bắt. Muốn xử lý lỗi, đặt `try/catch` bên trong `sendReceipt`, hoặc bắt ở nơi gọi `checkout` bằng `call`. Bẫy chính là nghĩ `try/catch` hoạt động với `fork` giống với `call`.",
+      "en": "A task created with `fork` is attached. When it throws an uncaught error, the parent aborts: its running effect (`call(chargeCard)`) and other forks are cancelled, and the error is thrown out of the parent. `fork` returned long before, so the `catch` around it has nothing to catch. To handle the error, put the `try/catch` inside `sendReceipt`, or catch at the place that runs `checkout` with `call`. The main trap is thinking `try/catch` works around `fork` the way it does around `call`."
+    }
+  },
+  {
+    "id": "state-redux-saga-004",
+    "type": "mcq",
+    "topics": [
+      "state/redux-saga"
+    ],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": [
+      "state-redux-saga-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Khi app khởi động, saga `startup` cần chạy prefetch ảnh ở background. Prefetch không được chặn `startup`, lỗi của nó không được làm `startup` dừng, và nó phải chạy tiếp kể cả khi `startup` bị cancel. Bạn dùng effect nào?",
+      "en": "On app start, a `startup` saga needs to run an image prefetch in the background. The prefetch must not block `startup`, its errors must not stop `startup`, and it must keep running even if `startup` is cancelled. Which effect do you use?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "`yield call(prefetchImages)`",
+          "en": "`yield call(prefetchImages)`"
+        },
+        "misconception": {
+          "id": "saga-call-non-blocking",
+          "text": {
+            "vi": "Nghĩ rằng `call` chạy ở background. `call` là blocking: saga dừng ở đó cho tới khi hàm hoặc generator được gọi kết thúc.",
+            "en": "Believing `call` runs in the background. `call` is blocking: the saga pauses there until the called function or generator finishes."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`yield fork(prefetchImages)`",
+          "en": "`yield fork(prefetchImages)`"
+        },
+        "misconception": {
+          "id": "saga-fork-detached",
+          "text": {
+            "vi": "Nghĩ rằng `fork` tạo task độc lập. Task fork vẫn gắn với task cha: lỗi của nó làm task cha abort, và cancel task cha thì nó cũng bị cancel.",
+            "en": "Believing `fork` creates an independent task. A forked task stays attached to its parent: its error aborts the parent, and cancelling the parent cancels it too."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`yield spawn(prefetchImages)`",
+          "en": "`yield spawn(prefetchImages)`"
+        }
+      },
+      {
+        "text": {
+          "vi": "`yield fork(prefetchImages)` bọc trong `try/catch`",
+          "en": "`yield fork(prefetchImages)` wrapped in `try/catch`"
+        },
+        "misconception": {
+          "id": "saga-catch-around-fork",
+          "text": {
+            "vi": "Nghĩ rằng `try/catch` quanh `yield fork(...)` bắt được lỗi của task con. `fork` trả về ngay; lỗi của task attached đi lên task cha, làm task cha abort, và `catch` quanh lệnh `fork` không bao giờ chạy.",
+            "en": "Believing a `try/catch` around `yield fork(...)` catches the child's error. `fork` returns at once; an attached child's error travels up to the parent and aborts it, and the `catch` around the `fork` never runs."
+          }
+        }
+      }
+    ],
+    "answer": [
+      2
+    ],
+    "explanation": {
+      "vi": "`spawn` tạo một task detached: không chặn task cha, lỗi của nó không đi lên task cha, và cancel task cha không ảnh hưởng tới nó. `fork` cũng không chặn, nhưng task attached chia sẻ số phận với task cha cả khi lỗi lẫn khi cancel. Vì lỗi của task spawn không ai nhận, hãy tự `try/catch` và báo cáo lỗi bên trong `prefetchImages`.",
+      "en": "`spawn` creates a detached task: it does not block the parent, its errors do not travel up to the parent, and cancelling the parent does not touch it. `fork` does not block either, but an attached task shares its parent's fate on both errors and cancellation. Since nobody receives a spawned task's errors, catch and report them inside `prefetchImages` yourself."
+    }
+  },
+  {
+    "id": "state-redux-saga-005",
+    "type": "mcq",
+    "topics": [
+      "state/redux-saga"
+    ],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": [
+      "state-redux-saga-core"
+    ],
+    "multi": true,
+    "prompt": {
+      "vi": "Task `fetchProfile` bị cancel (ví dụ bởi `takeLatest`) trong lúc đang block ở `yield call(fetchJson, url)`. Những câu nào đúng? Chọn tất cả câu đúng.",
+      "en": "A `fetchProfile` task is cancelled (for example by `takeLatest`) while it is blocked on `yield call(fetchJson, url)`. Which statements are true? Select all that apply."
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Generator nhảy tới `finally`, nơi `yield cancelled()` trả về `true`",
+          "en": "The generator jumps to `finally`, where `yield cancelled()` returns `true`"
+        }
+      },
+      {
+        "text": {
+          "vi": "Khối `catch` chạy và nhận một lỗi cancel mà bạn có thể kiểm tra được",
+          "en": "The `catch` block runs with a cancellation error that you can inspect"
+        },
+        "misconception": {
+          "id": "saga-cancel-runs-catch",
+          "text": {
+            "vi": "Nghĩ rằng cancel đi qua `catch`. Redux-saga dừng generator bằng cách cho nó return, nên chỉ `finally` chạy; muốn biết là bị cancel thì dùng `yield cancelled()` trong `finally`.",
+            "en": "Believing cancellation goes through `catch`. Redux-saga stops the generator by making it return, so only `finally` runs; to know it was cancelled, use `yield cancelled()` inside `finally`."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Request HTTP đang chạy trong `fetchJson` sẽ tự động bị abort",
+          "en": "The in-flight HTTP request inside `fetchJson` is aborted automatically"
+        },
+        "misconception": {
+          "id": "saga-cancel-aborts-fetch",
+          "text": {
+            "vi": "Nghĩ rằng cancel saga thì huỷ luôn `fetch`. Saga chỉ ngừng chờ kết quả; request vẫn chạy cho tới khi bạn gọi `abort()` trên `AbortController`, trong `finally` hoặc qua `[CANCEL]` của promise.",
+            "en": "Believing cancelling the saga aborts the `fetch`. The saga only stops waiting for the result; the request keeps going until you call `abort()` on an `AbortController`, in `finally` or through the promise's `[CANCEL]`."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Các task mà nó đã tạo bằng `fork` cũng bị cancel",
+          "en": "Tasks it started with `fork` are cancelled too"
+        }
+      },
+      {
+        "text": {
+          "vi": "Redux-saga gọi `[CANCEL]` của promise đang chờ, nếu promise có method đó",
+          "en": "Redux-saga calls `[CANCEL]` on the pending promise, if the promise has one"
+        }
+      }
+    ],
+    "answer": [
+      0,
+      3,
+      4
+    ],
+    "explanation": {
+      "vi": "Cancel lan xuống: effect đang block bị cancel, các fork attached bị cancel, rồi generator return nên chỉ `finally` chạy. Trong `finally`, `yield cancelled()` cho biết task bị cancel hay kết thúc bình thường. Với promise, redux-saga gọi `promise[CANCEL]` nếu có (`CANCEL` import từ `redux-saga`); đó là chỗ để gọi `controller.abort()`. Nếu không làm vậy, request vẫn chạy và tốn băng thông, chỉ là kết quả bị bỏ.",
+      "en": "Cancellation flows down: the blocking effect is cancelled, attached forks are cancelled, then the generator returns, so only `finally` runs. Inside `finally`, `yield cancelled()` tells you whether the task was cancelled or ended normally. For promises, redux-saga calls `promise[CANCEL]` if it exists (`CANCEL` is imported from `redux-saga`); that is the place to call `controller.abort()`. Without it the request keeps running and using bandwidth, and its result is simply discarded."
+    }
+  },
+  {
+    "id": "state-redux-saga-006",
+    "type": "mcq",
+    "topics": [
+      "state/redux-saga"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": [
+      "state-redux-saga-core"
+    ],
+    "multi": true,
+    "prompt": {
+      "vi": "Bạn bọc `NetInfo.addEventListener` trong một `eventChannel` và dùng watcher lặp `take(chan)`. Với redux-saga 1.x, những câu nào đúng? Chọn tất cả câu đúng.",
+      "en": "You wrap `NetInfo.addEventListener` in an `eventChannel` and loop over it with `take(chan)` in a watcher. In redux-saga 1.x, which statements are true? Select all that apply."
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Hàm subscribe phải trả về hàm unsubscribe, hàm này chạy khi channel bị close",
+          "en": "The subscribe function must return the unsubscribe function, which runs when the channel closes"
+        }
+      },
+      {
+        "text": {
+          "vi": "Không truyền buffer thì event phát ra lúc saga đang bận `call` vẫn được giữ cho lần `take` sau",
+          "en": "Without a buffer argument, events emitted while the saga is busy in a `call` are kept for the next `take`"
+        },
+        "misconception": {
+          "id": "saga-eventchannel-buffers-default",
+          "text": {
+            "vi": "Nghĩ rằng `eventChannel` mặc định có buffer. Không truyền buffer thì event phát ra lúc không có ai `take` sẽ bị bỏ; muốn giữ thì truyền buffer, ví dụ `buffers.sliding(1)` cho trạng thái mạng.",
+            "en": "Believing `eventChannel` buffers by default. Without a buffer argument, events emitted while nobody is taking are dropped; to keep them, pass one, for example `buffers.sliding(1)` for network state."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Cancel task watcher sẽ tự close channel và gỡ listener",
+          "en": "Cancelling the watcher task closes the channel and removes the listener on its own"
+        },
+        "misconception": {
+          "id": "saga-cancel-closes-channel",
+          "text": {
+            "vi": "Nghĩ rằng cancel watcher thì channel tự close. Channel không thuộc về task nào; bạn phải gọi `chan.close()` trong `finally`, nếu không listener native còn sống mãi.",
+            "en": "Believing cancelling the watcher closes the channel. The channel does not belong to any task; you must call `chan.close()` in `finally`, or the native listener lives on."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Phát `END` sẽ close channel, và saga đang block ở `take(chan)` kết thúc và chạy `finally`",
+          "en": "Emitting `END` closes the channel, and a saga blocked on `take(chan)` terminates and runs `finally`"
+        }
+      },
+      {
+        "text": {
+          "vi": "Trong hàm subscribe bạn có thể `yield put(...)` để dispatch action",
+          "en": "Inside the subscribe function you can `yield put(...)` to dispatch an action"
+        },
+        "misconception": {
+          "id": "saga-put-in-emitter",
+          "text": {
+            "vi": "Nghĩ rằng hàm subscribe là một phần của saga. Nó là callback thường, không phải generator, nên không `yield` được; nó chỉ `emit`, còn saga `take` từ channel rồi `put`.",
+            "en": "Believing the subscribe function is part of the saga. It is a plain callback, not a generator, so it cannot `yield`; it only calls `emit`, and the saga takes from the channel and then puts."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0,
+      3
+    ],
+    "explanation": {
+      "vi": "`eventChannel(subscribe, buffer?)` gọi `subscribe(emit)` một lần và giữ hàm trả về làm unsubscribe; `chan.close()` hoặc `emit(END)` sẽ gọi nó. Saga đang `take` từ channel đã close sẽ kết thúc, nên `finally` chạy. Mẫu chuẩn: tạo channel, lặp `take` trong `try`, và gọi `chan.close()` trong `finally` để gỡ listener cả khi bị cancel. Bẫy hay gặp: quên rằng không có buffer thì event lúc saga bận sẽ mất.",
+      "en": "`eventChannel(subscribe, buffer?)` calls `subscribe(emit)` once and keeps the returned function as the unsubscribe; `chan.close()` or `emit(END)` calls it. A saga taking from a closed channel terminates, so its `finally` runs. The standard pattern: create the channel, loop on `take` inside `try`, and call `chan.close()` in `finally` so the listener is removed even on cancellation. A common trap is forgetting that without a buffer, events emitted while the saga is busy are lost."
+    }
+  },
+  {
+    "id": "state-redux-saga-007",
+    "type": "spot-bug",
+    "topics": [
+      "state/redux-saga",
+      "state/async"
+    ],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 105,
+    "lessons": [
+      "state-redux-saga-core"
+    ],
+    "prompt": {
+      "vi": "Ô tìm kiếm dispatch `searchChanged` ở mỗi lần gõ phím. Trên mạng 4G chập chờn, người dùng gõ `phone` nhưng đôi khi danh sách hiện kết quả của `ph`. Dòng nào gây lỗi, và vì sao?",
+      "en": "The search box dispatches `searchChanged` on every keystroke. On flaky 4G, users type `phone` but the list sometimes shows the results for `ph`. Which line causes it, and why?"
+    },
+    "code": "import { call, put, takeEvery } from 'redux-saga/effects';\nimport type { SagaIterator } from 'redux-saga';\nimport type { PayloadAction } from '@reduxjs/toolkit';\n\nfunction* searchProducts(action: PayloadAction<string>): SagaIterator {\n  try {\n    const items: Product[] = yield call(api.search, action.payload);\n    yield put(searchSucceeded(items));\n  } catch (e) {\n    yield put(searchFailed(String(e)));\n  }\n}\n\nexport function* watchSearch(): SagaIterator {\n  yield takeEvery(searchChanged.type, searchProducts);\n}",
+    "answerLine": 15,
+    "causeOptions": [
+      {
+        "text": {
+          "vi": "`takeEvery` xếp hàng các lần tìm, nên danh sách luôn chậm một truy vấn",
+          "en": "`takeEvery` queues the searches, so the list always lags one query behind"
+        },
+        "misconception": {
+          "id": "saga-takeevery-queues",
+          "text": {
+            "vi": "Nghĩ rằng `takeEvery` xếp hàng các task và chạy lần lượt. Nó fork một task mới cho mỗi action, nên các task chạy song song và kết thúc theo thứ tự bất kỳ.",
+            "en": "Believing `takeEvery` queues tasks and runs them one after another. It forks a new task for every action, so tasks run concurrently and finish in any order."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Mỗi lần gõ chạy một task song song, và response cũ về chậm có thể `put` sau response mới",
+          "en": "Each keystroke runs a concurrent task, and an older, slower response can `put` after the newest one"
+        }
+      },
+      {
+        "text": {
+          "vi": "`put` là bất đồng bộ, nên hai action `searchSucceeded` có thể tới reducer sai thứ tự đã `put`",
+          "en": "`put` is asynchronous, so two `searchSucceeded` actions can reach the reducer out of their `put` order"
+        },
+        "misconception": {
+          "id": "saga-put-reorders",
+          "text": {
+            "vi": "Nghĩ rằng `put` làm đảo thứ tự action. Các `put` được dispatch theo đúng thứ tự chúng chạy; thứ tự sai đến từ việc các task chạy song song và response về lúc nào thì `put` lúc đó.",
+            "en": "Believing `put` reorders actions. Puts are dispatched in the order they execute; the wrong order comes from concurrent tasks, each putting whenever its response arrives."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Khối `catch` nuốt lỗi của truy vấn mới nhất, nên kết quả cũ còn nằm trên màn hình",
+          "en": "The `catch` block swallows the newest query's error, so the old result stays on screen"
+        },
+        "misconception": {
+          "id": "saga-catch-hides-result",
+          "text": {
+            "vi": "Đổ lỗi cho `catch`. Ở đây lỗi được `put` thành `searchFailed`, không bị nuốt; và triệu chứng xảy ra cả khi mọi request đều thành công.",
+            "en": "Blaming the `catch`. The error here is put as `searchFailed`, not swallowed, and the symptom happens even when every request succeeds."
+          }
+        }
+      }
+    ],
+    "answerCause": 1,
+    "explanation": {
+      "vi": "`takeEvery` fork một task cho mỗi lần gõ, và các task không biết nhau. Nếu request cho `ph` về sau request cho `phone`, `searchSucceeded` cũ được `put` sau cùng và ghi đè kết quả đúng. Dùng `takeLatest`: mỗi action mới cancel task trước, nên chỉ task mới nhất được `put`. Thường kèm thêm `debounce` hoặc `delay` ở đầu worker để bớt request, và abort request cũ trong `finally`.",
+      "en": "`takeEvery` forks one task per keystroke, and the tasks know nothing about each other. If the request for `ph` returns after the one for `phone`, the old `searchSucceeded` is put last and overwrites the correct result. Use `takeLatest`: each new action cancels the previous task, so only the newest task puts. It is usually paired with `debounce` or a `delay` at the start of the worker to cut requests, and aborting the old request in `finally`."
+    }
+  },
+  {
+    "id": "state-redux-saga-008",
+    "type": "spot-bug",
+    "topics": [
+      "state/redux-saga"
+    ],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 105,
+    "lessons": [
+      "state-redux-saga-core"
+    ],
+    "prompt": {
+      "vi": "Sau khi đăng nhập, inbox cập nhật mỗi 15 giây như mong muốn. Nhưng bấm Đăng xuất thì không có gì xảy ra: `sessionCleared` không bao giờ được dispatch và việc polling vẫn tiếp tục. Dòng nào gây lỗi, và vì sao?",
+      "en": "After login, the inbox refreshes every 15 seconds as intended. But tapping Log out does nothing: `sessionCleared` is never dispatched and polling carries on. Which line causes it, and why?"
+    },
+    "code": "function* syncInbox(token: string): SagaIterator {\n  while (true) {\n    const messages: Message[] = yield call(api.fetchInbox, token);\n    yield put(inboxReceived(messages));\n    yield delay(15_000);\n  }\n}\n\nexport function* authFlow(): SagaIterator {\n  while (true) {\n    const { payload }: PayloadAction<Credentials> = yield take(loginRequested.type);\n    const token: string = yield call(api.login, payload);\n    yield put(loginSucceeded(token));\n    yield call(syncInbox, token);\n    yield take(logoutRequested.type);\n    yield put(sessionCleared());\n  }\n}",
+    "answerLine": 14,
+    "causeOptions": [
+      {
+        "text": {
+          "vi": "`delay` khoá JS thread 15 giây, nên lần bấm Đăng xuất không được xử lý",
+          "en": "`delay` locks the JS thread for 15 seconds, so the Log out tap is never handled"
+        },
+        "misconception": {
+          "id": "saga-delay-blocks-thread",
+          "text": {
+            "vi": "Nghĩ rằng `delay` khoá thread. `delay` chỉ dừng generator đó bằng một timer; JS thread vẫn rảnh để chạy UI và các saga khác.",
+            "en": "Believing `delay` locks the thread. `delay` only pauses that generator on a timer; the JS thread stays free for the UI and other sagas."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`call` chặn `authFlow` cho tới khi `syncInbox` kết thúc, mà nó không bao giờ kết thúc",
+          "en": "`call` blocks `authFlow` until `syncInbox` returns, and it never returns"
+        }
+      },
+      {
+        "text": {
+          "vi": "Action logout được xếp hàng và sẽ được xử lý ở lần `take` kế tiếp, nên chỉ bị trễ",
+          "en": "The logout action is queued for the next `take`, so it is only delayed"
+        },
+        "misconception": {
+          "id": "saga-take-queues-actions",
+          "text": {
+            "vi": "Nghĩ rằng `take` giữ lại action bị lỡ. `take` chỉ nhận action dispatch trong lúc saga đang chờ ở đó; action tới lúc saga đang làm việc khác sẽ bị bỏ qua, trừ khi dùng `actionChannel`.",
+            "en": "Believing `take` keeps missed actions. `take` only receives actions dispatched while the saga is waiting on it; actions that arrive while it is busy elsewhere are missed, unless you use an `actionChannel`."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`while (true)` trong generator làm treo app, nên polling phải dùng `setInterval`",
+          "en": "`while (true)` in a generator freezes the app, so polling must use `setInterval`"
+        },
+        "misconception": {
+          "id": "saga-infinite-loop-freezes",
+          "text": {
+            "vi": "Nghĩ rằng vòng lặp vô hạn trong saga làm treo app. Mỗi `yield` trả quyền điều khiển cho middleware, nên `while (true)` có `yield` bên trong là cách viết polling bình thường.",
+            "en": "Believing an infinite loop in a saga freezes the app. Every `yield` hands control back to the middleware, so a `while (true)` with a `yield` inside is the normal way to poll."
+          }
+        }
+      }
+    ],
+    "answerCause": 1,
+    "explanation": {
+      "vi": "`call` là blocking: `authFlow` dừng ở dòng 14 cho tới khi `syncInbox` return, mà vòng lặp polling không bao giờ return. Vì thế saga không bao giờ tới `take(logoutRequested.type)`, và action logout bị bỏ qua. Sửa: `const task: Task = yield fork(syncInbox, token)`, sau đó `yield take(logoutRequested.type)` rồi `yield cancel(task)` trước khi `put(sessionCleared())`.",
+      "en": "`call` is blocking: `authFlow` stops at line 14 until `syncInbox` returns, and the polling loop never returns. So the saga never reaches `take(logoutRequested.type)` and the logout action is missed. The fix: `const task: Task = yield fork(syncInbox, token)`, then `yield take(logoutRequested.type)` and `yield cancel(task)` before `put(sessionCleared())`."
+    }
+  },
+  {
+    "id": "state-redux-saga-009",
+    "type": "spot-bug",
+    "topics": [
+      "state/redux-saga"
+    ],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 135,
+    "lessons": [
+      "state-redux-saga-core"
+    ],
+    "prompt": {
+      "vi": "Sau một phiên dùng trên mạng chập chờn, giỏ hàng và đăng nhập không còn phản hồi cho tới khi người dùng khởi động lại app. Không có crash. Sentry chỉ ghi một lỗi `Network request failed` từ `uploadEvents`. Dòng nào gây lỗi, và vì sao?",
+      "en": "After a session on a flaky network, the cart and login stop responding until the user restarts the app. There is no crash. Sentry records a single `Network request failed` error from `uploadEvents`. Which line causes it, and why?"
+    },
+    "code": "function* uploadEvents(action: PayloadAction<AnalyticsEvent[]>): SagaIterator {\n  const batch = action.payload;\n  yield call(api.uploadEvents, batch);\n  yield put(eventsUploaded(batch.length));\n}\n\nfunction* loadCart(): SagaIterator {\n  try {\n    const cart: Cart = yield call(api.fetchCart);\n    yield put(cartLoaded(cart));\n  } catch (e) {\n    yield put(cartFailed(String(e)));\n  }\n}\n\nexport function* rootSaga(): SagaIterator {\n  yield all([\n    takeEvery(eventsFlushed.type, uploadEvents),\n    takeEvery(cartRequested.type, loadCart),\n    fork(watchAuth),\n  ]);\n}",
+    "answerLine": 3,
+    "causeOptions": [
+      {
+        "text": {
+          "vi": "Chỉ watcher analytics dừng; giỏ hàng và đăng nhập hỏng vì một lý do khác",
+          "en": "Only the analytics watcher stops; the cart and login break for some other reason"
+        },
+        "misconception": {
+          "id": "saga-error-stops-one-watcher",
+          "text": {
+            "vi": "Nghĩ rằng lỗi chỉ làm dừng watcher của nó. Worker của `takeEvery` là fork attached, nên lỗi đi lên watcher, lên `all`, rồi lên root saga, và cả cây saga bị cancel.",
+            "en": "Believing an error only stops its own watcher. A `takeEvery` worker is an attached fork, so the error travels to the watcher, then to `all`, then to the root saga, and the whole saga tree is cancelled."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`call` thất bại sẽ retry mãi và giữ chân các watcher khác",
+          "en": "A failed `call` retries forever and holds up the other watchers"
+        },
+        "misconception": {
+          "id": "saga-call-retries",
+          "text": {
+            "vi": "Nghĩ rằng `call` tự retry. `call` không retry; promise reject thì lỗi được ném vào generator ngay tại dòng `yield`. Muốn retry thì dùng effect `retry` hoặc tự viết vòng lặp.",
+            "en": "Believing `call` retries on its own. `call` never retries; a rejected promise is thrown into the generator at that `yield`. For retries, use the `retry` effect or write a loop yourself."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Promise reject không được bắt, lỗi đi lên tới root saga và mọi watcher bị cancel",
+          "en": "The uncaught rejection travels up to the root saga and every watcher is cancelled"
+        }
+      },
+      {
+        "text": {
+          "vi": "`all` chạy các effect lần lượt, nên watcher analytics giữ chân các watcher sau nó",
+          "en": "`all` runs its effects one after another, so the analytics watcher holds up the ones after it"
+        },
+        "misconception": {
+          "id": "saga-all-sequential",
+          "text": {
+            "vi": "Nghĩ rằng `all` chạy tuần tự. `all` bắt đầu mọi effect cùng lúc và chờ tất cả; nếu một effect lỗi, các effect còn lại bị cancel và lỗi được ném ra.",
+            "en": "Believing `all` runs effects in sequence. `all` starts every effect at once and waits for all of them; if one fails, the rest are cancelled and the error is thrown."
+          }
+        }
+      }
+    ],
+    "answerCause": 2,
+    "explanation": {
+      "vi": "Dòng 3 không có `try/catch`. Khi request reject, lỗi ném ra khỏi `uploadEvents`, đi lên watcher `takeEvery` (worker là fork attached), lên `all`, rồi lên `rootSaga`. Root abort và cancel mọi watcher, nên app vẫn chạy nhưng không saga nào phản hồi action nữa. Sửa: bọc `try/catch` trong mọi worker, báo lỗi qua `onError` của `createSagaMiddleware`, và cân nhắc chạy từng watcher bằng `spawn` kèm cơ chế restart có giới hạn.",
+      "en": "Line 3 has no `try/catch`. When the request rejects, the error is thrown out of `uploadEvents`, up to the `takeEvery` watcher (the worker is an attached fork), up to `all`, then to `rootSaga`. The root aborts and cancels every watcher, so the app keeps running but no saga reacts to actions any more. The fix: a `try/catch` in every worker, error reporting through the `onError` option of `createSagaMiddleware`, and possibly running each watcher with `spawn` behind a bounded restart loop."
+    }
+  },
+  {
+    "id": "state-redux-saga-010",
+    "type": "open",
+    "topics": [
+      "state/redux-saga"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 270,
+    "lessons": [
+      "state-redux-saga-core"
+    ],
+    "prompt": {
+      "vi": "Team bạn bắt đầu một app RN mới với Redux Toolkit. Một bạn đề xuất dùng redux-saga cho mọi lời gọi API, vì dự án cũ đã làm vậy. Bạn sẽ trả lời thế nào, và khi nào bạn vẫn chọn saga?",
+      "en": "Your team is starting a new RN app with Redux Toolkit. Someone proposes redux-saga for every API call, because the old project did that. How do you respond, and when would you still choose sagas?"
+    },
+    "keyPoints": [
+      {
+        "vi": "Phần lớn việc gọi API là fetch và cache dữ liệu server, nên RTK Query (hoặc một thư viện data fetching) xử lý tốt hơn: cache, loading state, dedupe, refetch",
+        "en": "Most API work is fetching and caching server data, which RTK Query (or a data fetching library) handles better: caching, loading state, dedupe, refetch"
+      },
+      {
+        "vi": "Logic phản ứng theo action đơn giản dùng listener middleware của RTK (có từ RTK 1.8) hoặc thunk, nhẹ hơn và dễ đọc hơn",
+        "en": "Simple logic that reacts to actions fits RTK's listener middleware (since RTK 1.8) or thunks, which are lighter and easier to read"
+      },
+      {
+        "vi": "Saga đáng dùng cho workflow dài và phức tạp: cancel, race, timeout, polling, websocket qua `eventChannel`, xếp hàng qua `actionChannel`",
+        "en": "Sagas earn their place for long, complex workflows: cancellation, races, timeouts, polling, websockets through `eventChannel`, queueing through `actionChannel`"
+      },
+      {
+        "vi": "Chi phí của saga: generator khó học, kiểu TypeScript yếu ở `yield` (thường ra `any`), thêm dependency, và luồng code khó lần theo",
+        "en": "The cost of sagas: generators are harder to learn, TypeScript types are weak at `yield` (often `any`), another dependency, and code flow that is harder to follow"
+      },
+      {
+        "vi": "Lợi thế thật của saga là effect khai báo, test được từng bước, nhưng test hành vi với mock API cũng đạt được điều đó",
+        "en": "The real advantage of sagas is declarative effects that can be tested step by step, though behaviour tests with a mocked API achieve much of that"
+      }
+    ],
+    "modelAnswer": {
+      "vi": "Mình sẽ không dùng saga cho mọi lời gọi API. Phần lớn việc đó là fetch và cache dữ liệu server, và RTK Query làm sẵn cache, loading state, dedupe và refetch, những thứ ta sẽ phải tự viết lại bằng saga. Tài liệu Redux hiện cũng khuyên dùng RTK Query cho data fetching và listener middleware cho logic phản ứng theo action. Saga có chi phí: generator khó với người mới, `yield` gần như mất kiểu trong TypeScript, và luồng code khó lần theo. Mình vẫn chọn saga khi có workflow dài thật sự: đồng bộ có polling và cancel khi logout, websocket bọc trong `eventChannel`, upload xếp hàng phải chạy tuần tự, hay race giữa response và timeout. Khi đó cancel lan theo cây task và effect test được từng bước là lợi thế thật.",
+      "en": "I would not use sagas for every API call. Most of that work is fetching and caching server data, and RTK Query already gives us caching, loading state, dedupe and refetching that we would otherwise rebuild in sagas. The Redux docs now recommend RTK Query for data fetching and the listener middleware for logic that reacts to actions. Sagas have costs: generators are hard for newcomers, `yield` loses most of its types in TypeScript, and the flow is harder to trace. I would still pick sagas for genuinely long workflows: sync that polls and cancels on logout, a websocket wrapped in an `eventChannel`, queued uploads that must run in order, or a race between a response and a timeout. There, cancellation that flows down the task tree and effects you can test step by step are real advantages."
+    },
+    "followUps": [
+      {
+        "vi": "Nếu app cũ đã có 80 saga, bạn sẽ chuyển dần sang RTK Query thế nào mà không viết lại một lần?",
+        "en": "If the old app already has 80 sagas, how would you move to RTK Query gradually without a big rewrite?"
+      }
+    ]
+  },
+  {
+    "id": "state-redux-saga-011",
+    "type": "open",
+    "topics": [
+      "state/redux-saga"
+    ],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 330,
+    "lessons": [
+      "state-redux-saga-core"
+    ],
+    "prompt": {
+      "vi": "App chat của bạn dùng websocket qua redux-saga. Sau vài lần app vào background rồi quay lại, mỗi tin nhắn hiện hai, ba lần, và pin tụt nhanh. Kể lại cách bạn tìm nguyên nhân và thiết kế lại saga cho kết nối này.",
+      "en": "Your chat app runs its websocket through redux-saga. After the app goes to the background and back a few times, every message shows up two or three times and the battery drains fast. Walk me through how you found the cause and redesigned the saga for this connection."
+    },
+    "keyPoints": [
+      {
+        "vi": "Nhận ra triệu chứng nhân đôi là nhiều socket hoặc listener cùng sống: mỗi lần foreground lại mở kết nối mới mà kết nối cũ không bị đóng",
+        "en": "Recognise the duplication as several sockets or listeners alive at once: each foreground opens a new connection while the old one is never closed"
+      },
+      {
+        "vi": "Bọc socket trong `eventChannel` có hàm unsubscribe thật (gỡ listener, `socket.close()`), và gọi `chan.close()` trong `finally`",
+        "en": "Wrap the socket in an `eventChannel` with a real unsubscribe (remove listeners, `socket.close()`), and call `chan.close()` in `finally`"
+      },
+      {
+        "vi": "Chạy vòng đời kết nối trong một task duy nhất: fork khi foreground hoặc login, `cancel` khi background hoặc logout (AppState cũng bọc bằng `eventChannel`), hoặc dùng `takeLatest` để task mới cancel task cũ",
+        "en": "Run the connection lifecycle in a single task: fork it on foreground or login, `cancel` it on background or logout (AppState wrapped in an `eventChannel` too), or use `takeLatest` so a new task cancels the old one"
+      },
+      {
+        "vi": "Reconnect có backoff và `race` với timeout hoặc action ngắt kết nối, không lặp vô hạn ngay lập tức",
+        "en": "Reconnect with backoff and a `race` against a timeout or a disconnect action, not an immediate endless loop"
+      },
+      {
+        "vi": "Tin nhắn gửi đi dùng `actionChannel` để giữ thứ tự và không mất khi đang reconnect; phía nhận dedupe theo message id",
+        "en": "Outgoing messages go through an `actionChannel` so they stay in order and survive a reconnect; the receiving side dedupes by message id"
+      },
+      {
+        "vi": "Kiểm chứng bằng test saga (ví dụ redux-saga-test-plan) cho chuỗi foreground, background, foreground, và đếm số socket mở trên máy thật",
+        "en": "Verify with saga tests (for example redux-saga-test-plan) for a foreground, background, foreground sequence, and count open sockets on a real device"
+      }
+    ],
+    "modelAnswer": {
+      "vi": "Tin nhắn lặp đúng bằng số lần quay lại foreground, nên mình nghi nhiều socket cùng sống. Log ở hàm subscribe xác nhận: mỗi lần `active` lại có kết nối mới, còn kết nối cũ không bao giờ đóng. Nguyên nhân là saga watch AppState `fork` một task socket mới mỗi lần, không cancel task cũ, và `eventChannel` trả về hàm unsubscribe rỗng. Mình sửa ba chỗ. Hàm unsubscribe gỡ listener và gọi `socket.close()`, còn task gọi `chan.close()` trong `finally`. Vòng đời kết nối nằm trong một task: background hoặc logout thì `cancel`, foreground thì fork lại, nên lúc nào cũng chỉ có một socket. Reconnect dùng backoff và `race` với action ngắt kết nối. Tin gửi đi đi qua `actionChannel` để giữ thứ tự, phía nhận dedupe theo id. Cuối cùng mình viết test cho chuỗi foreground, background, foreground.",
+      "en": "Messages repeated exactly as many times as the app came back to the foreground, so I suspected several live sockets. A log in the subscribe function confirmed it: every `active` opened a new connection and the old one never closed. The AppState saga forked a new socket task each time without cancelling the old one, and the `eventChannel` returned an empty unsubscribe. I fixed three things. The unsubscribe removes listeners and calls `socket.close()`, and the task calls `chan.close()` in `finally`. The connection lifecycle lives in one task: background or logout cancels it, foreground forks it again, so there is only ever one socket. Reconnects use backoff and a `race` against a disconnect action. Outgoing messages go through an `actionChannel` to keep order, and the receiver dedupes by id. Then I added a test for a foreground, background, foreground sequence."
+    },
+    "followUps": [
+      {
+        "vi": "Tin nhắn tới trong lúc saga xử lý tin trước bị mất. Vì sao, và bạn sửa thế nào?",
+        "en": "Messages that arrive while the saga is handling the previous one get lost. Why, and how do you fix it?"
+      },
+      {
+        "vi": "Bạn có tắt hẳn socket khi background không, hay giữ lại một thời gian? Đánh đổi là gì?",
+        "en": "Do you close the socket immediately on background, or keep it for a while? What is the trade-off?"
+      }
+    ]
+  },
+  {
+    "id": "state-redux-saga-012",
+    "type": "mcq",
+    "topics": [
+      "state/redux-saga"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 75,
+    "lessons": [
+      "state-redux-saga-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Mỗi lần bấm +/- trong giỏ hàng dispatch `quantityChanged`. Server phải nhận mọi thay đổi, đúng thứ tự, và mỗi lúc chỉ một request. Watcher nào làm được điều đó?",
+      "en": "Every tap on +/- in the cart dispatches `quantityChanged`. The server must receive every change, in order, one request at a time. Which watcher does that?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Một watcher `takeEvery` chạy `syncQuantity` khi có thay đổi",
+          "en": "A `takeEvery` watcher that runs `syncQuantity` on changes"
+        },
+        "misconception": {
+          "id": "saga-takeevery-queues",
+          "text": {
+            "vi": "Nghĩ rằng `takeEvery` xếp hàng các task và chạy lần lượt. Nó fork một task mới cho mỗi action, nên các task chạy song song và kết thúc theo thứ tự bất kỳ.",
+            "en": "Believing `takeEvery` queues tasks and runs them one after another. It forks a new task for every action, so tasks run concurrently and finish in any order."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Một watcher `takeLatest` chạy `syncQuantity` khi có thay đổi",
+          "en": "A `takeLatest` watcher that runs `syncQuantity` on changes"
+        },
+        "misconception": {
+          "id": "saga-takelatest-sends-all",
+          "text": {
+            "vi": "Nghĩ rằng `takeLatest` vẫn gửi mọi thay đổi. Nó cancel task trước khi có action mới, nên các thay đổi ở giữa có thể không bao giờ được gửi hoặc gửi dở dang.",
+            "en": "Believing `takeLatest` still sends every change. It cancels the previous task when a new action arrives, so changes in between may never be sent, or be sent half way."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Một vòng lặp trên `actionChannel`: `take` rồi `call(syncQuantity)`",
+          "en": "An `actionChannel` loop that does `take`, then `call(syncQuantity)`"
+        }
+      },
+      {
+        "text": {
+          "vi": "Một watcher `takeLeading` chạy `syncQuantity` khi có thay đổi",
+          "en": "A `takeLeading` watcher that runs `syncQuantity` on changes"
+        },
+        "misconception": {
+          "id": "saga-takeleading-queues",
+          "text": {
+            "vi": "Nghĩ rằng `takeLeading` xếp hàng action tới sau. Trong lúc task đầu còn chạy, nó bỏ qua hẳn các action mới chứ không giữ lại.",
+            "en": "Believing `takeLeading` queues later actions. While the first task runs, it ignores new actions entirely rather than keeping them."
+          }
+        }
+      }
+    ],
+    "answer": [
+      2
+    ],
+    "explanation": {
+      "vi": "`actionChannel` buffer các action khớp pattern ngay cả khi saga đang bận. Vòng lặp `take(chan)` rồi `call(syncQuantity, action)` xử lý từng action một, theo đúng thứ tự dispatch, vì `call` là blocking. `takeEvery` chạy song song nên request có thể về sai thứ tự; `takeLatest` và `takeLeading` đều bỏ action. Nhớ `try/catch` trong vòng lặp, nếu không một request lỗi sẽ làm dừng cả hàng đợi.",
+      "en": "`actionChannel` buffers matching actions even while the saga is busy. A loop of `take(chan)` then `call(syncQuantity, action)` handles one action at a time, in dispatch order, because `call` is blocking. `takeEvery` runs concurrently, so requests can complete out of order; `takeLatest` and `takeLeading` both drop actions. Remember a `try/catch` inside the loop, or one failed request stops the whole queue."
+    }
+  }
+]

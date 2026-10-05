@@ -1,0 +1,835 @@
+[
+  {
+    "id": "state-redux-001",
+    "type": "mcq",
+    "topics": [
+      "state/redux"
+    ],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": [
+      "state-redux-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Trong một `createSlice`, case reducer `signedOut(state) { state = initialState; }` được dispatch. Sau đó state của slice là gì?",
+      "en": "In a `createSlice`, the case reducer `signedOut(state) { state = initialState; }` is dispatched. What is the slice state afterwards?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Không đổi, vì lệnh gán chỉ đổi biến cục bộ `state`",
+          "en": "Unchanged, because the assignment only rebinds the local `state`"
+        }
+      },
+      {
+        "text": {
+          "vi": "Được reset về `initialState`, vì Immer theo dõi cả lệnh gán này",
+          "en": "Reset to `initialState`, because Immer tracks that assignment too"
+        },
+        "misconception": {
+          "id": "redux-reassign-state-resets",
+          "text": {
+            "vi": "Nghĩ rằng gán lại `state` sẽ thay state. Immer chỉ thấy thay đổi trên draft; gán lại tham số chỉ đổi biến cục bộ. Muốn thay toàn bộ state thì `return initialState`.",
+            "en": "Believing that reassigning `state` replaces the state. Immer only sees changes made to the draft; reassigning the parameter just rebinds a local variable. To replace the whole state, `return initialState`."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Thành `undefined`, vì case reducer không return gì",
+          "en": "It becomes `undefined`, because the case reducer returns nothing"
+        },
+        "misconception": {
+          "id": "redux-void-return-undefined",
+          "text": {
+            "vi": "Nghĩ rằng case reducer không return sẽ làm state thành undefined. Với Immer, return undefined nghĩa là dùng draft, nên state là những gì draft đang giữ.",
+            "en": "Believing a case reducer with no return makes the state undefined. With Immer, returning undefined means use the draft, so the state is whatever the draft holds."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Immer ném lỗi, vì không được gán lại draft",
+          "en": "Immer throws, because reassigning the draft is not allowed"
+        },
+        "misconception": {
+          "id": "redux-immer-throws-on-reassign",
+          "text": {
+            "vi": "Nghĩ rằng Immer báo lỗi khi gán lại draft. Immer không thể thấy lệnh gán lại một tham số cục bộ, nên không có lỗi nào; thay đổi chỉ mất đi lặng lẽ.",
+            "en": "Believing Immer reports reassigning the draft. Immer cannot see a local parameter being reassigned, so nothing throws; the change is silently lost."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0
+    ],
+    "explanation": {
+      "vi": "Immer đưa cho reducer một draft (proxy) và ghi lại các thay đổi trên draft đó. `state = initialState` không đụng tới draft, nó chỉ trỏ biến cục bộ sang object khác, nên reducer kết thúc mà draft không đổi và state giữ nguyên. Cách đúng là `return initialState`: trả về giá trị mới thay cho draft. Bẫy chính là tưởng `state` là một tham chiếu tới store có thể gán đè.",
+      "en": "Immer hands the reducer a draft (a proxy) and records changes made to it. `state = initialState` never touches the draft; it only points a local variable at another object, so the reducer finishes with an unchanged draft and the state stays the same. The fix is `return initialState`, which replaces the draft with a new value. The trap is treating `state` as a reference into the store that you can overwrite."
+    }
+  },
+  {
+    "id": "state-redux-002",
+    "type": "mcq",
+    "topics": [
+      "state/redux"
+    ],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 75,
+    "lessons": [
+      "state-redux-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Một component đọc store bằng `useSelector((s: RootState) => ({ items: s.cart.items, total: s.cart.total }))`, không truyền hàm so sánh. Store làm component này re-render khi nào?",
+      "en": "A component reads the store with `useSelector((s: RootState) => ({ items: s.cart.items, total: s.cart.total }))` and no equality function. When does the store make it re-render?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Chỉ khi `cart.items` hoặc `cart.total` đổi tham chiếu",
+          "en": "Only when `cart.items` or `cart.total` changes reference"
+        },
+        "misconception": {
+          "id": "redux-useselector-shallow-default",
+          "text": {
+            "vi": "Nghĩ rằng useSelector so sánh nông kết quả. Mặc định nó dùng `===`; selector tạo object mới thì mỗi lần chạy đều trả về tham chiếu khác.",
+            "en": "Believing useSelector compares results shallowly. By default it uses `===`; a selector that builds a new object returns a different reference every time it runs."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Sau mọi action làm thay đổi bất kỳ phần nào của state",
+          "en": "After every action that changes any part of the store state"
+        }
+      },
+      {
+        "text": {
+          "vi": "Chỉ khi slice `cart` đổi, vì selector không đọc gì khác",
+          "en": "Only when the `cart` slice changes, as nothing else is read"
+        },
+        "misconception": {
+          "id": "redux-selector-tracks-reads",
+          "text": {
+            "vi": "Nghĩ rằng useSelector theo dõi những field mà selector đọc. Nó chạy lại selector sau mọi lần state đổi và chỉ so sánh kết quả.",
+            "en": "Believing useSelector tracks which fields the selector reads. It reruns the selector after every state change and compares only the result."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Sau mọi action, kể cả action không làm state thay đổi",
+          "en": "After every action, including ones that leave state unchanged"
+        },
+        "misconception": {
+          "id": "redux-every-dispatch-rerenders",
+          "text": {
+            "vi": "Nghĩ rằng mọi lần dispatch đều làm re-render. Nếu tham chiếu của root state không đổi, kết quả cũ được dùng lại và component không re-render.",
+            "en": "Believing every dispatch causes a re-render. If the root state reference is unchanged, the previous result is reused and the component does not re-render."
+          }
+        }
+      }
+    ],
+    "answer": [
+      1
+    ],
+    "explanation": {
+      "vi": "Khi root state đổi, `useSelector` chạy lại selector và so sánh kết quả với lần trước bằng `===`. Selector này tạo object mới mỗi lần chạy, nên mọi thay đổi state, kể cả ở slice không liên quan, đều làm component re-render. Nếu root state giữ nguyên tham chiếu thì không có re-render. Cách sửa: gọi `useSelector` riêng cho từng field, truyền `shallowEqual`, hoặc dùng selector memoize bằng `createSelector`. Từ react-redux 8.1, bản dev còn cảnh báo khi selector trả về tham chiếu khác cho cùng một input.",
+      "en": "When the root state changes, `useSelector` reruns the selector and compares the result with the previous one using `===`. This selector builds a new object every run, so any state change, even in an unrelated slice, re-renders the component. If the root state keeps its reference, nothing re-renders. Fix it with one `useSelector` per field, by passing `shallowEqual`, or with a memoised selector from `createSelector`. Since react-redux 8.1, development builds also warn when a selector returns a different reference for the same input."
+    }
+  },
+  {
+    "id": "state-redux-003",
+    "type": "mcq",
+    "topics": [
+      "state/redux"
+    ],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": [
+      "state-redux-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Bạn gọi `configureStore({ reducer })` mà không truyền option `middleware`. Store có những middleware nào?",
+      "en": "You call `configureStore({ reducer })` without a `middleware` option. What middleware does the store get?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Thunk, kèm kiểm tra immutability và serializability chỉ chạy ở dev",
+          "en": "Thunk, plus immutability and serialisability checks that run only in development"
+        }
+      },
+      {
+        "text": {
+          "vi": "Không có middleware nào, bạn phải tự thêm thunk",
+          "en": "None at all; you have to add thunk yourself"
+        },
+        "misconception": {
+          "id": "redux-thunk-not-default",
+          "text": {
+            "vi": "Nghĩ rằng RTK không có thunk sẵn. `configureStore` thêm thunk qua `getDefaultMiddleware`; chỉ `createStore` của Redux core mới cần tự thêm.",
+            "en": "Believing RTK has no thunk by default. `configureStore` adds it through `getDefaultMiddleware`; only the Redux core `createStore` needs it added by hand."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Thunk và các kiểm tra, chạy cả ở bản release nên phải tự gỡ bỏ",
+          "en": "Thunk and the checks, which also run in release and must be removed"
+        },
+        "misconception": {
+          "id": "redux-checks-run-in-prod",
+          "text": {
+            "vi": "Nghĩ rằng các kiểm tra của RTK chạy ở production. Chúng chỉ được thêm khi `process.env.NODE_ENV` khác `production`, nên release build không có chúng.",
+            "en": "Believing RTK's checks run in production. They are only added when `process.env.NODE_ENV` is not `production`, so release builds do not include them."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Thunk, các kiểm tra và listener middleware",
+          "en": "Thunk, the checks and the listener middleware"
+        },
+        "misconception": {
+          "id": "redux-listener-is-default",
+          "text": {
+            "vi": "Nghĩ rằng listener middleware có sẵn. Bạn phải tạo bằng `createListenerMiddleware` và tự thêm `listener.middleware` vào store.",
+            "en": "Believing the listener middleware is included. You create it with `createListenerMiddleware` and add `listener.middleware` to the store yourself."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0
+    ],
+    "explanation": {
+      "vi": "`getDefaultMiddleware` luôn thêm thunk. Khi chưa ở production, nó thêm middleware kiểm tra immutability (bắt lỗi mutate state ngoài reducer) và serializability (cảnh báo giá trị như `Date`, `Map`, function trong state hoặc action). Hai kiểm tra này tốn chi phí nên bị bỏ ở production. `configureStore` cũng bật Redux DevTools mặc định. Nếu truyền `middleware`, dùng callback `(getDefault) => getDefault().concat(...)` để giữ các mặc định này.",
+      "en": "`getDefaultMiddleware` always adds thunk. Outside production it also adds an immutability check (catches state mutated outside reducers) and a serialisability check (warns about values such as `Date`, `Map` or functions in state or actions). Both are costly, so they are left out in production. `configureStore` also enables Redux DevTools by default. If you pass `middleware`, use the `(getDefault) => getDefault().concat(...)` callback to keep these defaults."
+    }
+  },
+  {
+    "id": "state-redux-004",
+    "type": "mcq",
+    "topics": [
+      "state/redux"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": [
+      "state-redux-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Slice `todos` dùng `createEntityAdapter<Todo>()` (không có `sortComparer`). Component list chọn `selectTodoIds`, mỗi row chọn `selectTodoById(state, id)`. Một action gọi `todosAdapter.updateOne` để đổi title của một todo. Component nào re-render?",
+      "en": "The `todos` slice uses `createEntityAdapter<Todo>()` (no `sortComparer`). The list component selects `selectTodoIds`; each row selects `selectTodoById(state, id)`. An action calls `todosAdapter.updateOne` to change one todo's title. What re-renders?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Chỉ row của todo vừa được cập nhật",
+          "en": "Only the row for the updated todo"
+        }
+      },
+      {
+        "text": {
+          "vi": "Mọi row, vì object `entities` đã là object mới",
+          "en": "Every row, because `entities` is now a new object"
+        },
+        "misconception": {
+          "id": "redux-parent-ref-rerenders-children",
+          "text": {
+            "vi": "Nghĩ rằng object cha mới làm mọi subscriber re-render. Immer giữ nguyên tham chiếu của các entity không đổi, và mỗi row chỉ so sánh entity mà nó chọn.",
+            "en": "Believing a new parent object re-renders every subscriber. Immer keeps unchanged entities by reference, and each row compares only the entity it selected."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Component list, vì mảng `ids` được tạo lại mỗi lần update",
+          "en": "The list, because the `ids` array is rebuilt on every update"
+        },
+        "misconception": {
+          "id": "redux-adapter-rebuilds-ids",
+          "text": {
+            "vi": "Nghĩ rằng adapter tạo lại `ids` ở mọi lần update. Khi không có `sortComparer`, `updateOne` chỉ đụng tới `ids` nếu id của entity thay đổi.",
+            "en": "Believing the adapter rebuilds `ids` on every update. Without a `sortComparer`, `updateOne` only touches `ids` when an entity's id changes."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Không component nào, vì Immer sửa trực tiếp state trong store",
+          "en": "Nothing, because Immer mutates the store state in place"
+        },
+        "misconception": {
+          "id": "redux-immer-mutates-in-place",
+          "text": {
+            "vi": "Nghĩ rằng Immer sửa trực tiếp state hiện tại. Immer ghi lại thay đổi trên draft rồi tạo state mới với structural sharing: phần bị đổi có tham chiếu mới, phần còn lại giữ nguyên.",
+            "en": "Believing Immer mutates the current state in place. It records changes on a draft and produces a new state with structural sharing: changed parts get new references, the rest are reused."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0
+    ],
+    "explanation": {
+      "vi": "Entity adapter lưu dữ liệu dạng chuẩn hoá `{ ids, entities }`. `updateOne` chỉ tạo object mới cho todo bị sửa và cho object `entities` chứa nó; mảng `ids` và các todo khác giữ nguyên tham chiếu. Component list so sánh `ids` bằng `===` nên không re-render; mỗi row so sánh entity của nó, nên chỉ row bị sửa nhận tham chiếu mới. Đây là lý do nên để list chọn id và để row tự chọn dữ liệu của nó.",
+      "en": "The entity adapter stores normalised data as `{ ids, entities }`. `updateOne` creates new objects only for the edited todo and for the `entities` object that holds it; the `ids` array and the other todos keep their references. The list compares `ids` with `===` and does not re-render; each row compares its own entity, so only the edited row sees a new reference. This is why the list should select ids and each row should select its own data."
+    }
+  },
+  {
+    "id": "state-redux-005",
+    "type": "mcq",
+    "topics": [
+      "state/redux"
+    ],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": [
+      "state-redux-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Trong một reducer viết tay (không dùng Immer), đồng nghiệp viết `state.items.push(action.payload); return state;`. Action tới được store nhưng danh sách trên màn hình không cập nhật. Vì sao?",
+      "en": "In a hand-written reducer (no Immer), a teammate writes `state.items.push(action.payload); return state;`. The action reaches the store, but the list on screen does not update. Why?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "`useSelector` so sánh theo tham chiếu, mà `state.items` vẫn là mảng cũ",
+          "en": "`useSelector` compares references, and `state.items` is still the same array"
+        }
+      },
+      {
+        "text": {
+          "vi": "Redux đóng băng state ở production, nên lệnh `push` âm thầm thất bại",
+          "en": "Redux freezes state in production, so the `push` silently fails"
+        },
+        "misconception": {
+          "id": "redux-core-freezes-state",
+          "text": {
+            "vi": "Nghĩ rằng Redux core đóng băng state. Redux không freeze gì cả; lệnh push đã thành công, chỉ là tham chiếu không đổi nên không ai biết có thay đổi.",
+            "en": "Believing Redux core freezes state. Redux freezes nothing; the push succeeded, but the reference did not change, so nobody can tell anything changed."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Reducer chạy bất đồng bộ, nên màn hình đọc state trước lệnh `push`",
+          "en": "Reducers run asynchronously, so the screen reads state before the `push`"
+        },
+        "misconception": {
+          "id": "redux-reducers-async",
+          "text": {
+            "vi": "Nghĩ rằng reducer chạy bất đồng bộ. `dispatch` chạy reducer đồng bộ; khi nó return, state mới đã có trong store.",
+            "en": "Believing reducers run asynchronously. `dispatch` runs the reducer synchronously; when it returns, the new state is already in the store."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Mutate chỉ làm hỏng time travel của DevTools, nên lỗi nằm ở chỗ khác",
+          "en": "Mutation only breaks DevTools time travel, so the bug is elsewhere"
+        },
+        "misconception": {
+          "id": "redux-mutation-only-devtools",
+          "text": {
+            "vi": "Nghĩ rằng mutate chỉ ảnh hưởng DevTools. Toàn bộ cơ chế phát hiện thay đổi của Redux dựa vào tham chiếu, nên mutate làm UI bỏ lỡ cập nhật.",
+            "en": "Believing mutation only affects DevTools. Redux's whole change detection relies on references, so mutation makes the UI miss updates."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0
+    ],
+    "explanation": {
+      "vi": "Redux phát hiện thay đổi bằng tham chiếu. Reducer trả về đúng object cũ, nên `combineReducers` thấy slice không đổi và giữ nguyên root state; `useSelector` so sánh `state.items` bằng `===` và cũng thấy mảng cũ. Dữ liệu đã bị sửa nhưng không ai được báo. Cách sửa là trả về bản sao: `return { ...state, items: [...state.items, action.payload] }`, hoặc dùng `createSlice` để Immer làm việc đó.",
+      "en": "Redux detects changes by reference. The reducer returns the same object, so `combineReducers` sees an unchanged slice and keeps the old root state, and `useSelector` compares `state.items` with `===` and sees the same array. The data was changed, but nobody was told. Return a copy instead, `return { ...state, items: [...state.items, action.payload] }`, or use `createSlice` and let Immer do it."
+    }
+  },
+  {
+    "id": "state-redux-006",
+    "type": "mcq",
+    "topics": [
+      "state/redux"
+    ],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": [
+      "state-redux-core"
+    ],
+    "multi": true,
+    "prompt": {
+      "vi": "Những nhận định nào về `createAsyncThunk` là đúng? (chọn tất cả đáp án đúng)",
+      "en": "Which statements about `createAsyncThunk` are true? (select all that apply)"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Action `pending` được dispatch trước khi payload creator được gọi",
+          "en": "The `pending` action is dispatched before the payload creator is called"
+        }
+      },
+      {
+        "text": {
+          "vi": "`return rejectWithValue(x)` dispatch `rejected` với `action.payload` là `x`",
+          "en": "`return rejectWithValue(x)` dispatches `rejected` with `action.payload` set to `x`"
+        }
+      },
+      {
+        "text": {
+          "vi": "Nếu `condition` trả về `false`, thunk bị bỏ qua và mặc định không có action nào",
+          "en": "If `condition` returns `false`, the thunk is skipped and by default nothing is dispatched"
+        }
+      },
+      {
+        "text": {
+          "vi": "Gọi `abort()` trên promise trả về sẽ tự huỷ request HTTP",
+          "en": "Calling `abort()` on the returned promise cancels the HTTP request by itself"
+        },
+        "misconception": {
+          "id": "redux-abort-cancels-request",
+          "text": {
+            "vi": "Nghĩ rằng `abort()` tự huỷ request. Nó chỉ abort `signal` và dispatch `rejected`; request chỉ dừng nếu bạn truyền `signal` vào `fetch` hoặc client HTTP.",
+            "en": "Believing `abort()` cancels the request by itself. It aborts the `signal` and dispatches `rejected`; the request only stops if you pass that `signal` to `fetch` or your HTTP client."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Nếu payload creator ném lỗi, `await dispatch(fetchX())` cũng ném lỗi",
+          "en": "If the payload creator throws, `await dispatch(fetchX())` throws too"
+        },
+        "misconception": {
+          "id": "redux-dispatch-thunk-throws",
+          "text": {
+            "vi": "Nghĩ rằng dispatch một async thunk sẽ ném lỗi. Promise trả về luôn resolve với action cuối (`fulfilled` hoặc `rejected`); muốn có lỗi ném ra thì gọi `.unwrap()`.",
+            "en": "Believing that dispatching an async thunk throws. The returned promise always resolves with the final action (`fulfilled` or `rejected`); call `.unwrap()` to get a thrown error."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0,
+      1,
+      2
+    ],
+    "explanation": {
+      "vi": "Vòng đời là `pending`, rồi `fulfilled` hoặc `rejected`. `rejectWithValue` chỉ bọc giá trị, phải được `return` thì `rejected` mới mang `payload` đó. `condition` chạy trước tất cả; trả về `false` thì không có `pending`, và `rejected` chỉ được dispatch khi bạn bật `dispatchConditionRejection`. Hai bẫy hay gặp: `abort()` không tự dừng network nếu bạn không nối `signal` vào request, và `await dispatch(thunk())` không ném lỗi, nên code `try/catch` quanh nó không bao giờ vào `catch` nếu thiếu `.unwrap()`.",
+      "en": "The lifecycle is `pending`, then `fulfilled` or `rejected`. `rejectWithValue` only wraps a value; it must be returned for `rejected` to carry it as `payload`. `condition` runs before everything else; returning `false` means no `pending`, and `rejected` is only dispatched if you enable `dispatchConditionRejection`. Two common traps: `abort()` does not stop the network call unless you wire the `signal` into it, and `await dispatch(thunk())` never throws, so a `try/catch` around it never reaches `catch` without `.unwrap()`."
+    }
+  },
+  {
+    "id": "state-redux-007",
+    "type": "mcq",
+    "topics": [
+      "state/redux"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": [
+      "state-redux-core"
+    ],
+    "multi": true,
+    "prompt": {
+      "vi": "Hai màn hình đang mount cùng gọi `useGetProfileQuery('42')` của RTK Query. Endpoint có `providesTags: [{ type: 'Profile', id: '42' }]`. Những nhận định nào đúng? (chọn tất cả đáp án đúng)",
+      "en": "Two mounted screens both call RTK Query's `useGetProfileQuery('42')`. The endpoint has `providesTags: [{ type: 'Profile', id: '42' }]`. Which statements are true? (select all that apply)"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Chỉ một request được gửi; hai component dùng chung một cache entry",
+          "en": "Only one request is sent; both components share one cache entry"
+        }
+      },
+      {
+        "text": {
+          "vi": "Khi cả hai unmount, entry còn được giữ `keepUnusedDataFor` giây (mặc định 60)",
+          "en": "When both unmount, the entry is kept for `keepUnusedDataFor` seconds (60 by default)"
+        }
+      },
+      {
+        "text": {
+          "vi": "Một mutation có `invalidatesTags: [{ type: 'Profile', id: '42' }]` làm query này refetch",
+          "en": "A mutation with `invalidatesTags: [{ type: 'Profile', id: '42' }]` makes this query refetch"
+        }
+      },
+      {
+        "text": {
+          "vi": "Mỗi hook gửi request riêng, vì state của hook thuộc về từng component",
+          "en": "Each hook sends its own request, because hook state belongs to each component"
+        },
+        "misconception": {
+          "id": "redux-rtkq-per-component",
+          "text": {
+            "vi": "Nghĩ rằng mỗi hook RTK Query có cache riêng. Cache nằm trong Redux store, khoá theo endpoint và argument; các hook chỉ là subscription vào cùng entry.",
+            "en": "Believing each RTK Query hook has its own cache. The cache lives in the Redux store, keyed by endpoint and argument; hooks are just subscriptions to the same entry."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Trên RN, chỉ cần bật `refetchOnFocus` là refetch khi app quay lại foreground",
+          "en": "On RN, setting `refetchOnFocus` alone refetches when the app returns to the foreground"
+        },
+        "misconception": {
+          "id": "redux-rtkq-focus-rn",
+          "text": {
+            "vi": "Nghĩ rằng `refetchOnFocus` tự chạy trên RN. Nó cần `setupListeners`, và handler mặc định dựa vào event focus của `window`; trên RN bạn phải truyền handler riêng dùng `AppState`.",
+            "en": "Believing `refetchOnFocus` works on its own in RN. It needs `setupListeners`, whose default handler relies on `window` focus events; in RN you pass a custom handler built on `AppState`."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0,
+      1,
+      2
+    ],
+    "explanation": {
+      "vi": "RTK Query lưu cache trong store, khoá theo endpoint và argument đã serialize. Hai subscription cùng key dùng chung một request và một entry. Khi không còn subscriber, entry bị xoá sau `keepUnusedDataFor` (mặc định 60 giây). Tag nối mutation với query: mutation invalidate một tag thì query đang có subscriber và provide tag đó sẽ refetch. Trên RN, `refetchOnFocus` và `refetchOnReconnect` chỉ chạy khi bạn gọi `setupListeners(store.dispatch, handler)` với handler nối vào `AppState` và trạng thái mạng.",
+      "en": "RTK Query keeps its cache in the store, keyed by endpoint and serialised argument. Two subscriptions with the same key share one request and one entry. Once no subscribers remain, the entry is removed after `keepUnusedDataFor` (60 seconds by default). Tags link mutations to queries: when a mutation invalidates a tag, subscribed queries that provide it refetch. In RN, `refetchOnFocus` and `refetchOnReconnect` only work if you call `setupListeners(store.dispatch, handler)` with a handler wired to `AppState` and network status."
+    }
+  },
+  {
+    "id": "state-redux-008",
+    "type": "spot-bug",
+    "topics": [
+      "state/redux"
+    ],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 105,
+    "lessons": [
+      "state-redux-core"
+    ],
+    "prompt": {
+      "vi": "Dispatch `todoAdded` làm app ném lỗi từ Immer ngay lập tức. Dòng nào gây lỗi, và vì sao?",
+      "en": "Dispatching `todoAdded` makes Immer throw straight away. Which line causes it, and why?"
+    },
+    "code": "import { createSlice, type PayloadAction } from '@reduxjs/toolkit';\n\ntype Todo = { id: string; title: string };\ntype TodosState = { items: Todo[]; lastAddedId: string | null };\n\nconst initialState: TodosState = { items: [], lastAddedId: null };\n\nconst todosSlice = createSlice({\n  name: 'todos',\n  initialState,\n  reducers: {\n    todoAdded(state, action: PayloadAction<Todo>) {\n      state.items.push(action.payload);\n      return { ...state, lastAddedId: action.payload.id };\n    },\n  },\n});\n\nexport const { todoAdded } = todosSlice.actions;\nexport default todosSlice.reducer;",
+    "answerLine": 14,
+    "causeOptions": [
+      {
+        "text": {
+          "vi": "Reducer vừa sửa draft vừa return giá trị mới, điều Immer không cho phép",
+          "en": "The reducer both modifies the draft and returns a new value, which Immer forbids"
+        }
+      },
+      {
+        "text": {
+          "vi": "`push` không dùng được trên draft, phải dùng spread để thêm phần tử",
+          "en": "`push` does not work on a draft; you must spread to add items"
+        },
+        "misconception": {
+          "id": "redux-draft-no-push",
+          "text": {
+            "vi": "Nghĩ rằng draft không hỗ trợ method mutate của mảng. Trong `createSlice`, `push`, `splice` hay gán index trên draft đều hợp lệ; Immer biến chúng thành bản cập nhật bất biến.",
+            "en": "Believing drafts do not support mutating array methods. In `createSlice`, `push`, `splice` and index assignment on a draft are all fine; Immer turns them into an immutable update."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Spread một draft tạo ra bản sao chứa proxy đã bị thu hồi",
+          "en": "Spreading a draft creates a copy full of revoked proxies"
+        },
+        "misconception": {
+          "id": "redux-spread-draft-revoked",
+          "text": {
+            "vi": "Đoán sai cơ chế lỗi. Immer có thể hoàn tất các draft lồng nhau trong giá trị trả về; lỗi ở đây là do vừa sửa draft vừa return, chứ không phải vì spread.",
+            "en": "Guessing the wrong mechanism. Immer can finalise nested drafts inside a returned value; the error here comes from modifying the draft and returning a value together, not from the spread."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Case reducer phải return state, nên thiếu `return` ở các reducer khác",
+          "en": "Case reducers must return state, so the other reducers are missing a `return`"
+        },
+        "misconception": {
+          "id": "redux-must-return-state",
+          "text": {
+            "vi": "Nghĩ rằng reducer của `createSlice` bắt buộc return. Với Immer, bạn chọn một trong hai: sửa draft và không return, hoặc return giá trị mới mà không sửa draft.",
+            "en": "Believing `createSlice` reducers must return. With Immer you pick one: modify the draft and return nothing, or return a new value without touching the draft."
+          }
+        }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "Dòng 13 sửa draft bằng `push`, rồi dòng 14 return một object mới. Immer yêu cầu chọn một trong hai cách, nên nó ném lỗi khi producer vừa sửa draft vừa trả về giá trị mới. Cách sửa đơn giản nhất là bỏ `return` và viết `state.lastAddedId = action.payload.id;`. Cùng lỗi này hay xuất hiện ở arrow function viết tắt như `(state, a) => state.items.push(a.payload)`, vì nó ngầm return độ dài mảng.",
+      "en": "Line 13 modifies the draft with `push`, then line 14 returns a new object. Immer requires you to pick one approach, so it throws when a producer both modifies the draft and returns a new value. The simplest fix is to drop the `return` and write `state.lastAddedId = action.payload.id;`. The same error often comes from a shorthand arrow such as `(state, a) => state.items.push(a.payload)`, which implicitly returns the new array length."
+    }
+  },
+  {
+    "id": "state-redux-009",
+    "type": "spot-bug",
+    "topics": [
+      "state/redux"
+    ],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 100,
+    "lessons": [
+      "state-redux-core"
+    ],
+    "prompt": {
+      "vi": "Khi API lỗi, màn hình hiện profile rỗng thay vì thông báo lỗi. DevTools cho thấy `profile/fetch/fulfilled` với payload `undefined`, và case `rejected` không bao giờ chạy. Dòng nào gây lỗi?",
+      "en": "When the API fails, the screen shows an empty profile instead of an error message. DevTools shows `profile/fetch/fulfilled` with an `undefined` payload, and the `rejected` case never runs. Which line causes it?"
+    },
+    "code": "import { createAsyncThunk } from '@reduxjs/toolkit';\nimport { api, type ApiError } from '../api';\nimport type { Profile } from './types';\n\nexport const fetchProfile = createAsyncThunk(\n  'profile/fetch',\n  async (userId: string, { rejectWithValue }) => {\n    try {\n      const res = await api.get<Profile>(`/users/${userId}`);\n      return res.data;\n    } catch (err) {\n      rejectWithValue((err as ApiError).message);\n    }\n  },\n);",
+    "answerLine": 12,
+    "causeOptions": [
+      {
+        "text": {
+          "vi": "Thiếu `return`, nên thunk resolve với `undefined` và dispatch `fulfilled`",
+          "en": "The `return` is missing, so the thunk resolves with `undefined` and dispatches `fulfilled`"
+        }
+      },
+      {
+        "text": {
+          "vi": "`rejectWithValue` dispatch `rejected` ngay, nhưng `fulfilled` sau đó ghi đè",
+          "en": "`rejectWithValue` dispatches `rejected` at once, but `fulfilled` overwrites it"
+        },
+        "misconception": {
+          "id": "redux-rejectwithvalue-dispatches",
+          "text": {
+            "vi": "Nghĩ rằng `rejectWithValue` tự dispatch. Nó chỉ bọc một giá trị; RTK chỉ dispatch `rejected` khi payload creator return đúng giá trị bọc đó.",
+            "en": "Believing `rejectWithValue` dispatches. It only wraps a value; RTK dispatches `rejected` only when the payload creator returns that wrapper."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`ApiError` không có `message`, nên payload của `rejected` bị mất",
+          "en": "`ApiError` has no `message`, so the `rejected` payload is lost"
+        },
+        "misconception": {
+          "id": "redux-blame-payload-shape",
+          "text": {
+            "vi": "Đổ lỗi cho hình dạng payload. Dù message là undefined, một `rejectWithValue` được return vẫn dispatch `rejected`; ở đây `rejected` hoàn toàn không xuất hiện.",
+            "en": "Blaming the payload shape. Even with an undefined message, a returned `rejectWithValue` still dispatches `rejected`; here `rejected` never appears at all."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Phải khai báo generic `{ rejectValue: string }`, nếu không `rejected` bị bỏ qua",
+          "en": "The thunk needs `{ rejectValue: string }` in its generics, or `rejected` is skipped"
+        },
+        "misconception": {
+          "id": "redux-generics-runtime",
+          "text": {
+            "vi": "Nghĩ rằng generic của TypeScript đổi hành vi lúc chạy. Generic chỉ khai báo kiểu cho payload và không sinh ra code nào.",
+            "en": "Believing TypeScript generics change runtime behaviour. They only type the payload and emit no code."
+          }
+        }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "`rejectWithValue` trả về một object bọc giá trị, nó không dispatch gì. Ở dòng 12 giá trị đó bị bỏ đi, nên payload creator kết thúc mà không return, promise resolve với `undefined`, và RTK coi đó là thành công: dispatch `fulfilled` với payload `undefined`. Sửa thành `return rejectWithValue(...)`. Generic `{ rejectValue: string }` chỉ giúp `action.payload` ở case `rejected` có kiểu đúng; nó không đổi hành vi lúc chạy.",
+      "en": "`rejectWithValue` returns an object that wraps the value; it dispatches nothing. On line 12 that object is thrown away, so the payload creator ends without returning, the promise resolves with `undefined`, and RTK treats it as success: it dispatches `fulfilled` with an `undefined` payload. Change it to `return rejectWithValue(...)`. The `{ rejectValue: string }` generic only types `action.payload` in the `rejected` case; it does not change runtime behaviour."
+    }
+  },
+  {
+    "id": "state-redux-010",
+    "type": "spot-bug",
+    "topics": [
+      "state/redux"
+    ],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 135,
+    "lessons": [
+      "state-redux-core"
+    ],
+    "prompt": {
+      "vi": "Slice `session` được lưu bằng redux-persist. Mọi thứ chạy ổn cho tới khi người dùng tắt hẳn app rồi mở lại: `SessionBanner` crash với `startedAt.getTime is not a function`. Bản dev cũng log cảnh báo non-serializable mỗi lần đăng nhập. Dòng nào là gốc của lỗi?",
+      "en": "The `session` slice is persisted with redux-persist. Everything works until a user kills the app and reopens it: `SessionBanner` then crashes with `startedAt.getTime is not a function`. Development builds also log a non-serialisable warning on every sign-in. Which line is the root cause?"
+    },
+    "code": "import { createSlice, type PayloadAction } from '@reduxjs/toolkit';\n\ntype SessionState = { userId: string | null; startedAt: Date | null };\n\nconst initialState: SessionState = { userId: null, startedAt: null };\n\nexport const sessionSlice = createSlice({\n  name: 'session',\n  initialState,\n  reducers: {\n    signedIn(state, action: PayloadAction<string>) {\n      state.userId = action.payload;\n      state.startedAt = new Date();\n    },\n  },\n});\n\n// SessionBanner.tsx\nconst startedAt = useSelector((s: RootState) => s.session.startedAt);\nconst minutes = startedAt ? Math.floor((Date.now() - startedAt.getTime()) / 60_000) : 0;",
+    "answerLine": 13,
+    "causeOptions": [
+      {
+        "text": {
+          "vi": "`Date` không serialize được: redux-persist lưu thành string và trả lại string",
+          "en": "A `Date` is not serialisable: redux-persist saves it as a string and restores a string"
+        }
+      },
+      {
+        "text": {
+          "vi": "Immer đóng băng `Date`, nên các method của nó không gọi được nữa",
+          "en": "Immer freezes the `Date`, so its methods can no longer be called"
+        },
+        "misconception": {
+          "id": "redux-frozen-date-methods",
+          "text": {
+            "vi": "Nghĩ rằng object bị freeze thì mất method. Freeze chỉ chặn ghi property; `getTime` vẫn chạy bình thường trên một `Date` bị đóng băng.",
+            "en": "Believing a frozen object loses its methods. Freezing only blocks property writes; `getTime` still works on a frozen `Date`."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Rehydrate chưa xong, nên `startedAt` vẫn là `null` ở lần render đầu",
+          "en": "Rehydration has not finished, so `startedAt` is still `null` on first render"
+        },
+        "misconception": {
+          "id": "redux-blame-rehydration-timing",
+          "text": {
+            "vi": "Đổ lỗi cho thời điểm rehydrate. Giá trị `null` đã được chặn bởi toán tử ba ngôi; lỗi `getTime is not a function` nghĩa là giá trị tồn tại nhưng không phải `Date`.",
+            "en": "Blaming rehydration timing. A `null` value is already guarded by the ternary; `getTime is not a function` means the value exists but is not a `Date`."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`useSelector` trả về bản sao của state, và bản sao làm mất prototype",
+          "en": "`useSelector` returns a copy of the state, and the copy drops the prototype"
+        },
+        "misconception": {
+          "id": "redux-useselector-copies",
+          "text": {
+            "vi": "Nghĩ rằng useSelector sao chép state. Nó trả về đúng giá trị selector đọc từ store, cùng tham chiếu.",
+            "en": "Believing useSelector copies state. It returns exactly what the selector reads from the store, by reference."
+          }
+        }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "Trong phiên chạy đầu, `startedAt` là một `Date` thật nên mọi thứ chạy ổn. redux-persist serialize state bằng JSON, nên `Date` thành chuỗi ISO; sau khi khởi động lại, rehydrate đưa chuỗi đó vào store và `getTime` không tồn tại. Cảnh báo của serializability middleware chính là tín hiệu sớm. Sửa bằng cách lưu số `Date.now()` hoặc chuỗi ISO, và tạo giá trị đó trong callback `prepare` của action: `new Date()` trong reducer còn làm reducer không thuần, vì chạy lại cùng action cho ra kết quả khác. Nhớ viết migration cho state đã lưu theo kiểu cũ.",
+      "en": "In the first session `startedAt` is a real `Date`, so everything works. redux-persist serialises state as JSON, so the `Date` becomes an ISO string; after a restart, rehydration puts that string into the store and there is no `getTime`. The serialisability middleware warning was the early signal. Fix it by storing a number from `Date.now()` or an ISO string, created in the action's `prepare` callback: `new Date()` inside a reducer also makes it impure, since replaying the same action gives a different result. Remember a migration for state already saved in the old shape."
+    }
+  },
+  {
+    "id": "state-redux-011",
+    "type": "open",
+    "topics": [
+      "state/redux"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 270,
+    "lessons": [
+      "state-redux-core"
+    ],
+    "prompt": {
+      "vi": "Bạn tiếp nhận một app RN mà mọi thứ đều nằm trong Redux: kết quả API kèm cờ `isLoading` viết tay, state của form, cả việc modal đang mở hay không. App hay gửi request trùng và hiện dữ liệu cũ. Bạn sẽ tổ chức lại state thế nào, và khi nào Redux là quá tay?",
+      "en": "You inherit an RN app where everything lives in Redux: API results with hand-written `isLoading` flags, form state, even whether a modal is open. It sends duplicate requests and shows stale data. How would you reorganise the state, and when is Redux overkill?"
+    },
+    "keyPoints": [
+      {
+        "vi": "Tách server state (cache của dữ liệu từ API) khỏi client state (UI, form, lựa chọn của người dùng)",
+        "en": "Separate server state (a cache of API data) from client state (UI, forms, user choices)"
+      },
+      {
+        "vi": "Chuyển server state sang RTK Query hoặc React Query để có dedup request, cache theo argument, invalidation và refetch",
+        "en": "Move server state to RTK Query or React Query for request dedup, per-argument caching, invalidation and refetching"
+      },
+      {
+        "vi": "Đưa state cục bộ như form hay modal về lại component bằng `useState`, chỉ nâng lên khi nhiều màn hình cần",
+        "en": "Move local state such as forms and modals back into components with `useState`, lifting it only when several screens need it"
+      },
+      {
+        "vi": "Giữ Redux cho client state dùng chung có nhiều nơi ghi, logic cập nhật phức tạp, hoặc cần middleware và DevTools",
+        "en": "Keep Redux for shared client state with many writers, complex update logic, or a need for middleware and DevTools"
+      },
+      {
+        "vi": "Biết giới hạn của các lựa chọn khác: Context không có selector nên mọi consumer re-render; Zustand nhẹ và có selector",
+        "en": "Know the limits of the alternatives: Context has no selectors, so every consumer re-renders; Zustand is light and has selectors"
+      },
+      {
+        "vi": "Di chuyển dần từng endpoint, không viết lại toàn bộ một lần",
+        "en": "Migrate incrementally, one endpoint at a time, not as a big-bang rewrite"
+      }
+    ],
+    "modelAnswer": {
+      "vi": "Mình chia state làm hai loại. Phần lớn store ở đây là server state: bản sao của dữ liệu API cùng cờ loading viết tay, và đó chính là nguồn gốc của request trùng và dữ liệu cũ. Phần đó mình chuyển sang RTK Query, vì app đã dùng Redux, hoặc React Query nếu muốn tách hẳn. Chúng cho mình dedup, cache theo argument, tag để invalidate sau mutation, và refetch khi app quay lại foreground. Form và modal mình đưa về `useState` trong component. Những gì còn lại trong Redux là client state dùng chung thật sự, như phiên đăng nhập, giỏ hàng offline, cài đặt. Nếu phần còn lại rất nhỏ, Redux có thể là quá tay, và Zustand hay Context tách nhỏ là đủ, miễn là nhớ Context không có selector. Mình làm từng endpoint một, để mỗi bước đều release được.",
+      "en": "I split state into two kinds. Most of this store is server state: copies of API data with hand-written loading flags, and that is exactly where the duplicate requests and stale data come from. I move it to RTK Query, since the app already uses Redux, or React Query if we want a clean break. That gives dedup, per-argument caching, tags to invalidate after mutations, and refetching when the app returns to the foreground. Forms and modals go back to `useState` in their components. What stays in Redux is genuinely shared client state, such as the session, an offline cart and settings. If that leftover is tiny, Redux may be overkill and Zustand or a few split Contexts are enough, as long as we remember Context has no selectors. I migrate one endpoint at a time so every step can ship."
+    },
+    "followUps": [
+      {
+        "vi": "RTK Query và React Query khác nhau thế nào khi app đã có sẵn Redux?",
+        "en": "How do RTK Query and React Query differ when the app already uses Redux?"
+      },
+      {
+        "vi": "Bạn đo thế nào để chứng minh việc tổ chức lại đã giảm request và re-render?",
+        "en": "How would you measure that the reorganisation reduced requests and re-renders?"
+      }
+    ]
+  },
+  {
+    "id": "state-redux-012",
+    "type": "open",
+    "topics": [
+      "state/redux"
+    ],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 330,
+    "lessons": [
+      "state-redux-core"
+    ],
+    "prompt": {
+      "vi": "Bản mới đổi `settings.theme` từ string thành object `{ mode, accent }`. Người cài mới không sao, nhưng người cập nhật từ bản cũ bị crash ngay khi mở app với `Cannot read property 'mode' of undefined`. Store dùng redux-persist với AsyncStorage. Kể lại cách bạn xử lý, và cách bạn ngăn nó lặp lại.",
+      "en": "A new release changes `settings.theme` from a string to an object `{ mode, accent }`. Fresh installs are fine, but users updating from the old version crash on launch with `Cannot read property 'mode' of undefined`. The store uses redux-persist with AsyncStorage. Walk me through how you handled it and how you stopped it happening again."
+    },
+    "keyPoints": [
+      {
+        "vi": "Hiểu nguyên nhân: state cũ được rehydrate đè lên `initialState`; reconciler mặc định `autoMergeLevel1` thay nguyên cả slice ở cấp đầu, nên field mới biến mất",
+        "en": "Understand the cause: old persisted state is rehydrated over `initialState`; the default `autoMergeLevel1` reconciler replaces each top-level slice whole, so the new field disappears"
+      },
+      {
+        "vi": "Giảm thiệt hại nhanh: phát bản sửa (OTA nếu chỉ là JS) với migration, và đọc state theo cách phòng thủ trong lúc chờ",
+        "en": "Mitigate fast: ship a fix (OTA if it is JS-only) with a migration, and read the state defensively in the meantime"
+      },
+      {
+        "vi": "Dùng `version` và `createMigrate` trong persist config, mỗi lần đổi hình dạng state đã lưu là thêm một migration",
+        "en": "Use `version` and `createMigrate` in the persist config, adding a migration every time the persisted shape changes"
+      },
+      {
+        "vi": "Chỉ persist những gì cần qua `whitelist`/`blacklist`; không persist cache của server hay state tạm thời",
+        "en": "Persist only what you need through `whitelist`/`blacklist`; do not persist server caches or transient state"
+      },
+      {
+        "vi": "Chặn render cho tới khi rehydrate xong bằng `PersistGate`, và bỏ qua các action của redux-persist trong `serializableCheck`",
+        "en": "Hold rendering until rehydration completes with `PersistGate`, and ignore redux-persist's actions in `serializableCheck`"
+      },
+      {
+        "vi": "Thêm test hoặc bước QA nâng cấp từ bản cũ có dữ liệu đã lưu, không chỉ cài mới",
+        "en": "Add a test or QA step that upgrades from the previous version with saved data, not just fresh installs"
+      }
+    ],
+    "modelAnswer": {
+      "vi": "Crash chỉ xảy ra khi cập nhật, nên mình nghi ngay state đã lưu. redux-persist rehydrate state cũ đè lên `initialState`, và reconciler mặc định thay nguyên slice `settings`, nên `theme` vẫn là string cũ và `theme.mode` là undefined. Để cầm máu, mình phát bản sửa qua OTA vì lỗi chỉ ở JS: thêm `version` cho persist config và một migration bằng `createMigrate` chuyển string cũ thành `{ mode, accent }`. Sau đó mình rà lại những gì đang persist: chỉ whitelist session và settings, bỏ cache API vì nó làm rehydrate chậm và dễ lệch hình dạng. Mình kiểm tra `PersistGate` đang chặn render và `serializableCheck` bỏ qua các action như `PERSIST`, `REHYDRATE`. Để không lặp lại, mọi PR đổi hình dạng slice được persist phải có migration, và QA có bước nâng cấp từ bản đang chạy kèm dữ liệu thật.",
+      "en": "The crash only hit upgrades, so I suspected persisted state straight away. redux-persist rehydrates old state over `initialState`, and the default reconciler replaces the whole `settings` slice, so `theme` was still the old string and `theme.mode` was undefined. To stop the bleeding I shipped an OTA fix, since the bug was JS-only: a `version` in the persist config and a `createMigrate` migration that turns the old string into `{ mode, accent }`. Then I reviewed what we persist: only the session and settings are whitelisted now, not API caches, which slow rehydration and drift in shape. I checked that `PersistGate` holds rendering and that `serializableCheck` ignores actions such as `PERSIST` and `REHYDRATE`. To prevent a repeat, any PR that changes a persisted slice's shape needs a migration, and QA upgrades from the live version with real data."
+    },
+    "followUps": [
+      {
+        "vi": "Nếu migration bị lỗi giữa chừng trên máy người dùng thì bạn xử lý thế nào?",
+        "en": "What would you do if a migration fails halfway on a user's device?"
+      },
+      {
+        "vi": "Bạn chọn persist ở cấp root hay từng slice, và vì sao?",
+        "en": "Would you persist at the root or per slice, and why?"
+      }
+    ]
+  }
+]

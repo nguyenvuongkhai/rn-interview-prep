@@ -1,0 +1,836 @@
+[
+  {
+    "id": "state-async-001",
+    "type": "mcq",
+    "topics": [
+      "state/async"
+    ],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": [
+      "state-async-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Đoạn code sau in ra gì, theo thứ tự?\n`console.log('A'); setTimeout(() => console.log('B'), 0); Promise.resolve().then(() => console.log('C')); console.log('D');`",
+      "en": "What does this code log, in order?\n`console.log('A'); setTimeout(() => console.log('B'), 0); Promise.resolve().then(() => console.log('C')); console.log('D');`"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "A, B, C, D",
+          "en": "A, B, C, D"
+        },
+        "misconception": {
+          "id": "async-timeout-zero-sync",
+          "text": {
+            "vi": "Nghĩ rằng `setTimeout(fn, 0)` chạy `fn` ngay lập tức. Nó chỉ xếp một task vào hàng đợi; callback chạy sau khi code hiện tại và mọi microtask đang chờ đã xong.",
+            "en": "Believing `setTimeout(fn, 0)` runs `fn` straight away. It only queues a task; the callback runs after the current code and every pending microtask have finished."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "A, D, B, C",
+          "en": "A, D, B, C"
+        },
+        "misconception": {
+          "id": "async-timers-before-microtasks",
+          "text": {
+            "vi": "Nghĩ rằng timer chạy trước callback của promise. Callback của promise là microtask, được chạy hết ngay khi code đồng bộ hiện tại kết thúc và trước task timer kế tiếp.",
+            "en": "Believing timers run before promise callbacks. Promise callbacks are microtasks, drained as soon as the current synchronous code ends and before the next timer task."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "A, D, C, B",
+          "en": "A, D, C, B"
+        }
+      },
+      {
+        "text": {
+          "vi": "A, C, D, B",
+          "en": "A, C, D, B"
+        },
+        "misconception": {
+          "id": "async-then-runs-sync",
+          "text": {
+            "vi": "Nghĩ rằng `.then` trên một promise đã resolve sẽ chạy ngay. Callback luôn được xếp thành microtask, nên nó chạy sau phần code đồng bộ còn lại.",
+            "en": "Believing `.then` on an already resolved promise runs immediately. The callback is always queued as a microtask, so it runs after the rest of the synchronous code."
+          }
+        }
+      }
+    ],
+    "answer": [
+      2
+    ],
+    "explanation": {
+      "vi": "Code đồng bộ chạy trước: in `A` rồi `D`. Khi call stack trống, engine chạy hết hàng đợi microtask, nên callback của `.then` in `C`. Chỉ sau đó task timer mới được xử lý và in `B`, dù delay là 0. Bẫy chính là nghĩ `setTimeout(fn, 0)` hay `.then` trên promise đã resolve chạy ngay. Hệ quả thực tế: code sau `await` luôn chạy ở một microtask sau, và một chuỗi microtask dài có thể chặn timer cũng như việc xử lý sự kiện, vì hàng đợi microtask phải chạy hết trước task kế tiếp.",
+      "en": "Synchronous code runs first: `A`, then `D`. Once the call stack is empty, the engine drains the microtask queue, so the `.then` callback logs `C`. Only then is the timer task handled and `B` logged, even with a 0 delay. The trap is thinking `setTimeout(fn, 0)` or `.then` on a resolved promise runs immediately. In practice, code after `await` always runs in a later microtask, and a long chain of microtasks can hold back timers and event handling, because the microtask queue drains completely before the next task."
+    }
+  },
+  {
+    "id": "state-async-002",
+    "type": "mcq",
+    "topics": [
+      "state/async"
+    ],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": [
+      "state-async-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Màn hình search gọi `fetchResults(query).then(setResults)` trong một `useEffect` có deps `[query]` và không có cleanup. Người dùng gõ `re`, rồi `react`. Request `re` chậm và resolve sau request `react`. Khi cả hai đã resolve, danh sách hiện gì?",
+      "en": "A search screen calls `fetchResults(query).then(setResults)` in a `useEffect` with `[query]` deps and no cleanup. The user types `re`, then `react`. The `re` request is slow and resolves after the `react` one. Once both have resolved, what does the list show?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Kết quả của `react`, vì React bỏ update từ effect đã chạy lại",
+          "en": "Results for `react`, because React drops updates from an effect that has re-run"
+        },
+        "misconception": {
+          "id": "async-react-drops-stale",
+          "text": {
+            "vi": "Nghĩ rằng React tự bỏ qua kết quả của lần chạy effect cũ. React không biết gì về promise bạn tạo; `setResults` gọi lúc nào thì update lúc đó, trừ khi bạn tự chặn trong cleanup.",
+            "en": "Believing React ignores results from an earlier effect run. React knows nothing about the promises you create; `setResults` applies whenever it is called unless your cleanup guards it."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Kết quả của `re`, vì response chậm hơn gọi `setResults` sau cùng",
+          "en": "Results for `re`, because the slower response called `setResults` last"
+        }
+      },
+      {
+        "text": {
+          "vi": "Kết quả của `react`, vì response về theo thứ tự request được gửi",
+          "en": "Results for `react`, because responses arrive in the order they were sent"
+        },
+        "misconception": {
+          "id": "async-responses-in-order",
+          "text": {
+            "vi": "Nghĩ rằng response về theo thứ tự gửi. Mỗi request đi độc lập; server, cache hay mạng chậm đều có thể làm request gửi trước về sau.",
+            "en": "Believing responses arrive in the order requests were sent. Each request travels independently; the server, a cache or a slow network can make an earlier request finish later."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Kết quả của `react`, kèm cảnh báo update trên component đã unmount",
+          "en": "Results for `react`, plus a warning about updating an unmounted component"
+        },
+        "misconception": {
+          "id": "async-unmounted-warning",
+          "text": {
+            "vi": "Nhầm race condition với lỗi unmount. Component vẫn đang mount nên không có cảnh báo nào, và React 18 đã bỏ cảnh báo đó; lỗi ở đây là dữ liệu sai hiện ra lặng lẽ.",
+            "en": "Confusing a race with an unmount problem. The component is still mounted, so there is no warning, and React 18 removed that warning anyway; the bug here is wrong data shown silently."
+          }
+        }
+      }
+    ],
+    "answer": [
+      1
+    ],
+    "explanation": {
+      "vi": "Mỗi lần `query` đổi, effect bắt đầu một request mới, nhưng request cũ vẫn chạy và vẫn gọi `setResults` khi xong. Response nào resolve sau cùng thì thắng, nên danh sách hiện kết quả của `re` dù ô search ghi `react`. React không tự huỷ hay bỏ qua promise của lần chạy effect trước. Cách sửa là để cleanup chặn kết quả cũ: một cờ `ignore`, `AbortController`, hoặc so sánh id request mới nhất.",
+      "en": "Each change to `query` starts a new request, but the old one keeps running and still calls `setResults` when it finishes. Whichever response resolves last wins, so the list shows results for `re` while the box says `react`. React does not cancel or ignore promises from an earlier effect run. The fix is a cleanup that blocks stale results: an `ignore` flag, an `AbortController`, or a check against the latest request id."
+    }
+  },
+  {
+    "id": "state-async-003",
+    "type": "mcq",
+    "topics": [
+      "state/async"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 75,
+    "lessons": [
+      "state-async-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Bạn viết `await Promise.all([loadProfile(), loadFeed(), loadBadges()])`. `loadFeed` reject sau 100 ms; hai hàm còn lại mất 2 s và thành công. Điều gì xảy ra?",
+      "en": "You write `await Promise.all([loadProfile(), loadFeed(), loadBadges()])`. `loadFeed` rejects after 100 ms; the other two take 2 s and succeed. What happens?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "`await` ném lỗi sau khoảng 2 s, khi mọi promise đã xong",
+          "en": "The `await` throws after about 2 s, once every promise has settled"
+        },
+        "misconception": {
+          "id": "async-all-waits-all",
+          "text": {
+            "vi": "Nghĩ rằng `Promise.all` chờ mọi promise xong rồi mới báo lỗi. Nó reject ngay khi promise đầu tiên reject; muốn chờ hết và nhận từng kết quả thì dùng `Promise.allSettled`.",
+            "en": "Believing `Promise.all` waits for everything before reporting a failure. It rejects as soon as the first promise rejects; to wait for all and get each outcome, use `Promise.allSettled`."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`await` ném lỗi sau khoảng 100 ms; hai request kia vẫn chạy tiếp",
+          "en": "The `await` throws after about 100 ms; the other two requests keep running"
+        }
+      },
+      {
+        "text": {
+          "vi": "`await` ném lỗi sau khoảng 100 ms và hai request kia bị huỷ",
+          "en": "The `await` throws after about 100 ms and the other two requests are cancelled"
+        },
+        "misconception": {
+          "id": "async-all-cancels-rest",
+          "text": {
+            "vi": "Nghĩ rằng promise bị reject sẽ huỷ các việc còn lại. Promise không có cơ chế huỷ; request vẫn chạy tới cùng và kết quả bị bỏ đi. Muốn huỷ thật thì truyền `AbortSignal` và tự gọi `abort()`.",
+            "en": "Believing a rejection cancels the remaining work. Promises have no cancellation; the requests run to completion and their results are thrown away. To really cancel, pass an `AbortSignal` and call `abort()` yourself."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Nó resolve sau 2 s, với `undefined` ở vị trí kết quả của feed",
+          "en": "It resolves after 2 s with `undefined` in place of the feed result"
+        },
+        "misconception": {
+          "id": "async-all-skips-failures",
+          "text": {
+            "vi": "Nghĩ rằng `Promise.all` bỏ qua phần tử lỗi. Chỉ cần một phần tử reject là cả `Promise.all` reject với lỗi đó; nó không bao giờ trả về mảng thiếu một phần.",
+            "en": "Believing `Promise.all` skips failed entries. A single rejection rejects the whole `Promise.all` with that error; it never returns a partly filled array."
+          }
+        }
+      }
+    ],
+    "answer": [
+      1
+    ],
+    "explanation": {
+      "vi": "`Promise.all` reject ngay khi phần tử đầu tiên reject, nên `await` ném lỗi sau khoảng 100 ms. Promise không huỷ được: `loadProfile` và `loadBadges` vẫn chạy tới cùng, tốn băng thông, rồi kết quả bị bỏ. Nếu màn hình cần hiện phần nào thành công và báo lỗi phần còn lại, dùng `Promise.allSettled`. Nếu muốn dừng hẳn các request kia khi một cái lỗi, truyền chung một `AbortSignal` và gọi `abort()` trong `catch`.",
+      "en": "`Promise.all` rejects as soon as the first entry rejects, so the `await` throws after about 100 ms. Promises cannot be cancelled: `loadProfile` and `loadBadges` run to completion, using bandwidth, and their results are discarded. If the screen should show what succeeded and flag what failed, use `Promise.allSettled`. If the other requests should stop when one fails, pass them a shared `AbortSignal` and call `abort()` in the `catch`."
+    }
+  },
+  {
+    "id": "state-async-004",
+    "type": "mcq",
+    "topics": [
+      "state/async",
+      "render/effects"
+    ],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": [
+      "state-async-core"
+    ],
+    "multi": true,
+    "prompt": {
+      "vi": "Một `useEffect` fetch kết quả search theo `query`. Những thay đổi nào ngăn một response cũ, chậm hơn ghi đè kết quả của query mới nhất? (chọn tất cả đáp án đúng)",
+      "en": "A `useEffect` fetches search results for `query`. Which changes stop an older, slower response from overwriting the results for the newest query? (select all that apply)"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Trong cleanup, bật một cờ `ignore` cục bộ và bỏ qua `setResults` khi cờ đã bật",
+          "en": "In the cleanup, set a local `ignore` flag and skip `setResults` once it is set"
+        }
+      },
+      {
+        "text": {
+          "vi": "Truyền `signal` của `AbortController` vào `fetch`, gọi `abort()` ở cleanup",
+          "en": "Pass an `AbortController` signal to `fetch` and call `abort()` in the cleanup"
+        }
+      },
+      {
+        "text": {
+          "vi": "Lưu id request tăng dần trong ref, chỉ áp response có id vẫn là mới nhất",
+          "en": "Keep an increasing request id in a ref and apply a response only if it is the latest"
+        }
+      },
+      {
+        "text": {
+          "vi": "Bọc hàm fetch trong `useCallback` để mọi lần chạy dùng cùng một hàm",
+          "en": "Wrap the fetch function in `useCallback` so every run uses the same function"
+        },
+        "misconception": {
+          "id": "async-usecallback-fixes-race",
+          "text": {
+            "vi": "Nghĩ rằng giữ hàm ổn định sẽ sửa được race. `useCallback` chỉ giữ tham chiếu của hàm; mỗi lần gọi vẫn tạo một request độc lập, và response về sau vẫn ghi đè.",
+            "en": "Believing a stable function fixes the race. `useCallback` only keeps the function's identity; each call still starts an independent request, and the later response still overwrites."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Debounce ô nhập 300 ms trước khi gửi request",
+          "en": "Debounce the input by 300 ms before sending the request"
+        },
+        "misconception": {
+          "id": "async-debounce-fixes-race",
+          "text": {
+            "vi": "Nghĩ rằng debounce loại bỏ race. Debounce giảm số request, nhưng hai request vẫn có thể cùng bay khi người dùng dừng gõ hai lần, và response chậm vẫn về sau cùng.",
+            "en": "Believing debounce removes the race. It cuts the number of requests, but two can still be in flight when the user pauses twice, and the slow one can still land last."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0,
+      1,
+      2
+    ],
+    "explanation": {
+      "vi": "Ba cách đầu đều bảo đảm chỉ kết quả của query mới nhất được áp vào state. Cờ `ignore` dùng được với mọi promise. `AbortController` còn dừng luôn request cũ để tiết kiệm băng thông; `fetch` của RN hỗ trợ nó, và bạn cần bắt rồi bỏ qua lỗi `AbortError`. Id request trong ref hữu ích khi việc gửi request nằm ngoài effect, ví dụ trong handler. `useCallback` không liên quan tới thứ tự response, còn debounce chỉ làm race hiếm đi chứ không loại bỏ nó.",
+      "en": "The first three all make sure only the newest query's result reaches state. The `ignore` flag works with any promise. `AbortController` also stops the old request and saves bandwidth; RN's `fetch` supports it, and you need to catch and ignore the `AbortError`. A request id in a ref helps when requests are started outside an effect, for example in a handler. `useCallback` has nothing to do with response order, and debounce only makes the race rarer, it does not remove it."
+    }
+  },
+  {
+    "id": "state-async-005",
+    "type": "mcq",
+    "topics": [
+      "state/async"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": [
+      "state-async-core"
+    ],
+    "multi": true,
+    "prompt": {
+      "vi": "Người dùng bắt đầu upload một ảnh lớn rồi chuyển sang app khác trong một phút. Những nhận định nào đúng? (chọn tất cả đáp án đúng)",
+      "en": "A user starts a large photo upload, then switches to another app for a minute. Which statements are true? (select all that apply)"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Trên iOS, app thường bị suspend sau vài giây, làm timer và chuỗi promise trong JS dừng lại",
+          "en": "On iOS the app is usually suspended within seconds, which pauses JS timers and promise chains"
+        }
+      },
+      {
+        "text": {
+          "vi": "Một `setTimeout` tới hạn trong lúc app bị suspend chỉ chạy sau khi app quay lại",
+          "en": "A `setTimeout` that falls due while the app is suspended runs only after the app resumes"
+        }
+      },
+      {
+        "text": {
+          "vi": "Upload bắt buộc phải xong nên dùng cơ chế native, như `URLSession` nền hoặc `WorkManager`",
+          "en": "An upload that must finish belongs in a native mechanism, such as a background `URLSession` or `WorkManager`"
+        }
+      },
+      {
+        "text": {
+          "vi": "Nhận sự kiện `background` từ `AppState` bảo đảm đủ thời gian để xong các request đang chờ",
+          "en": "Receiving the `background` event from `AppState` guarantees time to finish pending requests"
+        },
+        "misconception": {
+          "id": "async-appstate-grants-time",
+          "text": {
+            "vi": "Nghĩ rằng sự kiện `background` cho bạn thời gian để làm nốt việc. Nó chỉ báo trạng thái đã đổi; hệ điều hành có thể suspend hoặc kill app ngay sau đó, trừ khi code native xin thêm thời gian hoặc dùng cơ chế chạy nền.",
+            "en": "Believing the `background` event buys you time to finish work. It only reports the change; the OS can suspend or kill the app right after, unless native code asks for extra time or uses a background mechanism."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Trên Android, JS dừng ngay khoảnh khắc app rời khỏi foreground",
+          "en": "On Android, JS stops executing the moment the app leaves the foreground"
+        },
+        "misconception": {
+          "id": "async-android-stops-instantly",
+          "text": {
+            "vi": "Nghĩ rằng Android dừng JS ngay khi app vào nền. Process thường vẫn chạy một thời gian cho tới khi hệ thống quyết định hạn chế, đóng băng hoặc kill nó, nên code của bạn phải chịu được cả hai trường hợp.",
+            "en": "Believing Android stops JS as soon as the app is backgrounded. The process usually keeps running for a while until the system decides to restrict, freeze or kill it, so your code must cope with both cases."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0,
+      1,
+      2
+    ],
+    "explanation": {
+      "vi": "Trên iOS, app không có background mode hay task xin thêm thời gian sẽ bị suspend rất nhanh sau khi vào nền. Khi đó JS không chạy: timer tới hạn chỉ chạy sau khi app quay lại, và request đang dở có thể lỗi lúc resume. Trên Android, process thường còn chạy một lúc rồi mới bị hạn chế hoặc kill, nên bạn không được giả định nó dừng ngay hay chạy mãi. Việc phải hoàn tất như upload lớn nên giao cho cơ chế native chạy nền. `AppState` chỉ để biết trạng thái, ví dụ để tạm dừng polling hoặc làm mới dữ liệu khi quay lại.",
+      "en": "On iOS, an app with no background mode or extra-time task is suspended very soon after it is backgrounded. JS does not run then: due timers fire only after the app resumes, and an in-flight request may fail on resume. On Android the process often keeps running for a while before it is restricted or killed, so you cannot assume it stops at once or runs forever. Work that must complete, like a large upload, belongs in a native background mechanism. `AppState` is for knowing the state, for example to pause polling or refresh data when the user returns."
+    }
+  },
+  {
+    "id": "state-async-006",
+    "type": "spot-bug",
+    "topics": [
+      "state/async"
+    ],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 105,
+    "lessons": [
+      "state-async-core"
+    ],
+    "prompt": {
+      "vi": "Badge hiện đúng số tin chưa đọc, nhưng cứ 15 giây người dùng lại thấy toast \"N new messages\" với N là tổng số tin chưa đọc, kể cả khi không có tin mới. Dòng nào gây ra lỗi?",
+      "en": "The badge shows the right unread count, but every 15 seconds users get a \"N new messages\" toast where N is the total unread, even when nothing new arrived. Which line causes it?"
+    },
+    "code": "function useUnreadBadge(userId: string): number {\n  const [count, setCount] = useState<number>(0);\n\n  useEffect(() => {\n    const id = setInterval(async () => {\n      const next: number = await fetchUnreadCount(userId);\n      if (next > count) {\n        showToast(`${next - count} new messages`);\n      }\n      setCount(next);\n    }, 15000);\n    return () => clearInterval(id);\n  }, [userId]);\n\n  return count;\n}",
+    "answerLine": 7,
+    "causeOptions": [
+      {
+        "text": {
+          "vi": "Callback của interval giữ `count` của lần render đầu, nên luôn so với 0",
+          "en": "The interval callback captured `count` from the first render, so it always compares with 0"
+        }
+      },
+      {
+        "text": {
+          "vi": "`setCount` gọi trong `setInterval` bị bỏ qua, nên `count` không đổi",
+          "en": "`setCount` called inside `setInterval` is ignored, so `count` never changes"
+        },
+        "misconception": {
+          "id": "async-timer-setstate-ignored",
+          "text": {
+            "vi": "Nghĩ rằng update state từ timer bị bỏ qua. `setCount` trong timer hay sau `await` vẫn hoạt động bình thường, và badge hiện đúng số; chỉ biến `count` trong closure là cũ.",
+            "en": "Believing state updates from timers are ignored. `setCount` works fine in a timer or after `await`, and the badge shows the right number; only the `count` captured by the closure is old."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Callback `async` làm phép so sánh chạy trước khi `await` xong",
+          "en": "The `async` callback makes the comparison run before the `await` finishes"
+        },
+        "misconception": {
+          "id": "async-await-skipped-in-timer",
+          "text": {
+            "vi": "Nghĩ rằng callback `async` trong timer không chờ `await`. Bên trong hàm `async`, dòng sau `await` chỉ chạy khi promise đã resolve; `next` lúc so sánh là giá trị thật.",
+            "en": "Believing an `async` timer callback does not wait for `await`. Inside an `async` function the line after `await` runs only once the promise resolves; `next` holds the real value at the comparison."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Cleanup chỉ chạy khi unmount, nên đổi `userId` để lại hai interval",
+          "en": "The cleanup only runs on unmount, so changing `userId` leaves two intervals"
+        },
+        "misconception": {
+          "id": "async-cleanup-only-unmount",
+          "text": {
+            "vi": "Nghĩ rằng cleanup của effect chỉ chạy khi unmount. React chạy cleanup trước mỗi lần chạy lại effect khi deps đổi, nên interval cũ bị huỷ trước khi interval mới bắt đầu.",
+            "en": "Believing an effect's cleanup only runs on unmount. React runs it before every re-run caused by a deps change, so the old interval is cleared before the new one starts."
+          }
+        }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "Effect chỉ chạy lại khi `userId` đổi, nên callback của interval giữ closure của lần render đầu, nơi `count` bằng 0. `setCount(next)` vẫn cập nhật state và badge đúng, nhưng dòng 7 luôn so với 0, nên khi còn tin chưa đọc là toast hiện với tổng số. Sửa bằng cách lưu giá trị lần trước trong một ref (`lastRef.current`) và so với ref đó. Đừng gọi `showToast` bên trong updater của `setCount`, vì updater phải là hàm thuần. Từ React 19.2 có thể đưa logic này vào `useEffectEvent` để luôn đọc `count` mới nhất.",
+      "en": "The effect only re-runs when `userId` changes, so the interval callback keeps the closure from the first render, where `count` is 0. `setCount(next)` still updates state and the badge is right, but line 7 always compares with 0, so any unread messages trigger a toast with the total. Fix it by keeping the last value in a ref (`lastRef.current`) and comparing with that. Do not call `showToast` inside a `setCount` updater, since updaters must be pure. From React 19.2 you can move this logic into `useEffectEvent` so it always reads the latest `count`."
+    }
+  },
+  {
+    "id": "state-async-007",
+    "type": "spot-bug",
+    "topics": [
+      "state/async"
+    ],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 105,
+    "lessons": [
+      "state-async-core"
+    ],
+    "prompt": {
+      "vi": "Outbox offline lưu các thay đổi theo đúng thứ tự người dùng thực hiện. Sau khi có mạng lại, server đôi khi nhận `delete` trước `create` tương ứng, và `lastFlush` vẫn được ghi dù việc gửi thất bại. Dòng nào gây ra lỗi?",
+      "en": "The offline outbox stores edits in the order the user made them. After reconnecting, the server sometimes receives a `delete` before the matching `create`, and `lastFlush` is written even when sends fail. Which line causes it?"
+    },
+    "code": "type OutboxItem = { id: string; op: 'create' | 'update' | 'delete'; payload: unknown };\n\nexport async function flushOutbox(): Promise<void> {\n  const items: OutboxItem[] = await outbox.readAll();\n  items.forEach(async (item: OutboxItem) => {\n    await api.send(item);\n    await outbox.remove(item.id);\n  });\n  await outbox.setLastFlush(Date.now());\n}",
+    "answerLine": 5,
+    "causeOptions": [
+      {
+        "text": {
+          "vi": "`await` trong callback làm mỗi lần gửi chờ lần trước, nên flush chậm",
+          "en": "The `await` in the callback makes each send wait for the last, so the flush is slow"
+        },
+        "misconception": {
+          "id": "async-foreach-sequential",
+          "text": {
+            "vi": "Nghĩ rằng `await` trong callback của `forEach` làm các vòng chạy tuần tự. `forEach` gọi mọi callback liền một lượt và không chờ promise nào; `await` chỉ dừng bên trong từng callback.",
+            "en": "Believing `await` inside a `forEach` callback makes the iterations sequential. `forEach` calls every callback in one go and waits for no promise; `await` only pauses inside each callback."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`forEach` không chờ callback async, nên mọi lần gửi chạy cùng lúc và hàm đi tiếp",
+          "en": "`forEach` does not wait for async callbacks, so every send starts at once and the function moves on"
+        }
+      },
+      {
+        "text": {
+          "vi": "Phải bọc các lời gọi `api.send` trong `Promise.all` để giữ thứ tự",
+          "en": "The `api.send` calls should be wrapped in `Promise.all` to keep the order"
+        },
+        "misconception": {
+          "id": "async-all-keeps-order",
+          "text": {
+            "vi": "Nghĩ rằng `Promise.all` giữ thứ tự thực thi. Nó chỉ trả kết quả theo thứ tự đầu vào; các việc vẫn chạy đồng thời, nên server vẫn có thể nhận chúng theo thứ tự bất kỳ.",
+            "en": "Believing `Promise.all` preserves execution order. It only returns results in input order; the work still runs concurrently, so the server can still receive it in any order."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Callback thiếu `try/catch`, nên một lần gửi lỗi làm dừng cả `forEach`",
+          "en": "The callback has no `try/catch`, so one failed send stops the whole `forEach`"
+        },
+        "misconception": {
+          "id": "async-rejection-stops-foreach",
+          "text": {
+            "vi": "Nghĩ rằng callback async bị reject sẽ dừng `forEach`. Lúc đó `forEach` đã chạy xong; promise bị reject chỉ thành unhandled rejection, còn các lần gửi khác vẫn tiếp tục.",
+            "en": "Believing a rejected async callback stops `forEach`. By then `forEach` has already returned; the rejected promise just becomes an unhandled rejection while the other sends carry on."
+          }
+        }
+      }
+    ],
+    "answerCause": 1,
+    "explanation": {
+      "vi": "`forEach` bỏ qua giá trị trả về của callback, nên nó tạo một promise cho mỗi item rồi trả về ngay. Mọi request bay cùng lúc và có thể tới server theo thứ tự bất kỳ, nên `delete` có thể tới trước `create`. Hàm chạy tiếp tới dòng 9 và ghi `lastFlush` trước khi việc gửi xong, còn lỗi thành unhandled rejection. Với hàng đợi offline cần giữ thứ tự, dùng `for (const item of items)` với `await` và dừng ở lỗi đầu tiên, để item lỗi và các item sau nó còn nằm trong outbox cho lần flush tới.",
+      "en": "`forEach` ignores what its callback returns, so it creates a promise per item and returns at once. Every request is in flight together and can reach the server in any order, so a `delete` can beat its `create`. The function moves on to line 9 and writes `lastFlush` before the sends finish, while failures become unhandled rejections. For an offline queue that must keep its order, use `for (const item of items)` with `await` and stop at the first failure, so the failed item and everything after it stay in the outbox for the next flush."
+    }
+  },
+  {
+    "id": "state-async-008",
+    "type": "spot-bug",
+    "topics": [
+      "state/async"
+    ],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 150,
+    "lessons": [
+      "state-async-core"
+    ],
+    "prompt": {
+      "vi": "Người dùng thỉnh thoảng bị đăng xuất, thường là ngay khi mở màn hình Home, nơi gọi bốn request song song. Backend xoay vòng refresh token: mỗi refresh token chỉ dùng được một lần, và dùng lại token đã dùng sẽ thu hồi cả phiên. Dòng nào gây ra lỗi?",
+      "en": "Users are logged out now and then, usually right as the Home screen opens and fires four requests in parallel. The backend rotates refresh tokens: each one is single-use, and reusing a spent token revokes the whole session. Which line causes it?"
+    },
+    "code": "async function refreshTokens(): Promise<string> {\n  const refreshToken: string = await secureStore.get('refresh');\n  const res: Response = await fetch(REFRESH_URL, {\n    method: 'POST',\n    body: JSON.stringify({ refreshToken }),\n  });\n  const pair: TokenPair = await res.json();\n  await secureStore.set('refresh', pair.refreshToken);\n  session.accessToken = pair.accessToken;\n  return pair.accessToken;\n}\n\nexport async function authFetch(url: string): Promise<Response> {\n  const res: Response = await fetch(url, { headers: authHeader(session.accessToken) });\n  if (res.status !== 401) return res;\n  const token: string = await refreshTokens();\n  return fetch(url, { headers: authHeader(token) });\n}",
+    "answerLine": 16,
+    "causeOptions": [
+      {
+        "text": {
+          "vi": "Mỗi request nhận 401 tự bắt đầu một lần refresh, nên cùng một refresh token bị gửi nhiều lần",
+          "en": "Each request that gets a 401 starts its own refresh, so one refresh token is sent repeatedly"
+        }
+      },
+      {
+        "text": {
+          "vi": "`secureStore.set` ở dòng 8 làm mất refresh token mới khi app bị kill giữa chừng",
+          "en": "`secureStore.set` on line 8 loses the new refresh token if the app is killed mid-way"
+        },
+        "misconception": {
+          "id": "async-blame-token-write",
+          "text": {
+            "vi": "Đổ lỗi cho việc lưu token. Lệnh ghi đã được `await` và chỉ gây lỗi nếu app bị kill đúng lúc refresh; ở đây lỗi bám theo một loạt request song song, tức là nhiều lần refresh chạy cùng lúc.",
+            "en": "Blaming token persistence. The write is awaited and could only matter if the app were killed mid-refresh; these logouts follow a burst of parallel requests, which points at concurrent refreshes."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Request thử lại ở dòng 17 phải lặp tới khi hết nhận 401",
+          "en": "The retry on line 17 should loop until it stops getting a 401"
+        },
+        "misconception": {
+          "id": "async-retry-401-loop",
+          "text": {
+            "vi": "Nghĩ rằng thử lại 401 nhiều lần sẽ ổn. Khi phiên đã bị thu hồi thì không lần thử nào thành công, và vòng lặp không có giới hạn có thể gửi request mãi.",
+            "en": "Believing repeated 401 retries will get through. Once the session is revoked no retry can succeed, and an unbounded loop can keep firing requests forever."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Access token hết hạn quá nhanh; kéo dài thời hạn của nó là sửa được",
+          "en": "The access token expires too soon; a longer lifetime fixes it"
+        },
+        "misconception": {
+          "id": "async-longer-token-fixes-race",
+          "text": {
+            "vi": "Nghĩ rằng kéo dài thời hạn token sửa được race. Nó chỉ làm race hiếm đi; mỗi lần token hết hạn trong lúc có nhiều request song song, lỗi vẫn xảy ra.",
+            "en": "Believing a longer token lifetime fixes the race. It only makes the race rarer; whenever the token expires while several requests are in flight, the bug comes back."
+          }
+        }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "Khi access token hết hạn, cả bốn request cùng nhận 401 và mỗi request tự gọi `refreshTokens()` ở dòng 16. Cả bốn đọc cùng một refresh token từ storage và gửi lên. Request đầu thành công; các request sau dùng lại token đã dùng, nên backend coi là token bị đánh cắp và thu hồi phiên. Sửa bằng cách dùng chung một promise refresh đang chạy: `refreshPromise ??= refreshTokens().finally(() => { refreshPromise = null; })`, để mọi request nhận 401 cùng chờ một lần refresh duy nhất rồi mới thử lại.",
+      "en": "When the access token expires, all four requests get a 401 and each one calls `refreshTokens()` on line 16. All four read the same refresh token from storage and send it. The first succeeds; the others reuse a spent token, so the backend treats it as theft and revokes the session. Fix it by sharing one in-flight refresh promise: `refreshPromise ??= refreshTokens().finally(() => { refreshPromise = null; })`, so every request that hits a 401 waits on a single refresh before retrying."
+    }
+  },
+  {
+    "id": "state-async-009",
+    "type": "open",
+    "topics": [
+      "state/async"
+    ],
+    "kind": "advanced",
+    "difficulty": 3,
+    "estSeconds": 330,
+    "lessons": [
+      "state-async-core"
+    ],
+    "prompt": {
+      "vi": "Người dùng like và unlike bài viết khi đang trên tàu, sóng chập chờn. Product muốn trái tim đổi ngay khi bấm và không thao tác nào bị mất. Bạn thiết kế thế nào?",
+      "en": "Users like and unlike posts while on a train with patchy signal. Product wants the heart to change the moment it is tapped, and no action to be lost. How would you design it?"
+    },
+    "keyPoints": [
+      {
+        "vi": "Cập nhật UI lạc quan ngay khi bấm, và giữ trạng thái trước đó để rollback khi server từ chối hẳn",
+        "en": "Update the UI optimistically on tap, and keep the previous state to roll back if the server rejects the action outright"
+      },
+      {
+        "vi": "Lưu outbox xuống storage để thao tác sống sót khi app bị kill, và flush theo thứ tự khi có mạng lại",
+        "en": "Persist an outbox to storage so actions survive the app being killed, and flush it in order when the network returns"
+      },
+      {
+        "vi": "Gửi trạng thái mong muốn (`liked: true`) thay vì `toggle`, và gộp các thao tác trên cùng một bài thành trạng thái cuối",
+        "en": "Send the desired state (`liked: true`) rather than a toggle, and collapse actions on the same post into the final state"
+      },
+      {
+        "vi": "Làm cho request idempotent, bằng trạng thái mong muốn hoặc idempotency key, để gửi lại không bị áp hai lần",
+        "en": "Make requests idempotent, through the desired state or an idempotency key, so a resend is never applied twice"
+      },
+      {
+        "vi": "Thử lại lỗi mạng và 5xx với exponential backoff có jitter; với 4xx thì dừng, rollback và báo người dùng",
+        "en": "Retry network errors and 5xx with exponential backoff and jitter; on a 4xx stop, roll back and tell the user"
+      },
+      {
+        "vi": "Đối chiếu với dữ liệu server khi thành công, và không để response của thao tác cũ ghi đè ý định mới hơn trên máy",
+        "en": "Reconcile with server data on success, and never let a response for an older action overwrite newer local intent"
+      }
+    ],
+    "modelAnswer": {
+      "vi": "Mình cập nhật trái tim ngay trên UI và ghi thao tác vào một outbox lưu trong storage, để app bị kill cũng không mất. Mình gửi trạng thái mong muốn, `liked: true` hay `false`, chứ không gửi `toggle`, vì như vậy request tự idempotent và gửi lại không gây sai. Trong outbox, các thao tác trên cùng một bài được gộp lại: like rồi unlike khi đang offline thì chỉ còn trạng thái cuối. Khi có mạng, outbox flush tuần tự. Lỗi mạng và 5xx thì thử lại với exponential backoff có jitter; 4xx như bài đã bị xoá thì bỏ thao tác, rollback và báo người dùng. Khi response về, mình chỉ áp nó nếu không có thao tác mới hơn đang chờ cho bài đó, để kết quả cũ không đè lên ý định mới.",
+      "en": "I flip the heart immediately and write the action to an outbox persisted in storage, so it survives the app being killed. I send the desired state, `liked: true` or `false`, never a toggle, which makes the request idempotent and safe to resend. Actions on the same post are collapsed in the outbox: like then unlike while offline leaves only the final state. When the network returns, the outbox flushes in order. Network errors and 5xx are retried with exponential backoff and jitter; a 4xx, such as the post being deleted, drops the action, rolls back the UI and tells the user. When a response arrives, I only apply it if no newer action for that post is pending, so a stale result never overwrites newer intent."
+    },
+    "followUps": [
+      {
+        "vi": "Nếu cùng một người dùng thao tác trên cùng bài từ hai máy khi đang offline thì sao?",
+        "en": "What changes if the same user acts on the same post from two devices while offline?"
+      },
+      {
+        "vi": "Bạn kiểm thử luồng này thế nào khi mạng chập chờn?",
+        "en": "How would you test this flow under a flaky network?"
+      }
+    ]
+  },
+  {
+    "id": "state-async-010",
+    "type": "open",
+    "topics": [
+      "state/async"
+    ],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 330,
+    "lessons": [
+      "state-async-core"
+    ],
+    "prompt": {
+      "vi": "Bug report: sau khi đổi tài khoản nhanh, màn hình hồ sơ đôi khi hiện tên và đơn hàng của tài khoản trước trong vài giây, thỉnh thoảng còn kéo dài tới khi khởi động lại app. Kể lại cách bạn tìm ra và sửa lỗi này.",
+      "en": "A bug report: after switching accounts quickly, the profile screen sometimes shows the previous account's name and orders for a few seconds, and occasionally until the app is restarted. Walk me through how you found and fixed it."
+    },
+    "keyPoints": [
+      {
+        "vi": "Tái hiện ổn định bằng mạng chậm (Network Link Conditioner, throttling hoặc mock có delay) để race xảy ra mỗi lần",
+        "en": "Reproduce it reliably with a slow network (Network Link Conditioner, throttling or delayed mocks) so the race happens every time"
+      },
+      {
+        "vi": "Xác định nguyên nhân: response của tài khoản cũ resolve sau khi đổi tài khoản và ghi vào state hoặc cache dùng chung",
+        "en": "Identify the cause: responses for the old account resolve after the switch and write into shared state or cache"
+      },
+      {
+        "vi": "Gắn mỗi request với tài khoản đã gửi nó, và bỏ response nếu tài khoản đó không còn là tài khoản hiện tại",
+        "en": "Tag each request with the account that sent it, and drop the response if that account is no longer current"
+      },
+      {
+        "vi": "Khi logout hoặc đổi tài khoản, abort request đang bay và xoá state, cache theo người dùng",
+        "en": "On logout or switch, abort in-flight requests and clear per-user state and caches"
+      },
+      {
+        "vi": "Giải thích trường hợp kéo dài tới khi restart: dữ liệu sai đã được persist, nên key cache theo user id",
+        "en": "Explain the until-restart case: the wrong data was persisted, so key caches by user id"
+      },
+      {
+        "vi": "Thêm test hồi quy với các promise resolve sai thứ tự một cách có kiểm soát",
+        "en": "Add a regression test with promises that resolve out of order under your control"
+      }
+    ],
+    "modelAnswer": {
+      "vi": "Đầu tiên mình làm race xảy ra mỗi lần, bằng Network Link Conditioner hoặc mock API có delay, rồi đổi tài khoản trong lúc màn hình hồ sơ đang tải. Lúc đó thấy ngay: request của tài khoản cũ về sau khi đổi và ghi vào store dùng chung. Trường hợp kéo dài tới khi restart là vì store đó được persist, nên dữ liệu sai được ghi xuống đĩa. Mình sửa ở ba chỗ. Mỗi request mang theo id tài khoản, và khi response về, nếu id đó khác tài khoản hiện tại thì bỏ đi. Khi logout hoặc đổi tài khoản, mình abort các request đang bay và xoá state, cache của người dùng cũ. Cache persist được key theo user id. Cuối cùng mình viết test với các promise do mình điều khiển, resolve sai thứ tự, để lỗi không quay lại.",
+      "en": "First I made the race happen every time, with Network Link Conditioner or a delayed mock API, switching accounts while the profile screen was loading. Then it was obvious: a request for the old account came back after the switch and wrote into a shared store. The until-restart case happened because that store was persisted, so the wrong data was written to disk. I fixed it in three places. Every request carries the account id, and when the response arrives, it is dropped if that id is no longer the current account. On logout or switch, I abort in-flight requests and clear the old user's state and caches. Persisted caches are keyed by user id. Finally I added a test with promises I control resolving out of order, so the bug cannot quietly return."
+    },
+    "followUps": [
+      {
+        "vi": "Nếu dùng một thư viện như React Query, bạn sẽ dùng cơ chế nào của nó để xử lý việc đổi tài khoản?",
+        "en": "If you used a library like React Query, which of its mechanisms would you rely on for the account switch?"
+      },
+      {
+        "vi": "Vì sao chỉ abort request thôi là chưa đủ?",
+        "en": "Why is aborting requests on its own not enough?"
+      }
+    ]
+  },
+  {
+    "id": "state-async-011",
+    "type": "mcq",
+    "topics": [
+      "state/async"
+    ],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 45,
+    "lessons": [
+      "state-async-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Trong app React Native, bạn gọi `controller.abort()` khi `await fetch(url, { signal: controller.signal })` vẫn đang chờ. Lời gọi đang được `await` sẽ ra sao?",
+      "en": "In a React Native app you call `controller.abort()` while `await fetch(url, { signal: controller.signal })` is still pending. What happens to the awaited call?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Nó reject với một lỗi có `name` là `AbortError`",
+          "en": "It rejects with an error whose `name` is `AbortError`"
+        }
+      },
+      {
+        "text": {
+          "vi": "Không có gì; `fetch` của RN bỏ qua `signal` và request chạy xong bình thường",
+          "en": "Nothing; RN's `fetch` ignores `signal` and the request completes normally"
+        },
+        "misconception": {
+          "id": "async-rn-fetch-no-abort",
+          "text": {
+            "vi": "Nghĩ rằng `fetch` của RN không hỗ trợ huỷ. RN có `AbortController`, và `fetch` của RN tôn trọng `signal`: gọi `abort()` làm promise đang chờ reject.",
+            "en": "Believing RN's `fetch` cannot be aborted. RN ships `AbortController`, and its `fetch` honours `signal`: calling `abort()` rejects the pending promise."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Nó resolve với `undefined`, nên code phía sau phải kiểm tra giá trị đó",
+          "en": "It resolves with `undefined`, so the code after it must check for that"
+        },
+        "misconception": {
+          "id": "async-abort-resolves-undefined",
+          "text": {
+            "vi": "Nghĩ rằng abort làm promise resolve rỗng. Abort là một lỗi: promise reject, nên code sau `await` không chạy và bạn cần `catch` để bỏ qua `AbortError`.",
+            "en": "Believing abort resolves the promise with nothing. Abort is a failure: the promise rejects, so the code after `await` does not run and you need a `catch` that ignores `AbortError`."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Nó vẫn resolve với response, chỉ việc đọc body sau đó mới ném lỗi",
+          "en": "It still resolves with the response, and only reading the body throws"
+        },
+        "misconception": {
+          "id": "async-abort-only-body",
+          "text": {
+            "vi": "Nghĩ rằng abort chỉ ảnh hưởng tới việc đọc body. Khi request còn đang chờ, chính promise của `fetch` bị reject; không có response nào được trả về.",
+            "en": "Believing abort only affects reading the body. While the request is pending, the `fetch` promise itself rejects; no response is returned."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0
+    ],
+    "explanation": {
+      "vi": "Gọi `abort()` khi request còn chờ làm promise của `fetch` reject với lỗi `AbortError`, nên code sau `await` không chạy. Vì vậy trong effect bạn cần `catch` và bỏ qua riêng lỗi này (`e.name === 'AbortError'`), nếu không màn hình sẽ hiện lỗi cho một request mà chính bạn huỷ. Lưu ý: abort chỉ làm app ngừng chờ. Server có thể đã nhận và xử lý request, nên với thao tác ghi dữ liệu, abort không có nghĩa là thao tác chưa xảy ra.",
+      "en": "Calling `abort()` while the request is pending rejects the `fetch` promise with an `AbortError`, so the code after `await` does not run. In an effect you therefore need a `catch` that ignores this error (`e.name === 'AbortError'`), or the screen shows an error for a request you cancelled yourself. Note that abort only stops the app waiting. The server may already have received and processed the request, so for a write, abort does not mean the write did not happen."
+    }
+  },
+  {
+    "id": "state-async-012",
+    "type": "mcq",
+    "topics": [
+      "state/async"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 75,
+    "lessons": [
+      "state-async-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Sau một sự cố, API đã hồi phục nhưng cứ vài giây lại bị đánh sập bởi từng đợt retry dồn dập. App thử lại request lỗi sau 1 s, 2 s, 4 s, 8 s. Thay đổi nào trực tiếp loại bỏ các đợt dồn dập này?",
+      "en": "After an outage, your API recovers but keeps getting knocked over every few seconds by bursts of retries. The app retries failed requests after 1 s, 2 s, 4 s, 8 s. Which change most directly removes the bursts?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Chuyển sang thử lại cố định mỗi 1 s",
+          "en": "Switch to a fixed retry every 1 s"
+        },
+        "misconception": {
+          "id": "async-fixed-retry-gentler",
+          "text": {
+            "vi": "Nghĩ rằng retry cố định nhẹ nhàng hơn. Nó tăng tải lên server đang yếu, và các client lỗi cùng lúc vẫn retry cùng lúc.",
+            "en": "Believing a fixed retry interval is gentler. It adds load to a struggling server, and clients that failed together still retry together."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Tăng hệ số backoff từ 2 lên 3",
+          "en": "Raise the backoff base from 2 to 3"
+        },
+        "misconception": {
+          "id": "async-longer-backoff-desyncs",
+          "text": {
+            "vi": "Nghĩ rằng delay dài hơn sẽ tách các client ra. Mọi client dùng cùng công thức nên vẫn retry đồng loạt, chỉ là thưa hơn; cần có yếu tố ngẫu nhiên mới phân tán được.",
+            "en": "Believing longer delays spread clients out. Every client uses the same formula, so they still retry in lockstep, only less often; spreading them needs randomness."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Thêm jitter ngẫu nhiên vào mỗi delay",
+          "en": "Add random jitter to each retry delay"
+        }
+      },
+      {
+        "text": {
+          "vi": "Thử lại ngay với lỗi mạng, chỉ backoff với 5xx",
+          "en": "Retry at once on network errors, back off only on 5xx"
+        },
+        "misconception": {
+          "id": "async-network-error-retry-now",
+          "text": {
+            "vi": "Nghĩ rằng lỗi mạng an toàn để thử lại ngay. Khi có sự cố, rất nhiều client gặp lỗi mạng cùng lúc, nên thử lại ngay chỉ làm đợt dồn dập lớn hơn.",
+            "en": "Believing network errors are safe to retry at once. During an outage many clients see network errors together, so immediate retries only make the burst bigger."
+          }
+        }
+      }
+    ],
+    "answer": [
+      2
+    ],
+    "explanation": {
+      "vi": "Các client gặp lỗi cùng lúc, khi sự cố xảy ra, và dùng cùng công thức backoff, nên chúng retry đúng cùng thời điểm: 1 s, 2 s, 4 s sau sự cố. Server vừa hồi phục lại nhận cả đợt cùng một lúc. Jitter, ví dụ chọn delay ngẫu nhiên trong khoảng từ 0 tới giá trị backoff, trải các lần retry ra theo thời gian. Kèm theo đó: đặt giới hạn số lần và delay tối đa, tôn trọng header `Retry-After` nếu có, và chỉ tự động retry request idempotent.",
+      "en": "Clients fail together, at the moment of the outage, and share the same backoff formula, so they retry at exactly the same moments: 1 s, 2 s, 4 s after it. The recovering server gets the whole wave at once. Jitter, for example picking a random delay between 0 and the backoff value, spreads the retries over time. Alongside it: cap the number of attempts and the maximum delay, honour a `Retry-After` header when present, and only retry idempotent requests automatically."
+    }
+  }
+]

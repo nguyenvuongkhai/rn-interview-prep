@@ -59,7 +59,7 @@ Route mới `#/interview` (setup) và `#/interview/:sessionId` (đang phỏng v�
    - Danh sách key point, các ý AI cho là đã nói được tick sẵn; bạn sửa tick được.
    - Nhận xét ngắn của AI, câu trả lời mẫu.
    - Chọn mức tự tin (`guess`/`fairly`/`sure`) như câu `open` hiện tại.
-   - Bấm **Tiếp** thì ghi attempt (xem §3).
+   - Bấm **Tiếp** để sang follow-up. Attempt được ghi một lần, sau khi xong follow-up hoặc khi bỏ qua nó (xem §3), vì `Repo` không có thao tác sửa attempt.
 7. **follow-up:** interviewer đọc câu follow-up của AI (nếu không có thì dùng `followUps[0]` của content; content cũng không có thì bỏ qua bước này). Ghi âm, transcript, gửi `/api/grade` ở chế độ follow-up để lấy nhận xét. Không chấm điểm.
 
 ### Tổng kết
@@ -194,9 +194,14 @@ Thư mục `functions/api/` trong repo. Cloudflare Pages tự deploy cùng site.
 | `src/interview/captions.ts` | bọc `SpeechRecognition` |
 | `src/interview/speak.ts` | bọc `speechSynthesis` |
 | `src/screens/InterviewSetupScreen.tsx`, `InterviewScreen.tsx` | UI |
-| `functions/api/transcribe.ts`, `grade.ts`, `health.ts` | Pages Functions |
-| `functions/_lib/access.ts` | kiểm tra JWT của Access bằng Web Crypto |
-| `functions/_lib/gradePrompt.ts` | dựng prompt và kiểm tra kết quả (hàm thuần) |
+| `src/interview/protocol.ts` | schema request/response dùng chung cho app và functions |
+| `functions/api/_middleware.ts`, `transcribe.ts`, `grade.ts`, `health.ts` | Pages Functions, chỉ là lớp mỏng gọi vào `server/` |
+| `server/env.ts` | kiểu tối thiểu cho `env.AI` và context của Pages |
+| `server/access.ts` | kiểm tra JWT của Access bằng Web Crypto |
+| `server/gradePrompt.ts` | dựng prompt và kiểm tra kết quả (hàm thuần) |
+| `server/handlers.ts` | logic của từng endpoint, test được với `env.AI` giả |
+
+Code dùng chung của server nằm ở `server/` thay vì trong `functions/`, vì Pages có thể coi mọi file trong `functions/` là một route.
 
 Thay đổi ở code sẵn có:
 - `router.ts`: thêm route interview.
@@ -209,7 +214,7 @@ Thay đổi ở code sẵn có:
 
 ### Ràng buộc
 - Không cài package mới. Kiểm tra JWT bằng Web Crypto, không dùng `jose`. Kiểu cho `env.AI` và `PagesFunction` được khai báo tối thiểu trong repo thay vì cài `@cloudflare/workers-types`.
-- `tsconfig.json` hiện chỉ include `src`; thêm một `functions/tsconfig.json` riêng để `tsc` kiểm tra cả functions.
+- `tsconfig.json` hiện chỉ include `src`; thêm `tsconfig.server.json` cho `server/`, `functions/` và `src/interview/protocol.ts`, và thêm nó vào script `check`. Vitest include thêm `server/**/*.test.ts`.
 
 ## 8. Testing
 

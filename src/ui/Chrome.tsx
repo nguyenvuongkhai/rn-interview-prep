@@ -13,7 +13,10 @@ const NAV: { name: 'today' | 'library' | 'progress' | 'settings'; label: UiKey }
 
 export function TopBar({ route }: { route: Route }) {
   const { lang, setLang, t } = useLang();
-  const section = route.name === 'lesson' ? 'library' : route.name === 'result' ? 'today' : route.name;
+  const section =
+    route.name === 'lesson' ? 'library'
+    : route.name === 'result' || route.name === 'interviewSetup' || route.name === 'interview' ? 'today'
+    : route.name;
   return (
     <header className="topbar">
       <a className="brand" href={href({ name: 'today' })}>RN Interview Prep</a>

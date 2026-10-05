@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Content } from '../content/load';
 import { NOW, challenge, mcq, open, topic } from '../core/testFixtures';
 import { DAY_MS } from '../core/types';
+import { EmptyInterviewError } from '../interview/pick';
 import { createMemoryRepo } from '../storage/repo';
 import { parseBackup } from './backup';
 import { createSessionService, localDate } from './sessionService';
@@ -136,5 +137,28 @@ describe('session service', () => {
     const other = setup().service;
     await other.importBackup(parseBackup(JSON.stringify(backup)));
     expect((await other.stats(NOW)).sessions).toEqual(backup.sessions);
+  });
+
+  it('answer stores the interview record with the attempt', async () => {
+    const { service } = setup();
+    const session = await service.startPractice(['o1'], NOW);
+    const interview = { transcript: 'k1 and k2', aiCovered: [0, 1], gradedBy: 'ai' as const };
+    const a = await service.answer({
+      sessionId: session.id, itemId: 'o1', response: { type: 'open', hitKeyPoints: [0, 1] },
+      confidence: 'fairly', timeSpent: 120, lang: 'en', now: NOW, interview,
+    });
+    expect(a).toMatchObject({ score: 0.5, interview });
+  });
+
+  it('startInterview builds an interview session that is not the Daily', async () => {
+    const { service } = setup();
+    const interview = await service.startInterview({ kind: 'all' }, 5, NOW);
+    expect(interview).toMatchObject({ mode: 'interview', durationMin: 30, itemIds: ['o1'] });
+    expect((await service.start(30, NOW + 1000)).mode).toBe('daily');
+  });
+
+  it('startInterview refuses a scope with no open questions', async () => {
+    const { service } = setup();
+    await expect(service.startInterview({ kind: 'group', group: 'state' }, 3, NOW)).rejects.toThrow(EmptyInterviewError);
   });
 });

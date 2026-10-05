@@ -6,6 +6,8 @@ export type Route =
   | { name: 'result'; sessionId: string }
   | { name: 'library' }
   | { name: 'lesson'; lessonId: string }
+  | { name: 'interviewSetup' }
+  | { name: 'interview'; sessionId: string }
   | { name: 'progress' }
   | { name: 'settings' };
 
@@ -30,6 +32,8 @@ export function parseRoute(hash: string): Route {
       return id ? { name, sessionId: id } : TODAY;
     case 'lesson':
       return id ? { name, lessonId: id } : TODAY;
+    case 'interview':
+      return id ? { name: 'interview', sessionId: id } : { name: 'interviewSetup' };
     case 'library':
     case 'progress':
     case 'settings':
@@ -48,6 +52,10 @@ export function href(route: Route): string {
       return `#/${route.name}/${encodeURIComponent(route.sessionId)}`;
     case 'lesson':
       return `#/lesson/${encodeURIComponent(route.lessonId)}`;
+    case 'interviewSetup':
+      return '#/interview';
+    case 'interview':
+      return `#/interview/${encodeURIComponent(route.sessionId)}`;
     default:
       return `#/${route.name}`;
   }

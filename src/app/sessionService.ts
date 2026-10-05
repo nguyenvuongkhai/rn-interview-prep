@@ -4,7 +4,9 @@ import { masteryByTopic, type Mastery } from '../core/mastery';
 import { diagnose, topGaps, type Gap } from '../core/recommend';
 import { nextReview } from '../core/scheduler';
 import { buildSession, type Duration, type SessionPlan } from '../core/sessionBuilder';
-import type { Attempt, Confidence, Lang, Picked, ReviewState } from '../core/types';
+import type { Attempt, Confidence, InterviewRecord, Lang, Picked, ReviewState } from '../core/types';
+import { EmptyInterviewError, INTERVIEW_DURATION, pickInterview, type InterviewScope } from '../interview/pick';
+import type { InterviewCount } from '../interview/settings';
 import type { Repo, SessionRecord, Snapshot } from '../storage/repo';
 import { toBackup, type Backup } from './backup';
 import { localDate } from './dates';
@@ -20,6 +22,8 @@ export interface AnswerInput {
   timeSpent: number;
   lang: Lang;
   now: number;
+  /** transcript and feedback when the answer came from a mock interview */
+  interview?: InterviewRecord;
 }
 
 export interface Overview {
@@ -117,6 +121,21 @@ export function createSessionService(repo: Repo, content: Content) {
 
     startPractice,
 
+    async startInterview(scope: InterviewScope, count: InterviewCount, now: number): Promise<SessionRecord> {
+      const h = await history(now);
+      const itemIds = pickInterview({
+        items: content.items, topics: content.topics, attempts: h.attempts, mastery: h.mastery,
+        scope, count, now, seed: `interview:${now}`,
+      });
+      if (itemIds.length === 0) throw new EmptyInterviewError();
+      const session: SessionRecord = {
+        id: crypto.randomUUID(), date: localDate(now), mode: 'interview', durationMin: INTERVIEW_DURATION[count],
+        itemIds, startedAt: now, overtimeSec: 0,
+      };
+      await repo.putSession(session);
+      return session;
+    },
+
     async startTopicPractice(topicId: string, now: number): Promise<SessionRecord> {
       const itemIds = content.items.filter((i) => i.topics[0] === topicId).slice(0, TOPIC_PRACTICE_LIMIT).map((i) => i.id);
       if (itemIds.length === 0) throw new Error(`No items for topic "${topicId}"`);
@@ -145,7 +164,7 @@ export function createSessionService(repo: Repo, content: Content) {
     importBackup: (snapshot: Snapshot) => repo.importAll(snapshot),
 
     async answer(input: AnswerInput): Promise<Attempt> {
-      const { sessionId, itemId, response, confidence, timeSpent, lang, now } = input;
+      const { sessionId, itemId, response, confidence, timeSpent, lang, now, interview } = input;
       const item = byId.get(itemId);
       if (!item) throw new Error(`Unknown item "${itemId}"`);
       const { score, misconceptionIds } = grade(item, response);
@@ -154,6 +173,7 @@ export function createSessionService(repo: Repo, content: Content) {
         usedHints: response.type === 'challenge' ? response.usedHints : 0,
         ...(response.type === 'challenge' ? { testResults: response.tests } : {}),
         ...(pickedFrom(response) ? { picked: pickedFrom(response) } : {}),
+        ...(interview ? { interview } : {}),
       };
       await repo.addAttempt(attempt);
       await repo.putReview(nextReview(await repo.getReview(itemId), itemId, score, confidence, now));

@@ -18,6 +18,19 @@ export interface Picked {
   hitKeyPoints?: number[];
 }
 
+/** What a mock interview adds to an open-question attempt. */
+export interface InterviewRecord {
+  transcript: string;
+  /** key points the AI said were covered, to compare with the final ticks */
+  aiCovered: number[];
+  feedback?: string;
+  followUp?: string;
+  followUpTranscript?: string;
+  followUpFeedback?: string;
+  /** 'ai' when Workers AI graded it, 'manual' when the user ticked the points alone */
+  gradedBy: 'ai' | 'manual';
+}
+
 export interface Attempt {
   id: string;
   itemId: string;
@@ -36,6 +49,8 @@ export interface Attempt {
   testResults?: TestResult[];
   /** what the user picked, so the Result screen can show it next to the answer key */
   picked?: Picked;
+  /** set only for attempts made in a mock interview */
+  interview?: InterviewRecord;
 }
 
 export interface ReviewState {

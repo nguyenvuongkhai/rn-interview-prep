@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { Snapshot } from '../storage/repo';
+import { INTERVIEW_SETTINGS_KEY, interviewSettingsSchema } from '../interview/settings';
 import { localDate } from './dates';
 
 export const BACKUP_APP = 'rn-interview-prep';
@@ -7,6 +8,15 @@ export const BACKUP_VERSION = 1;
 
 const testResult = z.object({
   name: z.string(), category: z.string(), pass: z.boolean(), error: z.string().optional(), hidden: z.boolean(),
+});
+const interviewRecord = z.object({
+  transcript: z.string(),
+  aiCovered: z.array(z.number().int()),
+  feedback: z.string().optional(),
+  followUp: z.string().optional(),
+  followUpTranscript: z.string().optional(),
+  followUpFeedback: z.string().optional(),
+  gradedBy: z.enum(['ai', 'manual']),
 });
 const attempt = z.object({
   id: z.string(), itemId: z.string(), sessionId: z.string(),
@@ -21,19 +31,24 @@ const attempt = z.object({
       hitKeyPoints: z.array(z.number().int()).optional(),
     })
     .optional(),
+  interview: interviewRecord.optional(),
 });
 const session = z.object({
-  id: z.string(), date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), mode: z.enum(['daily', 'practice']),
+  id: z.string(), date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), mode: z.enum(['daily', 'practice', 'interview']),
   durationMin: z.union([z.literal(15), z.literal(30), z.literal(45)]), itemIds: z.array(z.string()),
   startedAt: z.number(), finishedAt: z.number().optional(), overtimeSec: z.number().min(0),
 });
 const review = z.object({ itemId: z.string(), box: z.number().int().min(0), dueAt: z.number() });
 const draft = z.object({ challengeId: z.string(), code: z.string(), updatedAt: z.number() });
 // Settings the app reads at boot must hold values it understands, or a bad backup would break every load.
-const KNOWN_SETTINGS: Record<string, readonly unknown[]> = { lang: ['vi', 'en'], theme: ['dark', 'light', 'system'] };
+const KNOWN_SETTINGS: Record<string, (value: unknown) => boolean> = {
+  lang: (v) => v === 'vi' || v === 'en',
+  theme: (v) => v === 'dark' || v === 'light' || v === 'system',
+  [INTERVIEW_SETTINGS_KEY]: (v) => interviewSettingsSchema.safeParse(v).success,
+};
 const setting = z
   .object({ key: z.string(), value: z.unknown() })
-  .refine((s) => !(s.key in KNOWN_SETTINGS) || KNOWN_SETTINGS[s.key].includes(s.value), {
+  .refine((s) => !Object.hasOwn(KNOWN_SETTINGS, s.key) || KNOWN_SETTINGS[s.key](s.value), {
     message: 'unsupported value for this setting',
     path: ['value'],
   });

@@ -23,6 +23,11 @@ describe('router', () => {
     expect(parseRoute('#/settings')).toEqual({ name: 'settings' });
   });
 
+  it('parses the interview routes', () => {
+    expect(parseRoute('#/interview')).toEqual({ name: 'interviewSetup' });
+    expect(parseRoute('#/interview/abc')).toEqual({ name: 'interview', sessionId: 'abc' });
+  });
+
   it('href round-trips through parseRoute', () => {
     const routes: Route[] = [
       { name: 'today' },
@@ -32,6 +37,8 @@ describe('router', () => {
       { name: 'lesson', lessonId: 'l-1' },
       { name: 'progress' },
       { name: 'settings' },
+      { name: 'interviewSetup' },
+      { name: 'interview', sessionId: 'iv-1' },
     ];
     for (const r of routes) expect(parseRoute(href(r))).toEqual(r);
   });

@@ -1,7 +1,7 @@
 import type { Duration } from '../core/sessionBuilder';
 import type { Attempt, ReviewState } from '../core/types';
 
-export type SessionMode = 'daily' | 'practice';
+export type SessionMode = 'daily' | 'practice' | 'interview';
 
 export interface SessionRecord {
   id: string;

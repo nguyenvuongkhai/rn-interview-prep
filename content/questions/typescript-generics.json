@@ -1,0 +1,835 @@
+[
+  {
+    "id": "typescript-generics-001",
+    "type": "mcq",
+    "topics": [
+      "typescript/generics"
+    ],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": [
+      "typescript-generics-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Bạn đổi `function first(items: any[]): any` thành `function first<T>(items: T[]): T | undefined`. Với `const id = first(orderIds)`, trong đó `orderIds: number[]`, bản generic cho bạn điều gì mà bản `any` không có?",
+      "en": "You change `function first(items: any[]): any` to `function first<T>(items: T[]): T | undefined`. For `const id = first(orderIds)`, where `orderIds: number[]`, what does the generic version give you that the `any` version does not?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "`id` có kiểu `number | undefined`, vì kiểu đầu ra gắn với kiểu đầu vào",
+          "en": "`id` is typed `number | undefined`, because the output type is tied to the input"
+        }
+      },
+      {
+        "text": {
+          "vi": "Khi chạy, hàm kiểm tra mọi phần tử của mảng đều cùng kiểu `T`",
+          "en": "At runtime, the function checks that every element really has type `T`"
+        },
+        "misconception": {
+          "id": "tsgen-generics-runtime-check",
+          "text": {
+            "vi": "Nghĩ rằng generic tồn tại lúc chạy. Mọi kiểu, kể cả tham số kiểu, bị xoá khi biên dịch; JS chạy ra giống hệt bản `any`. Generic chỉ giúp compiler kiểm tra lúc viết code.",
+            "en": "Believing generics exist at runtime. All types, type parameters included, are erased at compile time; the emitted JS is identical to the `any` version. Generics only help the compiler while you write code."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Hàm nhận được nhiều kiểu mảng hơn, vì `any[]` chỉ nhận mảng thuần",
+          "en": "The function accepts more kinds of array, since `any[]` takes only plain arrays"
+        },
+        "misconception": {
+          "id": "tsgen-generics-accept-more-than-any",
+          "text": {
+            "vi": "Nghĩ rằng generic linh hoạt hơn `any` về đầu vào. `any[]` đã nhận mọi mảng; lợi ích của generic nằm ở việc giữ được kiểu của đầu vào để dùng cho đầu ra.",
+            "en": "Believing generics accept more inputs than `any`. `any[]` already takes every array; the gain from a generic is keeping the input type so the output can use it."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Code chạy nhanh hơn, vì engine biết trước kiểu của phần tử",
+          "en": "The code runs faster, because the engine knows the element type ahead of time"
+        },
+        "misconception": {
+          "id": "tsgen-types-affect-performance",
+          "text": {
+            "vi": "Nghĩ rằng kiểu TypeScript ảnh hưởng tới tốc độ chạy. Hermes hay V8 chỉ thấy JS sau khi kiểu đã bị xoá, nên annotation không làm code nhanh hay chậm hơn.",
+            "en": "Believing TypeScript types affect runtime speed. Hermes or V8 only see the JS after types are erased, so annotations make code neither faster nor slower."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0
+    ],
+    "explanation": {
+      "vi": "Generic giữ quan hệ giữa đầu vào và đầu ra: compiler suy ra `T = number` từ `orderIds`, nên `id` có kiểu `number | undefined` và bạn bị buộc xử lý trường hợp mảng rỗng. Với bản `any`, `id` là `any`, mọi lỗi dùng sai sau đó đều lọt qua và `any` còn lan sang các biến khác. Bẫy chính là nghĩ generic làm gì đó lúc chạy: JS sinh ra của hai bản giống hệt nhau.",
+      "en": "A generic keeps the relation between input and output: the compiler infers `T = number` from `orderIds`, so `id` is `number | undefined` and you are forced to handle the empty case. With the `any` version `id` is `any`, every later misuse slips through and the `any` spreads to other variables. The trap is thinking a generic does anything at runtime: the emitted JS of both versions is identical."
+    }
+  },
+  {
+    "id": "typescript-generics-002",
+    "type": "mcq",
+    "topics": [
+      "typescript/generics"
+    ],
+    "kind": "core",
+    "difficulty": 2,
+    "estSeconds": 75,
+    "lessons": [
+      "typescript-generics-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Cho `function createStore<T>(initial: T) { let value = initial; return { get: () => value, set: (next: T) => { value = next; } }; }`. Bạn gọi `const status = createStore('idle')`. Compiler suy ra `T` là gì?",
+      "en": "Given `function createStore<T>(initial: T) { let value = initial; return { get: () => value, set: (next: T) => { value = next; } }; }`, you call `const status = createStore('idle')`. What does the compiler infer for `T`?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "`string`",
+          "en": "`string`"
+        }
+      },
+      {
+        "text": {
+          "vi": "`'idle'`, vì đối số là một literal",
+          "en": "`'idle'`, because the argument is a literal"
+        },
+        "misconception": {
+          "id": "tsgen-literal-always-kept",
+          "text": {
+            "vi": "Nghĩ rằng tham số kiểu luôn giữ literal. Khi `T` không có constraint kiểu primitive và không đứng trực tiếp ở kiểu trả về, literal bị nới thành `string`. Muốn giữ literal thì dùng `T extends string` hoặc `const T` (TS 5.0+).",
+            "en": "Believing a type parameter always keeps the literal. When `T` has no primitive constraint and does not appear at the top level of the return type, the literal widens to `string`. To keep it, use `T extends string` or `const T` (TS 5.0+)."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`unknown`, vì `T` không có constraint",
+          "en": "`unknown`, because `T` has no constraint"
+        },
+        "misconception": {
+          "id": "tsgen-unconstrained-is-unknown",
+          "text": {
+            "vi": "Nghĩ rằng `T` không có constraint thì thành `unknown`. `unknown` chỉ là kết quả khi không có chỗ nào để suy luận; ở đây compiler suy luận từ đối số.",
+            "en": "Believing an unconstrained `T` becomes `unknown`. `unknown` is the fallback only when there is nothing to infer from; here the compiler infers from the argument."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`any`, vì hàm không ghi kiểu trả về",
+          "en": "`any`, because the function has no return annotation"
+        },
+        "misconception": {
+          "id": "tsgen-no-annotation-is-any",
+          "text": {
+            "vi": "Nghĩ rằng thiếu annotation kiểu trả về thì thành `any`. Compiler suy ra kiểu trả về từ thân hàm; `any` ngầm chỉ xuất hiện ở tham số không có kiểu.",
+            "en": "Believing a missing return annotation means `any`. The compiler infers the return type from the body; implicit `any` only appears on untyped parameters."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0
+    ],
+    "explanation": {
+      "vi": "Khi `T` không có constraint primitive và không đứng trực tiếp ở kiểu trả về (ở đây nó nằm trong object `{ get, set }`), compiler nới literal `'idle'` thành `string`. Điều này hợp lý cho một store: `status.set('loading')` phải được phép. Nếu bạn muốn literal (ví dụ khai báo danh sách route), dùng `<T extends string>` hoặc `const` type parameter từ TS 5.0. Bẫy chính là nghĩ literal luôn được giữ, rồi ngạc nhiên khi một union kiểu `'a' | 'b'` biến thành `string`.",
+      "en": "When `T` has no primitive constraint and does not appear at the top level of the return type (here it sits inside the `{ get, set }` object), the compiler widens the literal `'idle'` to `string`. That suits a store: `status.set('loading')` should be allowed. When you want the literal (say, a list of route names), use `<T extends string>` or a `const` type parameter from TS 5.0. The trap is assuming literals are always kept, then being surprised when an `'a' | 'b'` union turns into `string`."
+    }
+  },
+  {
+    "id": "typescript-generics-003",
+    "type": "mcq",
+    "topics": [
+      "typescript/generics"
+    ],
+    "kind": "pitfall",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": [
+      "typescript-generics-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Cho `type Settings = { theme: string; flags: { beta: boolean } }` và `const s: Readonly<Settings> = load()`. Lệnh gán nào biên dịch không lỗi?",
+      "en": "Given `type Settings = { theme: string; flags: { beta: boolean } }` and `const s: Readonly<Settings> = load()`, which assignment compiles without an error?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "`s.flags.beta = true`",
+          "en": "`s.flags.beta = true`"
+        }
+      },
+      {
+        "text": {
+          "vi": "`s.theme = 'dark'`",
+          "en": "`s.theme = 'dark'`"
+        },
+        "misconception": {
+          "id": "tsgen-readonly-only-object-ref",
+          "text": {
+            "vi": "Nghĩ rằng `Readonly` chỉ khoá biến chứ không khoá field. `Readonly<T>` thêm `readonly` vào từng property cấp một, nên `s.theme` không gán được.",
+            "en": "Believing `Readonly` locks the variable rather than its fields. `Readonly<T>` adds `readonly` to every top-level property, so `s.theme` cannot be assigned."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`s.flags = { beta: true }`",
+          "en": "`s.flags = { beta: true }`"
+        },
+        "misconception": {
+          "id": "tsgen-readonly-skips-object-fields",
+          "text": {
+            "vi": "Nghĩ rằng `Readonly` chỉ áp dụng cho field kiểu primitive. Mọi property cấp một đều thành `readonly`, kể cả property kiểu object.",
+            "en": "Believing `Readonly` only applies to primitive fields. Every top-level property becomes `readonly`, including object-typed ones."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Không lệnh nào, vì `Readonly` khoá mọi cấp",
+          "en": "None of them, because `Readonly` locks every level"
+        },
+        "misconception": {
+          "id": "tsgen-readonly-is-deep",
+          "text": {
+            "vi": "Nghĩ rằng `Readonly` là deep. Nó là mapped type chỉ thêm `readonly` ở cấp một; object lồng bên trong vẫn sửa được. Muốn khoá sâu thì cần một kiểu `DeepReadonly` tự viết hoặc `as const` cho literal.",
+            "en": "Believing `Readonly` is deep. It is a mapped type that adds `readonly` at the top level only; nested objects stay writable. Locking deeply needs a hand-written `DeepReadonly` or `as const` on a literal."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0
+    ],
+    "explanation": {
+      "vi": "`Readonly<T>` là `{ readonly [K in keyof T]: T[K] }`: nó chỉ thêm `readonly` vào property cấp một. `s.theme` và `s.flags` không gán được, nhưng `s.flags` vẫn có kiểu `{ beta: boolean }` bình thường, nên `s.flags.beta = true` biên dịch được. Nó cũng không có tác dụng lúc chạy; `Object.freeze` mới chặn được việc ghi, và cũng chỉ ở cấp một. Bẫy chính là tin rằng state hay config bọc trong `Readonly` thì không ai sửa được ở cấp lồng.",
+      "en": "`Readonly<T>` is `{ readonly [K in keyof T]: T[K] }`: it only adds `readonly` to top-level properties. `s.theme` and `s.flags` cannot be assigned, but `s.flags` still has the plain type `{ beta: boolean }`, so `s.flags.beta = true` compiles. It does nothing at runtime either; only `Object.freeze` blocks writes, and that is shallow too. The trap is trusting that state or config wrapped in `Readonly` cannot be changed at a nested level."
+    }
+  },
+  {
+    "id": "typescript-generics-004",
+    "type": "mcq",
+    "topics": [
+      "typescript/generics"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": [
+      "typescript-generics-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Cho `type Event = { type: 'tap'; x: number; meta: Meta } | { type: 'scroll'; offset: number; meta: Meta }`. Bạn viết `type CleanEvent = Omit<Event, 'meta'>`. `CleanEvent` là kiểu gì?",
+      "en": "Given `type Event = { type: 'tap'; x: number; meta: Meta } | { type: 'scroll'; offset: number; meta: Meta }`, you write `type CleanEvent = Omit<Event, 'meta'>`. What is `CleanEvent`?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "`{ type: 'tap' | 'scroll' }`",
+          "en": "`{ type: 'tap' | 'scroll' }`"
+        }
+      },
+      {
+        "text": {
+          "vi": "`{ type: 'tap'; x: number } | { type: 'scroll'; offset: number }`",
+          "en": "`{ type: 'tap'; x: number } | { type: 'scroll'; offset: number }`"
+        },
+        "misconception": {
+          "id": "tsgen-omit-distributes",
+          "text": {
+            "vi": "Nghĩ rằng `Omit` áp dụng riêng cho từng thành viên của union. `Omit` dựa trên `keyof T`, mà `keyof` của union chỉ gồm key chung, nên kết quả là một object duy nhất và mất discriminated union. Cần một bản phân phối: `T extends unknown ? Omit<T, K> : never`.",
+            "en": "Believing `Omit` applies to each union member separately. `Omit` is built on `keyof T`, and `keyof` a union gives only the shared keys, so the result is a single object and the discriminated union is lost. You need a distributive version: `T extends unknown ? Omit<T, K> : never`."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`{ type: 'tap' | 'scroll'; x: number; offset: number }`",
+          "en": "`{ type: 'tap' | 'scroll'; x: number; offset: number }`"
+        },
+        "misconception": {
+          "id": "tsgen-keyof-union-is-all-keys",
+          "text": {
+            "vi": "Nghĩ rằng `keyof` của union gồm mọi key của mọi thành viên. Nó chỉ gồm key có ở tất cả thành viên, vì chỉ những key đó chắc chắn tồn tại.",
+            "en": "Believing `keyof` a union includes every key of every member. It contains only the keys present in all members, since only those are guaranteed to exist."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Lỗi biên dịch, vì `'meta'` phải là key của mọi thành viên",
+          "en": "A compile error, because `'meta'` must be a key of every member"
+        },
+        "misconception": {
+          "id": "tsgen-omit-checks-keys",
+          "text": {
+            "vi": "Nghĩ rằng `Omit` kiểm tra key có tồn tại. Tham số key của `Omit` chỉ bị ràng buộc là `string | number | symbol`, nên gõ sai tên key cũng không báo lỗi. `Pick` thì ràng buộc `K extends keyof T`.",
+            "en": "Believing `Omit` checks that the key exists. Its key parameter is only constrained to `string | number | symbol`, so a misspelt key raises no error. `Pick`, by contrast, requires `K extends keyof T`."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0
+    ],
+    "explanation": {
+      "vi": "`Omit<T, K>` là `Pick<T, Exclude<keyof T, K>>`. Với union, `keyof Event` chỉ là `'type' | 'meta'`, nên sau khi bỏ `meta` chỉ còn `{ type: 'tap' | 'scroll' }`: mất `x`, `offset` và mất luôn khả năng narrow theo `type`. Cách sửa là kiểu phân phối `type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never`. Bẫy chính là dùng `Omit` trên props hay event là union rồi chỉ phát hiện khi một `switch` không còn narrow được.",
+      "en": "`Omit<T, K>` is `Pick<T, Exclude<keyof T, K>>`. On a union, `keyof Event` is just `'type' | 'meta'`, so removing `meta` leaves `{ type: 'tap' | 'scroll' }`: `x` and `offset` are gone, and so is narrowing on `type`. The fix is a distributive type, `type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never`. The trap is using `Omit` on union props or events and only noticing when a `switch` stops narrowing."
+    }
+  },
+  {
+    "id": "typescript-generics-005",
+    "type": "mcq",
+    "topics": [
+      "typescript/generics"
+    ],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": [
+      "typescript-generics-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Tầng API khai báo `type ApiResponse<T = unknown> = { data: T; status: number }`. Trong `function logResponse(res: ApiResponse) { const d = res.data; }`, `d` có kiểu gì?",
+      "en": "Your API layer declares `type ApiResponse<T = unknown> = { data: T; status: number }`. In `function logResponse(res: ApiResponse) { const d = res.data; }`, what is the type of `d`?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "`unknown`",
+          "en": "`unknown`"
+        }
+      },
+      {
+        "text": {
+          "vi": "`any`",
+          "en": "`any`"
+        },
+        "misconception": {
+          "id": "tsgen-omitted-type-arg-any",
+          "text": {
+            "vi": "Nghĩ rằng bỏ tham số kiểu thì thành `any`. Khi có giá trị mặc định, compiler dùng giá trị đó; khi không có mặc định, bỏ tham số kiểu của một generic type là lỗi biên dịch.",
+            "en": "Believing an omitted type argument becomes `any`. With a default, the compiler uses it; without one, leaving out the type argument of a generic type is a compile error."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`{}`",
+          "en": "`{}`"
+        },
+        "misconception": {
+          "id": "tsgen-default-is-empty-object",
+          "text": {
+            "vi": "Nhầm với cách suy luận cũ. Trước TS 3.5, tham số kiểu không suy ra được gì sẽ rơi về `{}`; ở đây không có suy luận, compiler dùng đúng giá trị mặc định `unknown` đã khai báo.",
+            "en": "Mixing this up with old inference behaviour. Before TS 3.5, a type parameter with nothing to infer fell back to `{}`; here nothing is inferred and the declared default `unknown` is used."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Lỗi biên dịch, vì `ApiResponse` cần một tham số kiểu",
+          "en": "A compile error, because `ApiResponse` needs a type argument"
+        },
+        "misconception": {
+          "id": "tsgen-type-defaults-ignored",
+          "text": {
+            "vi": "Nghĩ rằng generic type luôn bắt buộc truyền tham số. Tham số có giá trị mặc định (`T = unknown`) thì được phép bỏ, giống tham số mặc định của hàm.",
+            "en": "Believing a generic type always requires its arguments. A parameter with a default (`T = unknown`) may be left out, just like a default function parameter."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0
+    ],
+    "explanation": {
+      "vi": "Tham số kiểu có giá trị mặc định thì có thể bỏ khi dùng: `ApiResponse` là `ApiResponse<unknown>`, nên `d` là `unknown`. Chọn `unknown` làm mặc định là có chủ đích: code dùng `res.data` phải narrow hoặc validate trước, còn nếu mặc định là `any` thì mọi chỗ quên truyền tham số kiểu đều mất kiểm tra. Bẫy chính là đặt mặc định `= any` cho tiện, rồi `any` lan khắp tầng API.",
+      "en": "A type parameter with a default can be left out: `ApiResponse` means `ApiResponse<unknown>`, so `d` is `unknown`. Choosing `unknown` as the default is deliberate: code using `res.data` has to narrow or validate it first, whereas a default of `any` would silently switch off checking wherever someone forgets the type argument. The trap is defaulting to `= any` for convenience and letting `any` spread through the API layer."
+    }
+  },
+  {
+    "id": "typescript-generics-006",
+    "type": "mcq",
+    "topics": [
+      "typescript/generics"
+    ],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": [
+      "typescript-generics-core"
+    ],
+    "multi": true,
+    "prompt": {
+      "vi": "Cho `type User = { id: string; email: string; name: string }`, `type Status = 'active' | 'banned'`, `async function fetchUser(): Promise<User>` và `function track(event: string, props: { screen: string }): void`. Những phát biểu nào đúng?",
+      "en": "Given `type User = { id: string; email: string; name: string }`, `type Status = 'active' | 'banned'`, `async function fetchUser(): Promise<User>` and `function track(event: string, props: { screen: string }): void`, which statements are true?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "`Omit<User, 'emial'>` gõ sai tên key mà vẫn biên dịch được",
+          "en": "`Omit<User, 'emial'>` with a misspelt key still compiles"
+        }
+      },
+      {
+        "text": {
+          "vi": "`Awaited<ReturnType<typeof fetchUser>>` là `User`",
+          "en": "`Awaited<ReturnType<typeof fetchUser>>` is `User`"
+        }
+      },
+      {
+        "text": {
+          "vi": "`Pick<User, 'emial'>` gõ sai tên key mà vẫn biên dịch được",
+          "en": "`Pick<User, 'emial'>` with a misspelt key still compiles"
+        },
+        "misconception": {
+          "id": "tsgen-pick-unchecked-keys",
+          "text": {
+            "vi": "Nghĩ rằng `Pick` lỏng như `Omit`. `Pick` ràng buộc `K extends keyof T`, nên key sai bị báo lỗi; chỉ `Omit` nhận mọi key.",
+            "en": "Believing `Pick` is as loose as `Omit`. `Pick` requires `K extends keyof T`, so a wrong key is an error; only `Omit` accepts any key."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`Record<Status, string>` cho phép bỏ trống một vài key của `Status`",
+          "en": "`Record<Status, string>` lets you leave some `Status` keys out"
+        },
+        "misconception": {
+          "id": "tsgen-record-keys-optional",
+          "text": {
+            "vi": "Nghĩ rằng `Record<K, V>` có key tuỳ chọn. Với `K` là union literal, mọi key đều bắt buộc; muốn tuỳ chọn thì dùng `Partial<Record<K, V>>`.",
+            "en": "Believing `Record<K, V>` has optional keys. With `K` as a literal union, every key is required; for optional keys use `Partial<Record<K, V>>`."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`Parameters<typeof track>[1]` là kiểu `{ screen: string }`",
+          "en": "`Parameters<typeof track>[1]` is the type `{ screen: string }`"
+        }
+      }
+    ],
+    "answer": [
+      0,
+      1,
+      4
+    ],
+    "explanation": {
+      "vi": "`Omit` ràng buộc key là `PropertyKey`, nên `'emial'` không báo lỗi và bạn nhận lại nguyên `User`; `Pick` thì ràng buộc `keyof T` nên bắt được lỗi gõ. `ReturnType` của hàm async là Promise, `Awaited` mở nó ra (từ TS 4.5, và mở cả Promise lồng). `Parameters` trả về tuple tham số, nên index `[1]` là kiểu của tham số thứ hai. `Record` với key là union literal thì mọi key đều bắt buộc. Bẫy chính là tin `Omit` bắt lỗi gõ sai như `Pick`.",
+      "en": "`Omit` constrains its key to `PropertyKey`, so `'emial'` raises no error and you get the whole `User` back; `Pick` constrains to `keyof T` and catches the typo. `ReturnType` of an async function is a Promise, and `Awaited` unwraps it (from TS 4.5, nested Promises included). `Parameters` returns the parameter tuple, so index `[1]` is the second parameter type. `Record` with a literal union key makes every key required. The trap is trusting `Omit` to catch typos the way `Pick` does."
+    }
+  },
+  {
+    "id": "typescript-generics-007",
+    "type": "mcq",
+    "topics": [
+      "typescript/generics"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": [
+      "typescript-generics-core"
+    ],
+    "multi": true,
+    "prompt": {
+      "vi": "Bạn viết component generic `List<T>` nhận `data: T[]` và `renderItem: (item: T) => ReactNode` trong file `.tsx`. Những phát biểu nào đúng?",
+      "en": "You write a generic `List<T>` component taking `data: T[]` and `renderItem: (item: T) => ReactNode` in a `.tsx` file. Which statements are true?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Arrow function `<T>(props: ListProps<T>) => …` bị parse như thẻ JSX; viết `<T,>` để tránh",
+          "en": "An arrow function `<T>(props: ListProps<T>) => …` is parsed as a JSX tag; write `<T,>` to avoid it"
+        }
+      },
+      {
+        "text": {
+          "vi": "Với `<List data={users} renderItem={(u) => u.name} />`, `T` được suy ra là `User` từ `data`",
+          "en": "With `<List data={users} renderItem={(u) => u.name} />`, `T` is inferred as `User` from `data`"
+        }
+      },
+      {
+        "text": {
+          "vi": "Bọc bằng `React.memo(List)` vẫn giữ nguyên tham số kiểu `T` mà không cần làm gì",
+          "en": "Wrapping it in `React.memo(List)` keeps the type parameter `T` with no extra work"
+        },
+        "misconception": {
+          "id": "tsgen-memo-keeps-generic",
+          "text": {
+            "vi": "Nghĩ rằng `React.memo` giữ được generic. Kiểu của `memo` trả về một component với props cố định, nên `T` bị mất; cách thường dùng là cast kết quả về `typeof List`.",
+            "en": "Believing `React.memo` preserves the generic. The `memo` typings return a component with fixed props, so `T` is lost; the usual workaround is casting the result to `typeof List`."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Có thể truyền tường minh tham số kiểu trong JSX: `<List<User> data={users} … />`",
+          "en": "You can pass the type argument explicitly in JSX: `<List<User> data={users} … />`"
+        }
+      },
+      {
+        "text": {
+          "vi": "Trong JSX, tham số `u` của `renderItem` luôn là `unknown` nếu không truyền `<User>`",
+          "en": "In JSX, the `u` parameter of `renderItem` is always `unknown` unless you pass `<User>`"
+        },
+        "misconception": {
+          "id": "tsgen-jsx-no-inference",
+          "text": {
+            "vi": "Nghĩ rằng JSX không suy luận được generic. Props trong JSX được suy luận như đối số của một lời gọi hàm, nên `T` lấy từ `data` và `u` có kiểu `User`.",
+            "en": "Believing JSX cannot infer generics. JSX props are inferred like the arguments of a function call, so `T` comes from `data` and `u` is `User`."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0,
+      1,
+      3
+    ],
+    "explanation": {
+      "vi": "Trong `.tsx`, `<T>` ở đầu arrow function trông như thẻ JSX, nên viết `<T,>` hoặc `<T extends unknown>`, hoặc dùng `function List<T>(…)`. Props JSX được suy luận như đối số, nên `T` lấy từ `data` và `renderItem` được kiểu theo `User`; khi cần vẫn có thể ghi `<List<User> … />`. `React.memo` làm mất generic vì kiểu trả về của nó có props cố định; thường phải cast `as typeof List`. Bẫy chính là bọc memo rồi mới thấy `renderItem` nhận `unknown`.",
+      "en": "In `.tsx`, a leading `<T>` on an arrow function looks like a JSX tag, so write `<T,>` or `<T extends unknown>`, or use `function List<T>(…)`. JSX props are inferred like arguments, so `T` comes from `data` and `renderItem` is typed with `User`; you can still write `<List<User> … />` when needed. `React.memo` drops the generic because its return type has fixed props; you usually cast with `as typeof List`. The trap is adding memo and only then finding `renderItem` receives `unknown`."
+    }
+  },
+  {
+    "id": "typescript-generics-008",
+    "type": "spot-bug",
+    "topics": [
+      "typescript/generics"
+    ],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 100,
+    "lessons": [
+      "typescript-generics-core"
+    ],
+    "prompt": {
+      "vi": "Cả `price * qty` lẫn `title.toUpperCase()` đều báo lỗi biên dịch, và một đồng đội định thêm `as number`, `as string` cho xong. Dòng nào là nguyên nhân gốc?",
+      "en": "Both `price * qty` and `title.toUpperCase()` fail to compile, and a teammate wants to add `as number` and `as string` to move on. Which line is the root cause?"
+    },
+    "code": "type Product = { id: string; title: string; price: number; stock: number };\n\nexport function getField<T, K extends keyof T>(obj: T, key: K): T[keyof T] {\n  return obj[key];\n}\n\nexport function lineTotal(product: Product, qty: number): number {\n  const price = getField(product, 'price');\n  return price * qty;\n}\n\nexport function label(product: Product): string {\n  const title = getField(product, 'title');\n  return title.toUpperCase();\n}",
+    "answerLine": 3,
+    "causeOptions": [
+      {
+        "text": {
+          "vi": "Kiểu trả về `T[keyof T]` là union mọi giá trị; phải là `T[K]`",
+          "en": "The return type `T[keyof T]` is the union of every value; it should be `T[K]`"
+        }
+      },
+      {
+        "text": {
+          "vi": "Literal `'price'` bị nới thành `string`, nên `K` mất key cụ thể",
+          "en": "The literal `'price'` widens to `string`, so `K` loses the specific key"
+        },
+        "misconception": {
+          "id": "tsgen-key-literal-widens",
+          "text": {
+            "vi": "Nghĩ rằng key truyền vào bị nới thành `string`. Với constraint `K extends keyof T`, `K` giữ đúng literal `'price'`; thông tin chỉ bị mất vì kiểu trả về không dùng `K`.",
+            "en": "Believing the key argument widens to `string`. With the `K extends keyof T` constraint, `K` keeps the literal `'price'`; the information is lost only because the return type does not use `K`."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Tham số `K` thừa; khai báo `key: keyof T` là đủ và giữ được kiểu",
+          "en": "The `K` parameter is redundant; `key: keyof T` is enough and keeps the type"
+        },
+        "misconception": {
+          "id": "tsgen-key-param-redundant",
+          "text": {
+            "vi": "Nghĩ rằng tham số kiểu cho key là thừa. Không có `K`, compiler không nhớ key nào được truyền, nên kết quả luôn là union mọi giá trị; `K` chính là thứ nối đầu vào với đầu ra.",
+            "en": "Believing a type parameter for the key is redundant. Without `K`, the compiler cannot remember which key was passed, so the result is always the union of all values; `K` is what links input to output."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`Product` cần `as const` để compiler biết kiểu của từng field",
+          "en": "`Product` needs `as const` so the compiler knows each field type"
+        },
+        "misconception": {
+          "id": "tsgen-as-const-on-type",
+          "text": {
+            "vi": "Nhầm chỗ dùng `as const`. Nó áp dụng cho giá trị literal, không cho type alias; `Product` đã mô tả đúng kiểu từng field.",
+            "en": "Misplacing `as const`. It applies to literal values, not to type aliases; `Product` already describes each field type correctly."
+          }
+        }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "Dòng 3 đã có `K` được suy ra là `'price'` hay `'title'`, nhưng kiểu trả về `T[keyof T]` bỏ qua `K` và trả về `string | number` cho mọi key. Đổi thành `T[K]` thì `price` là `number`, `title` là `string`, và cả hai lỗi biến mất. Thêm `as number` chỉ giấu lỗi và sẽ sai khi ai đó đổi key. Bẫy chính là khai báo tham số kiểu cho key mà không dùng nó ở đầu ra.",
+      "en": "On line 3, `K` is already inferred as `'price'` or `'title'`, but the `T[keyof T]` return type ignores `K` and returns `string | number` for every key. Change it to `T[K]` and `price` is `number`, `title` is `string`, and both errors disappear. Adding `as number` only hides the problem and goes wrong when someone changes the key. The trap is declaring a type parameter for the key and then not using it in the output."
+    }
+  },
+  {
+    "id": "typescript-generics-009",
+    "type": "spot-bug",
+    "topics": [
+      "typescript/generics"
+    ],
+    "kind": "pitfall",
+    "difficulty": 3,
+    "estSeconds": 120,
+    "lessons": [
+      "typescript-generics-core"
+    ],
+    "prompt": {
+      "vi": "Compiler báo lỗi ở `selected: [...state.selected, tag]`: kiểu `('news' | 'sport' | 'tech')[]` không gán được cho kiểu của `selected`. Dòng nào là nguyên nhân gốc?",
+      "en": "The compiler rejects `selected: [...state.selected, tag]`: type `('news' | 'sport' | 'tech')[]` is not assignable to the type of `selected`. Which line is the root cause?"
+    },
+    "code": "type Tag = 'news' | 'sport' | 'tech';\n\ntype ListOf<T> = T extends unknown ? T[] : never;\n\ntype FilterState = {\n  selected: ListOf<Tag>;\n  updatedAt: number;\n};\n\nexport function addTag(state: FilterState, tag: Tag): FilterState {\n  if (state.selected.length >= 3) return state;\n  return {\n    selected: [...state.selected, tag],\n    updatedAt: Date.now(),\n  };\n}",
+    "answerLine": 3,
+    "causeOptions": [
+      {
+        "text": {
+          "vi": "`ListOf<Tag>` phân phối thành `'news'[] | 'sport'[] | 'tech'[]`",
+          "en": "`ListOf<Tag>` distributes into `'news'[] | 'sport'[] | 'tech'[]`"
+        }
+      },
+      {
+        "text": {
+          "vi": "Spread của một mảng literal luôn bị nới thành `string[]`",
+          "en": "Spreading an array of literals always widens it to `string[]`"
+        },
+        "misconception": {
+          "id": "tsgen-spread-widens-literals",
+          "text": {
+            "vi": "Nghĩ rằng spread làm mất literal type. Kết quả ở đây giữ nguyên `('news' | 'sport' | 'tech')[]`; lỗi là do kiểu đích bị tách thành union các mảng.",
+            "en": "Believing a spread drops literal types. The result here stays `('news' | 'sport' | 'tech')[]`; the error comes from the target type being split into a union of arrays."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`tag` cần được narrow bằng `switch` trước khi thêm vào mảng",
+          "en": "`tag` needs narrowing with a `switch` before it can be added"
+        },
+        "misconception": {
+          "id": "tsgen-narrow-before-push",
+          "text": {
+            "vi": "Sửa ở chỗ lỗi hiện ra. `tag` đã có đúng kiểu `Tag`; vấn đề là `selected` chỉ nhận mảng của một tag duy nhất, nên mảng trộn nhiều tag không bao giờ hợp lệ.",
+            "en": "Fixing where the error shows. `tag` already has the right type `Tag`; the problem is that `selected` only accepts an array of a single tag, so a mixed array is never valid."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`return state` sớm làm compiler suy ra kiểu trả về khác cho hàm",
+          "en": "The early `return state` makes the compiler infer a different return type"
+        },
+        "misconception": {
+          "id": "tsgen-early-return-changes-type",
+          "text": {
+            "vi": "Nghĩ rằng return sớm đổi kiểu trả về. Hàm đã ghi `FilterState`, nên mọi nhánh đều được kiểm tra theo kiểu đó; `return state` hoàn toàn hợp lệ.",
+            "en": "Believing an early return changes the return type. The function is annotated `FilterState`, so every branch is checked against it; `return state` is perfectly valid."
+          }
+        }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "Conditional type mà điều kiện là một tham số kiểu trần (`T extends …`) sẽ phân phối: `ListOf<'news' | 'sport' | 'tech'>` thành `'news'[] | 'sport'[] | 'tech'[]`. Mảng trộn nhiều tag không thuộc thành viên nào, nên phép gán ở dòng 13 lỗi. Sửa bằng cách tắt phân phối, `[T] extends [unknown] ? T[] : never`, hoặc đơn giản là viết `Tag[]`. Bẫy chính là sửa ở chỗ lỗi hiện ra thay vì ở định nghĩa kiểu.",
+      "en": "A conditional type whose checked type is a naked type parameter (`T extends …`) distributes: `ListOf<'news' | 'sport' | 'tech'>` becomes `'news'[] | 'sport'[] | 'tech'[]`. A mixed array matches none of the members, so the assignment on line 13 fails. Fix it by disabling distribution with `[T] extends [unknown] ? T[] : never`, or simply write `Tag[]`. The trap is patching where the error shows instead of the type definition."
+    }
+  },
+  {
+    "id": "typescript-generics-010",
+    "type": "spot-bug",
+    "topics": [
+      "typescript/generics"
+    ],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 135,
+    "lessons": [
+      "typescript-generics-core"
+    ],
+    "prompt": {
+      "vi": "Sau khi backend v2 đổi `displayName` thành `name`, app crash trên production với `Cannot read property 'slice' of undefined`. `tsc` không báo lỗi gì. Dòng nào là nguyên nhân gốc khiến lỗi không bị bắt?",
+      "en": "After backend v2 renamed `displayName` to `name`, the app crashes in production with `Cannot read property 'slice' of undefined`. `tsc` reports nothing. Which line is the root cause that let it through?"
+    },
+    "code": "type Profile = { id: string; displayName: string; avatarUrl: string };\n\nconst API_URL = 'https://api.example.com/v2';\n\nasync function get<T>(path: string): Promise<T> {\n  const res = await fetch(`${API_URL}${path}`);\n  if (!res.ok) throw new Error(`HTTP ${res.status}`);\n  return (await res.json()) as T;\n}\n\nexport function loadProfile(id: string): Promise<Profile> {\n  return get<Profile>(`/profiles/${id}`);\n}\n\nexport function initials(profile: Profile): string {\n  return profile.displayName.slice(0, 2).toUpperCase();\n}",
+    "answerLine": 8,
+    "causeOptions": [
+      {
+        "text": {
+          "vi": "Cast `as T` khẳng định dữ liệu chưa kiểm tra là `Profile`; cần validate bằng schema",
+          "en": "The `as T` cast asserts unchecked data is a `Profile`; it needs schema validation"
+        }
+      },
+      {
+        "text": {
+          "vi": "`T` thiếu constraint `T extends object`, nên compiler không kiểm tra được JSON",
+          "en": "`T` lacks a `T extends object` constraint, so the JSON cannot be checked"
+        },
+        "misconception": {
+          "id": "tsgen-constraint-validates-data",
+          "text": {
+            "vi": "Nghĩ rằng constraint kiểm tra dữ liệu thật. Constraint chỉ giới hạn kiểu mà caller được truyền vào `T`; nó không có mặt lúc chạy và không đọc JSON.",
+            "en": "Believing a constraint checks real data. A constraint only limits which types a caller may pass as `T`; it does not exist at runtime and never looks at the JSON."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`slice` cần optional chaining: `profile.displayName?.slice(0, 2)`",
+          "en": "`slice` needs optional chaining: `profile.displayName?.slice(0, 2)`"
+        },
+        "misconception": {
+          "id": "tsgen-patch-crash-site",
+          "text": {
+            "vi": "Sửa ở chỗ crash. Kiểu `Profile` nói `displayName` luôn có, nên optional chaining chỉ che triệu chứng; dữ liệu sai vẫn chảy khắp app. Phải chặn ở ranh giới nơi dữ liệu đi vào.",
+            "en": "Patching the crash site. The `Profile` type says `displayName` always exists, so optional chaining only hides the symptom while bad data flows through the app. It has to be stopped at the boundary where data enters."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Truyền `<Profile>` tường minh tắt kiểm tra; nên để compiler tự suy ra",
+          "en": "Passing `<Profile>` explicitly turns checking off; let the compiler infer it"
+        },
+        "misconception": {
+          "id": "tsgen-explicit-type-arg-disables-check",
+          "text": {
+            "vi": "Nghĩ rằng truyền tham số kiểu tường minh làm mất kiểm tra. Ở đây không có gì để suy ra từ `path`, và dù suy ra hay ghi tay, `get` vẫn không kiểm tra gì lúc chạy.",
+            "en": "Believing an explicit type argument disables checking. There is nothing to infer from `path` here, and inferred or written by hand, `get` still checks nothing at runtime."
+          }
+        }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "`res.json()` trả về `any`, và `as T` biến nó thành bất kỳ kiểu nào caller xin. `get<T>` trông như an toàn nhưng thực chất là một cast không kiểm tra: generic không validate dữ liệu. Khi API đổi hình dạng, kiểu vẫn nói `displayName: string` nên `tsc` im lặng. Cách sửa là validate ở ranh giới, ví dụ `get(path, ProfileSchema)` dùng zod và trả về `z.infer<typeof ProfileSchema>`, để lỗi xảy ra ngay ở tầng API với thông báo rõ ràng. Bẫy chính là coi tham số kiểu như một lời bảo đảm.",
+      "en": "`res.json()` returns `any`, and `as T` turns it into whatever type the caller asks for. `get<T>` looks safe but is really an unchecked cast: the generic does not validate anything. When the API changes shape, the type still says `displayName: string`, so `tsc` stays quiet. The fix is validating at the boundary, for example `get(path, ProfileSchema)` with zod returning `z.infer<typeof ProfileSchema>`, so the failure happens in the API layer with a clear message. The trap is treating a type parameter as a guarantee."
+    }
+  },
+  {
+    "id": "typescript-generics-011",
+    "type": "open",
+    "topics": [
+      "typescript/generics"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 300,
+    "lessons": [
+      "typescript-generics-core"
+    ],
+    "prompt": {
+      "vi": "App của bạn có một analytics/event bus mà ai cũng gọi `emit(name: string, payload: any)`. Tên event gõ sai và payload thiếu field xảy ra thường xuyên. Bạn sẽ thiết kế kiểu thế nào để `emit` và các prop handler như `onScreenView` được kiểm tra, mà team vẫn đọc hiểu được?",
+      "en": "Your app has an analytics/event bus where everyone calls `emit(name: string, payload: any)`. Misspelt event names and payloads with missing fields happen all the time. How would you design the types so `emit` and handler props such as `onScreenView` are checked, while the team can still read them?"
+    },
+    "keyPoints": [
+      {
+        "vi": "Khai báo một event map duy nhất, ví dụ `type AppEvents = { screenView: { screen: string }; purchase: { sku: string; amount: number } }`",
+        "en": "Declare a single event map, such as `type AppEvents = { screenView: { screen: string }; purchase: { sku: string; amount: number } }`"
+      },
+      {
+        "vi": "Viết `emit<K extends keyof AppEvents>(name: K, payload: AppEvents[K])`, để tên sai và payload sai đều báo lỗi",
+        "en": "Write `emit<K extends keyof AppEvents>(name: K, payload: AppEvents[K])`, so wrong names and wrong payloads are both errors"
+      },
+      {
+        "vi": "Sinh prop handler bằng mapped type có key remapping `as` và template literal type `on${Capitalize<K & string>}`, giá trị là `(p: AppEvents[K]) => void`",
+        "en": "Generate handler props with a mapped type using `as` key remapping and the template literal type `on${Capitalize<K & string>}`, each typed `(p: AppEvents[K]) => void`"
+      },
+      {
+        "vi": "Bỏ `any` ở API công khai; payload không có field thì dùng `undefined` hoặc overload thay vì `any`",
+        "en": "Remove `any` from the public API; events with no payload use `undefined` or an overload rather than `any`"
+      },
+      {
+        "vi": "Biết giới hạn: kiểu chỉ kiểm tra lúc biên dịch, dữ liệu từ native hay server vẫn cần validate",
+        "en": "Know the limit: types only check at compile time, so data from native code or the server still needs validating"
+      },
+      {
+        "vi": "Giữ kiểu đơn giản và có tên, kèm vài type test (`@ts-expect-error`) để khoá hành vi",
+        "en": "Keep the types simple and named, with a few type tests (`@ts-expect-error`) to lock the behaviour"
+      }
+    ],
+    "modelAnswer": {
+      "vi": "Mình bắt đầu bằng một event map duy nhất, `AppEvents`, ánh xạ tên event sang payload. Đó là nguồn sự thật, ai thêm event thì thêm ở đó. Sau đó `emit` thành `emit<K extends keyof AppEvents>(name: K, payload: AppEvents[K])`: gõ sai tên là lỗi, và payload được kiểm tra theo đúng event. Với component, mình sinh prop handler bằng mapped type có key remapping và template literal, `on${Capitalize<K & string>}`, nên `onScreenView` nhận đúng payload của `screenView`. Mình bỏ hẳn `any` ở API công khai. Mình cũng nói rõ với team đây chỉ là kiểm tra lúc biên dịch; event đến từ native module hay server vẫn phải validate. Cuối cùng mình giữ mỗi kiểu ngắn, có tên, và thêm vài dòng `@ts-expect-error` làm type test để không ai vô tình nới lỏng nó.",
+      "en": "I start with one event map, `AppEvents`, from event name to payload. That is the source of truth, and new events get added there. Then `emit` becomes `emit<K extends keyof AppEvents>(name: K, payload: AppEvents[K])`: a misspelt name is an error, and the payload is checked against that specific event. For components I generate handler props with a mapped type using key remapping and a template literal, `on${Capitalize<K & string>}`, so `onScreenView` receives exactly the `screenView` payload. I remove `any` from the public API entirely. I am also clear with the team that this is compile-time only; events coming from a native module or the server still need validating. Finally I keep each type short and named, and add a few `@ts-expect-error` lines as type tests so nobody loosens it by accident."
+    },
+    "followUps": [
+      {
+        "vi": "Làm sao để `emit('logout')` không bắt truyền payload khi event đó không có dữ liệu?",
+        "en": "How would you let `emit('logout')` skip the payload when that event carries no data?"
+      },
+      {
+        "vi": "Nếu tên event phải khớp với một danh sách bên native, bạn giữ hai bên đồng bộ thế nào?",
+        "en": "If event names must match a list on the native side, how do you keep both in sync?"
+      }
+    ]
+  },
+  {
+    "id": "typescript-generics-012",
+    "type": "open",
+    "topics": [
+      "typescript/generics"
+    ],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 330,
+    "lessons": [
+      "typescript-generics-core"
+    ],
+    "prompt": {
+      "vi": "Thư mục `types/` dùng chung của team đã phình ra: conditional type lồng nhau, `infer`, `DeepPartial` đệ quy, kiểu sinh từ kiểu khác qua nhiều tầng. Editor lag, thông báo lỗi dài cả trang, và dev mới bắt đầu rải `as any`. Kể lại cách bạn xử lý.",
+      "en": "Your team's shared `types/` folder has grown out of hand: nested conditional types, `infer`, a recursive `DeepPartial`, types derived from types across many layers. The editor lags, error messages run a full page, and new developers have started sprinkling `as any`. Walk me through how you would handle it."
+    },
+    "keyPoints": [
+      {
+        "vi": "Đo trước: `tsc --extendedDiagnostics` và `tsc --generateTrace` để tìm kiểu tốn thời gian kiểm tra nhất",
+        "en": "Measure first: `tsc --extendedDiagnostics` and `tsc --generateTrace` to find the types that cost the most to check"
+      },
+      {
+        "vi": "Thay kiểu suy diễn nhiều tầng bằng interface hay type alias có tên, viết tường minh ở ranh giới module",
+        "en": "Replace multi-layer derived types with named interfaces or type aliases, written explicitly at module boundaries"
+      },
+      {
+        "vi": "Áp dụng quy tắc: generic phải nối đầu vào với đầu ra; tham số kiểu chỉ xuất hiện một lần thì bỏ",
+        "en": "Apply a rule: a generic must link input to output; a type parameter that appears only once should go"
+      },
+      {
+        "vi": "Giới hạn đệ quy và conditional type ở vài helper được review kỹ, có comment và ví dụ",
+        "en": "Confine recursion and conditional types to a few well-reviewed helpers with comments and examples"
+      },
+      {
+        "vi": "Thêm type test (`@ts-expect-error`, `expectTypeOf`) để refactor kiểu mà không đổi hành vi",
+        "en": "Add type tests (`@ts-expect-error`, `expectTypeOf`) so types can be refactored without changing behaviour"
+      },
+      {
+        "vi": "Chặn `as any` bằng lint rule như `@typescript-eslint/no-explicit-any` và review, kèm hướng dẫn thay thế",
+        "en": "Block `as any` with a lint rule such as `@typescript-eslint/no-explicit-any` and review, with guidance on alternatives"
+      }
+    ],
+    "modelAnswer": {
+      "vi": "Mình coi `as any` là triệu chứng: kiểu khó tới mức người ta bỏ cuộc. Việc đầu tiên là đo bằng `tsc --extendedDiagnostics` và `--generateTrace` để biết kiểu nào làm chậm, thay vì đoán. Thường thủ phạm là vài helper đệ quy hay union rất lớn bị phân phối. Rồi mình đơn giản hoá: ở ranh giới module, như props, kết quả API hay state, mình viết interface có tên thay vì suy diễn qua năm tầng utility type. Mình đặt quy tắc cho review: generic phải nối đầu vào với đầu ra, tham số kiểu chỉ dùng một lần thì bỏ. Conditional type và `infer` vẫn được dùng, nhưng gom vào vài helper có comment và ví dụ. Trước khi refactor mình thêm type test để chắc hành vi không đổi. Cuối cùng là lint rule chặn `any` và một trang hướng dẫn cách làm thay thế.",
+      "en": "I treat `as any` as a symptom: the types got hard enough that people gave up. First I measure with `tsc --extendedDiagnostics` and `--generateTrace` to see which types are slow, rather than guessing. Usually the culprits are a few recursive helpers or huge unions being distributed. Then I simplify: at module boundaries, such as props, API results and state, I write named interfaces instead of deriving them through five layers of utility types. I set a review rule: a generic has to link input to output, and a type parameter used only once goes. Conditional types and `infer` still have a place, but in a few helpers with comments and examples. Before refactoring I add type tests so the behaviour stays the same. Finally, a lint rule against `any` and a short page on what to do instead."
+    },
+    "followUps": [
+      {
+        "vi": "Khi nào một kiểu phức tạp là xứng đáng, ví dụ trong thư viện dùng chung so với code màn hình?",
+        "en": "When is a complex type worth it, for example in a shared library versus screen code?"
+      },
+      {
+        "vi": "Bạn viết type test thế nào để nó chạy trong CI mà không cần test runtime?",
+        "en": "How would you write type tests that run in CI without any runtime tests?"
+      }
+    ]
+  }
+]

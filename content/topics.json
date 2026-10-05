@@ -23,6 +23,10 @@
   {"id": "state/async", "title": {"vi": "Bất đồng bộ và race condition", "en": "Async work and race conditions"}, "parent": "state", "weight": 3, "group": "state"},
   {"id": "state/redux", "title": {"vi": "Redux và Redux Toolkit", "en": "Redux and Redux Toolkit"}, "parent": "state", "weight": 3, "group": "state"},
   {"id": "state/redux-saga", "title": {"vi": "Redux-Saga và side effect", "en": "Redux-Saga and side effects"}, "parent": "state", "weight": 3, "group": "state"},
+  {"id": "typescript", "title": {"vi": "TypeScript", "en": "TypeScript"}, "parent": null, "weight": 3, "group": "typescript"},
+  {"id": "typescript/types", "title": {"vi": "Kiểu, union và narrowing", "en": "Types, unions and narrowing"}, "parent": "typescript", "weight": 3, "group": "typescript"},
+  {"id": "typescript/generics", "title": {"vi": "Generics và utility type", "en": "Generics and utility types"}, "parent": "typescript", "weight": 2, "group": "typescript"},
+  {"id": "typescript/react", "title": {"vi": "TypeScript trong React Native", "en": "TypeScript in React Native"}, "parent": "typescript", "weight": 3, "group": "typescript"},
   {"id": "workflow", "title": {"vi": "Git và quy trình nhóm", "en": "Git and team workflow"}, "parent": null, "weight": 1, "group": "workflow"},
   {"id": "workflow/git-agile", "title": {"vi": "Git branching, hotfix và Agile", "en": "Git branching, hotfixes and Agile"}, "parent": "workflow", "weight": 1, "group": "workflow"}
 ]

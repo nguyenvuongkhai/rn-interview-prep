@@ -1,0 +1,15 @@
+{
+  "id": "safe-parse",
+  "type": "challenge",
+  "topics": ["typescript/types", "typescript/generics"],
+  "kind": "advanced",
+  "difficulty": 2,
+  "estSeconds": 900,
+  "lessons": ["typescript-types-core"],
+  "title": { "vi": "Tự viết validator kiểu zod cho dữ liệu API", "en": "Write a zod-style validator for API data" },
+  "hints": [
+    { "vi": "Mỗi schema là một object có hàm `check(value, path, issues)` trả về giá trị đã làm sạch và đẩy lỗi vào `issues`. `safeParse` chỉ gọi `check` với path rỗng rồi xem `issues` có rỗng không.", "en": "Make every schema an object with a `check(value, path, issues)` that returns the cleaned value and pushes problems into `issues`. `safeParse` just calls `check` with an empty path and looks at whether `issues` is empty." },
+    { "vi": "`array` và `object` gọi `check` của schema con với path dài thêm một phần tử: `[...path, i]` hoặc `[...path, key]`. Đừng dừng ở lỗi đầu tiên.", "en": "`array` and `object` call the child schema's `check` with the path extended by one segment: `[...path, i]` or `[...path, key]`. Do not stop at the first problem." },
+    { "vi": "`optional()` bọc schema gốc: `undefined` thì trả về `undefined` ngay, còn lại thì giao cho schema gốc. Trong `object`, chỉ ghi key vào kết quả khi key có trong input.", "en": "`optional()` wraps the original schema: `undefined` returns `undefined` straight away, anything else goes to the original. In `object`, only write a key to the result when the input has it." }
+  ]
+}

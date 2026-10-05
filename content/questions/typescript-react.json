@@ -1,0 +1,831 @@
+[
+  {
+    "id": "typescript-react-001",
+    "type": "mcq",
+    "topics": [
+      "typescript/react"
+    ],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": [
+      "typescript-react-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Với `strict` bật, một màn hình khai báo `const [users, setUsers] = useState([]);`, sau đó gọi `setUsers(data)` với `data` có kiểu `User[]`. `tsc` báo gì?",
+      "en": "With `strict` on, a screen declares `const [users, setUsers] = useState([]);` and later calls `setUsers(data)`, where `data` is a `User[]`. What does `tsc` report?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Lỗi: state được suy ra là `never[]`, nên không gán được `User[]`",
+          "en": "An error: the state is inferred as `never[]`, so `User[]` is not assignable"
+        }
+      },
+      {
+        "text": {
+          "vi": "Không lỗi gì: mảng rỗng được suy ra là `any[]`, nhận mọi phần tử",
+          "en": "Nothing: an empty array literal is inferred as `any[]`, which accepts anything"
+        },
+        "misconception": {
+          "id": "tsreact-empty-array-any",
+          "text": {
+            "vi": "Nghĩ rằng `[]` ở đây thành `any[]`. Điều đó chỉ xảy ra khi tắt `noImplicitAny`; với `strict`, mảng rỗng truyền vào `useState` được suy ra là `never[]` và không thêm được gì vào.",
+            "en": "Believing `[]` becomes `any[]` here. That only happens with `noImplicitAny` off; under `strict`, an empty array passed to `useState` is inferred as `never[]`, and nothing can be added to it."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Không lỗi gì: TypeScript mở rộng kiểu state theo lần gọi `setUsers` đầu tiên",
+          "en": "Nothing: TypeScript widens the state type from the first `setUsers` call"
+        },
+        "misconception": {
+          "id": "tsreact-infer-from-later-use",
+          "text": {
+            "vi": "Nghĩ rằng TypeScript suy kiểu từ cách dùng về sau. Kiểu của `users` được chốt ngay tại lời gọi `useState`; các lần gọi setter sau đó chỉ được kiểm tra theo kiểu đó.",
+            "en": "Believing TypeScript infers a type from later usage. The type of `users` is fixed where `useState` is called; later setter calls are only checked against it."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Lỗi ngay ở `useState([])`, vì hook nào cũng bắt buộc phải có generic",
+          "en": "An error on `useState([])` itself, because every hook call needs a generic"
+        },
+        "misconception": {
+          "id": "tsreact-hooks-need-generic",
+          "text": {
+            "vi": "Nghĩ rằng hook nào cũng cần generic. `useState` suy kiểu từ giá trị khởi tạo; generic chỉ cần khi giá trị đó không mô tả đủ kiểu, như `[]` hay `null`.",
+            "en": "Believing every hook call needs a generic. `useState` infers from its initial value; the generic is only needed when that value does not describe the full type, as with `[]` or `null`."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0
+    ],
+    "explanation": {
+      "vi": "Kiểu của state lấy từ giá trị khởi tạo. Với `strict` (có `noImplicitAny` và `strictNullChecks`), một mảng rỗng không có gì để suy ra kiểu phần tử, nên `useState([])` cho `never[]`, và `setUsers(data)` báo `User[]` không gán được cho `never[]`. Cách sửa là `useState<User[]>([])`. Cùng bẫy đó với `useState(null)`: kiểu state là `null`, nên phải viết `useState<User | null>(null)`. Bẫy chính là tưởng TypeScript sẽ nhìn các lần gọi setter về sau để mở rộng kiểu.",
+      "en": "The state type comes from the initial value. Under `strict` (which includes `noImplicitAny` and `strictNullChecks`), an empty array gives nothing to infer an element type from, so `useState([])` yields `never[]`, and `setUsers(data)` reports that `User[]` is not assignable to `never[]`. The fix is `useState<User[]>([])`. The same trap applies to `useState(null)`: the state type is `null`, so write `useState<User | null>(null)`. The main trap is expecting TypeScript to look at later setter calls and widen the type."
+    }
+  },
+  {
+    "id": "typescript-react-002",
+    "type": "mcq",
+    "topics": [
+      "typescript/react"
+    ],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": [
+      "typescript-react-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Sau khi nâng lên `@types/react` 18, `const Card: React.FC<{ title: string }> = ({ title, children }) => …` báo lỗi `Property 'children' does not exist`. Cách sửa đúng là gì?",
+      "en": "After upgrading to `@types/react` 18, `const Card: React.FC<{ title: string }> = ({ title, children }) => …` fails with `Property 'children' does not exist`. What is the right fix?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Khai báo `children?: React.ReactNode` trong kiểu props",
+          "en": "Declare `children?: React.ReactNode` in the props type"
+        }
+      },
+      {
+        "text": {
+          "vi": "Khai báo `children: JSX.Element`, kiểu mà JSX con được biên dịch ra",
+          "en": "Declare `children: JSX.Element`, the type that JSX children compile to"
+        },
+        "misconception": {
+          "id": "tsreact-children-jsx-element",
+          "text": {
+            "vi": "Nghĩ rằng `children` nên có kiểu `JSX.Element`. Kiểu đó chỉ nhận đúng một element, nên text, mảng, số và `null` đều bị từ chối. `React.ReactNode` bao gồm mọi thứ React render được.",
+            "en": "Believing children should be typed `JSX.Element`. That accepts a single element only, so plain text, arrays, numbers and `null` are rejected. `React.ReactNode` covers everything React can render."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Đổi sang `React.VFC`, kiểu vẫn giữ `children` ngầm như trước",
+          "en": "Switch to `React.VFC`, which still keeps the old implicit `children`"
+        },
+        "misconception": {
+          "id": "tsreact-vfc-has-children",
+          "text": {
+            "vi": "Nghĩ rằng `VFC` vẫn thêm `children`. `VFC` chưa bao giờ có `children` và đã bị deprecate trong type của React 18; không còn kiểu nào tự thêm `children` nữa.",
+            "en": "Believing `VFC` still adds `children`. `VFC` never included `children` and is deprecated in the React 18 types; no component type adds `children` implicitly any more."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Đọc `props.children` thay vì destructure nó từ props",
+          "en": "Read `props.children` instead of destructuring it from props"
+        },
+        "misconception": {
+          "id": "tsreact-destructure-hides-children",
+          "text": {
+            "vi": "Nghĩ rằng destructure gây ra lỗi. Kiểu props đơn giản là không có `children`; `props.children` cũng báo lỗi y như vậy cho tới khi bạn khai báo nó.",
+            "en": "Believing destructuring causes the error. The props type simply has no `children`; `props.children` fails in the same way until you declare it."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0
+    ],
+    "explanation": {
+      "vi": "Type của React 18 bỏ `children` ngầm khỏi `React.FC`, vì nó cho phép truyền children vào cả những component không hề render chúng. Giờ bạn khai báo rõ: `children?: React.ReactNode`, hoặc dùng `React.PropsWithChildren<P>`, hai cách tương đương. `ReactNode` nhận text, số, element, mảng, `null` và `undefined`, nên đây là kiểu đúng cho children nói chung. Nhiều team bỏ luôn `FC` và khai báo kiểu ngay trên tham số: `function Card({ title, children }: CardProps)`. Bẫy chính là chọn `JSX.Element`, kiểu quá hẹp và làm `<Card>Hello</Card>` báo lỗi.",
+      "en": "The React 18 types removed implicit `children` from `React.FC`, because it let callers pass children to components that never render them. You now declare it explicitly: `children?: React.ReactNode`, or use `React.PropsWithChildren<P>`, which is equivalent. `ReactNode` accepts text, numbers, elements, arrays, `null` and `undefined`, so it is the right type for general children. Many teams drop `FC` altogether and type the parameter: `function Card({ title, children }: CardProps)`. The main trap is `JSX.Element`, which is too narrow and makes `<Card>Hello</Card>` fail."
+    }
+  },
+  {
+    "id": "typescript-react-003",
+    "type": "mcq",
+    "topics": [
+      "typescript/react"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 75,
+    "lessons": [
+      "typescript-react-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Trên RN 0.78 trở lên (React 19), `FancyInput` bọc một `TextInput`, và component cha cần ref tới nó để gọi `focus()`. Điều gì đã thay đổi so với React 18?",
+      "en": "On RN 0.78 or later (React 19), `FancyInput` wraps a `TextInput`, and the parent needs a ref to it to call `focus()`. What changed compared with React 18?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Function component nhận `ref` như một prop bình thường, nên không cần `forwardRef`",
+          "en": "A function component receives `ref` as a regular prop, so `forwardRef` is not needed"
+        }
+      },
+      {
+        "text": {
+          "vi": "`forwardRef` đã bị xoá, nên các wrapper cũ không còn compile được nữa",
+          "en": "`forwardRef` was removed, so existing wrappers no longer compile at all"
+        },
+        "misconception": {
+          "id": "tsreact-forwardref-removed",
+          "text": {
+            "vi": "Nghĩ rằng React 19 đã xoá `forwardRef`. Nó vẫn chạy trong React 19; React chỉ dự định deprecate nó về sau. Code mới có thể nhận `ref` như một prop.",
+            "en": "Believing React 19 removed `forwardRef`. It still works in React 19; the React team only plans to deprecate it later. New code can take `ref` as a prop instead."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`ref` vẫn bị tách khỏi props; chỉ `useImperativeHandle` mới đưa được nó ra ngoài",
+          "en": "`ref` is still stripped from props; only `useImperativeHandle` can expose it"
+        },
+        "misconception": {
+          "id": "tsreact-ref-stripped-react19",
+          "text": {
+            "vi": "Nghĩ rằng `ref` vẫn bị loại khỏi props của function component. Từ React 19, nó được truyền vào như mọi prop khác; `useImperativeHandle` chỉ dùng khi muốn đưa ra một handle tự định nghĩa.",
+            "en": "Believing `ref` is still removed from function component props. From React 19 it is passed through like any other prop; `useImperativeHandle` is only for exposing a custom handle."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Ref dạng prop chỉ chạy với Fabric; kiến trúc cũ vẫn phải dùng `forwardRef`",
+          "en": "Ref as a prop only works under Fabric; the old architecture still needs `forwardRef`"
+        },
+        "misconception": {
+          "id": "tsreact-ref-prop-fabric-only",
+          "text": {
+            "vi": "Nghĩ rằng ref dạng prop phụ thuộc kiến trúc renderer. Đây là tính năng của React 19, nên nó đi theo phiên bản React mà RN mang theo, không phụ thuộc Fabric.",
+            "en": "Believing ref as a prop depends on the renderer architecture. It is a React 19 feature, so it follows the React version that ships with RN, not Fabric."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0
+    ],
+    "explanation": {
+      "vi": "Từ React 19 (đi kèm RN 0.78 trở lên), function component nhận `ref` trong props. Bạn khai báo nó trong kiểu props, ví dụ `ref?: React.Ref<TextInput>`, rồi chuyển thẳng xuống `<TextInput ref={ref} />`. `forwardRef` vẫn chạy, nên code cũ không vỡ khi nâng cấp, nhưng component mới không cần nó nữa. Ở RN 0.76 và 0.77 (React 18.3), ref vẫn bị tách khỏi props và bạn vẫn cần `forwardRef`. Bẫy chính là gắn thay đổi này với Fabric, trong khi nó chỉ phụ thuộc phiên bản React.",
+      "en": "From React 19 (shipped with RN 0.78 and later), function components receive `ref` in their props. You declare it in the props type, for example `ref?: React.Ref<TextInput>`, and pass it straight to `<TextInput ref={ref} />`. `forwardRef` still works, so old code does not break on upgrade, but new components no longer need it. On RN 0.76 and 0.77 (React 18.3), `ref` is still stripped from props and you still need `forwardRef`. The main trap is tying this change to Fabric, when it depends only on the React version."
+    }
+  },
+  {
+    "id": "typescript-react-004",
+    "type": "mcq",
+    "topics": [
+      "typescript/react"
+    ],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 80,
+    "lessons": [
+      "typescript-react-core"
+    ],
+    "multi": true,
+    "prompt": {
+      "vi": "Một project RN mới tạo từ template của React Native Community CLI, viết bằng TypeScript và bundle bằng Metro. Những phát biểu nào về việc kiểm tra kiểu là đúng?",
+      "en": "A new RN project, created from the React Native Community CLI template, is written in TypeScript and bundled by Metro. Which statements about type checking are true?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Metro biến đổi TS bằng Babel, vốn chỉ xoá kiểu chứ không kiểm tra kiểu",
+          "en": "Metro transforms TS with Babel, which strips the types without checking them"
+        }
+      },
+      {
+        "text": {
+          "vi": "Build release chạy `tsc` và fail khi code còn lỗi kiểu",
+          "en": "Release builds run `tsc` and fail when the code has type errors"
+        },
+        "misconception": {
+          "id": "tsreact-release-build-typechecks",
+          "text": {
+            "vi": "Nghĩ rằng build native bản release có kiểm tra kiểu JS. Gradle và Xcode chỉ gọi Metro để bundle, và Metro dùng Babel, vốn xoá kiểu mà không kiểm tra.",
+            "en": "Believing the native release build type-checks the JS. Gradle and Xcode only call Metro to bundle, and Metro uses Babel, which drops types without checking them."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "CI cần một bước `tsc --noEmit` riêng để bắt lỗi kiểu",
+          "en": "CI needs a separate `tsc --noEmit` step to catch type errors"
+        }
+      },
+      {
+        "text": {
+          "vi": "Bật `strict: true` trong tsconfig.json khiến Metro từ chối file có lỗi kiểu",
+          "en": "Setting `strict: true` in tsconfig.json makes Metro reject files with type errors"
+        },
+        "misconception": {
+          "id": "tsreact-tsconfig-drives-metro",
+          "text": {
+            "vi": "Nghĩ rằng tsconfig.json điều khiển Metro. Babel không dùng nó để kiểm tra kiểu; nó chỉ cấu hình `tsc` và editor, nên thiết lập chặt hơn chỉ có tác dụng ở nơi `tsc` được chạy.",
+            "en": "Believing tsconfig.json controls Metro. Babel does not use it for type checking; it only configures `tsc` and the editor, so stricter settings matter only where `tsc` runs."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "tsconfig.json của template extend `@react-native/typescript-config`",
+          "en": "The template's tsconfig.json extends `@react-native/typescript-config`"
+        }
+      }
+    ],
+    "answer": [
+      0,
+      2,
+      4
+    ],
+    "explanation": {
+      "vi": "Metro dùng `@react-native/babel-preset`, trong đó có plugin TypeScript của Babel: nó xoá annotation rồi tiếp tục, không đọc tsconfig và không kiểm tra gì. Vì vậy một lỗi kiểu vẫn bundle và chạy được, cả ở dev lẫn release. Chỉ `tsc` (thường là `tsc --noEmit` trong CI hoặc pre-push hook) và editor mới thực sự kiểm tra kiểu. Template hiện tại extend `@react-native/typescript-config`, một cấu hình nền đã bật `strict`. Bẫy chính là tưởng \"build xanh\" nghĩa là kiểu đúng.",
+      "en": "Metro uses `@react-native/babel-preset`, which includes Babel's TypeScript plugin: it strips the annotations and moves on, without reading tsconfig or checking anything. So a type error still bundles and runs, in development and in release. Only `tsc` (usually `tsc --noEmit` in CI or a pre-push hook) and the editor actually check types. The current template extends `@react-native/typescript-config`, a base config with `strict` on. The main trap is reading a green build as proof that the types are right."
+    }
+  },
+  {
+    "id": "typescript-react-005",
+    "type": "mcq",
+    "topics": [
+      "typescript/react"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": [
+      "typescript-react-core"
+    ],
+    "multi": true,
+    "prompt": {
+      "vi": "Bạn khai báo `type RootStackParamList = { Home: undefined; Order: { orderId: number } }` và định kiểu màn hình bằng `NativeStackScreenProps<RootStackParamList, 'Order'>`. Những phát biểu nào là đúng?",
+      "en": "You declare `type RootStackParamList = { Home: undefined; Order: { orderId: number } }` and type the screen with `NativeStackScreenProps<RootStackParamList, 'Order'>`. Which statements are true?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "`route.params` lấy kiểu từ param list, nhưng không có gì kiểm tra giá trị lúc runtime",
+          "en": "`route.params` is typed from the param list, but nothing checks its values at runtime"
+        }
+      },
+      {
+        "text": {
+          "vi": "Khai báo global `ReactNavigation.RootParamList` cho `useNavigation()` có kiểu ở mọi nơi",
+          "en": "Declaring the global `ReactNavigation.RootParamList` types `useNavigation()` everywhere"
+        }
+      },
+      {
+        "text": {
+          "vi": "Khai báo `{ orderId: number }` khiến deep link đưa `orderId` vào dưới dạng number",
+          "en": "Declaring `{ orderId: number }` makes deep links deliver `orderId` as a number"
+        },
+        "misconception": {
+          "id": "tsreact-params-typed-coerced",
+          "text": {
+            "vi": "Nghĩ rằng kiểu của param sẽ chuyển đổi giá trị từ deep link. Kiểu bị xoá lúc build; path param và query param luôn đến dưới dạng string, trừ khi linking config có hàm `parse` cho chúng.",
+            "en": "Believing param types convert deep-link values. Types are erased at build time; path and query params arrive as strings unless the linking config has a `parse` function for them."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Gọi `navigation.navigate('Order')` mà thiếu param bắt buộc là lỗi lúc compile",
+          "en": "Calling `navigation.navigate('Order')` without its required params is a compile error"
+        }
+      },
+      {
+        "text": {
+          "vi": "`NativeStackScreenProps` ném lỗi khi màn hình mount nếu params sai kiểu",
+          "en": "`NativeStackScreenProps` throws when the screen mounts if the params do not match"
+        },
+        "misconception": {
+          "id": "tsreact-screenprops-validates",
+          "text": {
+            "vi": "Nghĩ rằng kiểu props của màn hình có kiểm tra params. `NativeStackScreenProps` chỉ là một kiểu; không có gì chạy lúc mount, nên giá trị sai đi thẳng vào code của bạn.",
+            "en": "Believing screen prop types validate params. `NativeStackScreenProps` is only a type; nothing runs at mount, so a bad value reaches your code unchanged."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0,
+      1,
+      3
+    ],
+    "explanation": {
+      "vi": "Param list là hợp đồng cho các lời gọi trong app: `navigate('Order')` thiếu `orderId` báo lỗi, và `route.params.orderId` có kiểu `number`. Khai báo `declare global { namespace ReactNavigation { interface RootParamList extends RootStackParamList {} } }` để `useNavigation()` dùng được kiểu đó ở mọi nơi. Nhưng tất cả chỉ là kiểu và bị xoá lúc build. Deep link, push notification hay state được khôi phục đều đi vào mà không qua kiểm tra nào: path param là string nếu linking config không có `parse`, và có thể thiếu hẳn. Bẫy chính là tin `route.params` như dữ liệu đã được kiểm tra.",
+      "en": "The param list is a contract for calls made inside the app: `navigate('Order')` without `orderId` fails, and `route.params.orderId` is typed `number`. Declare `declare global { namespace ReactNavigation { interface RootParamList extends RootStackParamList {} } }` so `useNavigation()` picks that type up everywhere. But all of it is types, erased at build time. Deep links, push notifications and restored state arrive with no check at all: path params are strings unless the linking config has a `parse`, and they can be missing entirely. The main trap is trusting `route.params` as validated data."
+    }
+  },
+  {
+    "id": "typescript-react-006",
+    "type": "spot-bug",
+    "topics": [
+      "typescript/react"
+    ],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 100,
+    "lessons": [
+      "typescript-react-core"
+    ],
+    "prompt": {
+      "vi": "Ở một màn hình, `<Chip label=\"Sale\" onPress={onSale} style={[styles.wide, isLast && styles.last]} />` báo lỗi kiểu, dù cùng mảng style đó dùng được trên một `View` bình thường. Dòng nào gây lỗi?",
+      "en": "On one screen, `<Chip label=\"Sale\" onPress={onSale} style={[styles.wide, isLast && styles.last]} />` fails type checking, though the same style array works on a plain `View`. Which line causes it?"
+    },
+    "code": "import { Pressable, StyleSheet, Text, type ViewStyle } from 'react-native';\n\ntype ChipProps = {\n  label: string;\n  onPress: () => void;\n  style?: ViewStyle;\n};\n\nexport function Chip({ label, onPress, style }: ChipProps) {\n  return (\n    <Pressable onPress={onPress} style={[styles.chip, style]}>\n      <Text>{label}</Text>\n    </Pressable>\n  );\n}\n\nconst styles = StyleSheet.create({ chip: { padding: 8, borderRadius: 16 } });",
+    "answerLine": 6,
+    "causeOptions": [
+      {
+        "text": {
+          "vi": "`ViewStyle` chỉ nhận một object, nên mảng và `false` bị từ chối; hãy dùng `StyleProp`",
+          "en": "`ViewStyle` allows one plain object, so arrays and `false` fail; use `StyleProp`"
+        }
+      },
+      {
+        "text": {
+          "vi": "`Pressable` cần một hàm cho `style`, nên mảng bên trong `Chip` là sai",
+          "en": "`Pressable` needs a function for `style`, so the array inside `Chip` is invalid"
+        },
+        "misconception": {
+          "id": "tsreact-pressable-style-function",
+          "text": {
+            "vi": "Nghĩ rằng `Pressable` chỉ nhận style dạng hàm. Nó nhận style bình thường hoặc một hàm của `{ pressed }`; mảng bên trong `Chip` không sai, lỗi nằm ở chỗ gọi.",
+            "en": "Believing `Pressable` only takes a style function. It accepts a normal style or a function of `{ pressed }`; the array inside `Chip` is fine, and the error is at the call site."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`isLast && styles.last` có thể là `false`, thứ RN không flatten được lúc runtime",
+          "en": "`isLast && styles.last` can be `false`, which RN cannot flatten at runtime"
+        },
+        "misconception": {
+          "id": "tsreact-falsy-style-crash",
+          "text": {
+            "vi": "Nghĩ rằng giá trị falsy làm hỏng mảng style. RN bỏ qua `false`, `null` và `undefined` khi flatten style; vấn đề chỉ là kiểu của prop không cho phép mảng.",
+            "en": "Believing falsy entries break style arrays. RN skips `false`, `null` and `undefined` when flattening styles; the only problem is that the prop type does not allow arrays."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`StyleSheet.create` trả về id dạng số, không khớp với `ViewStyle`",
+          "en": "`StyleSheet.create` returns numeric ids, which do not fit a `ViewStyle`"
+        },
+        "misconception": {
+          "id": "tsreact-stylesheet-returns-ids",
+          "text": {
+            "vi": "Nghĩ rằng `StyleSheet.create` trả về số. RN hiện tại trả về chính các object style kèm kiểu của chúng, nên một `styles.wide` riêng lẻ vẫn khớp `ViewStyle`; chỉ mảng là không.",
+            "en": "Believing `StyleSheet.create` hands back numbers. Current RN returns the style objects themselves with their types, so a single `styles.wide` fits `ViewStyle`; only the array does not."
+          }
+        }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "Dòng 6 khai báo `style?: ViewStyle`, tức một object style duy nhất. Các component có sẵn của RN dùng `StyleProp<ViewStyle>`, kiểu cho phép object, mảng lồng nhau và các giá trị falsy như `false`, `null`, `undefined`. Vì vậy mảng chạy được trên `View` nhưng không qua được `Chip`. Sửa thành `style?: StyleProp<ViewStyle>`; bên trong, `[styles.chip, style]` vẫn hợp lệ vì `Pressable` nhận `StyleProp<ViewStyle>`. Quy tắc chung: prop style mà component nhận từ ngoài thì dùng `StyleProp<…>`, còn `ViewStyle` hay `TextStyle` dùng cho một object cụ thể, như khi định kiểu cho một biến style.",
+      "en": "Line 6 declares `style?: ViewStyle`, a single style object. RN's built-in components use `StyleProp<ViewStyle>`, which allows an object, nested arrays and falsy values such as `false`, `null` and `undefined`. That is why the array works on `View` but not on `Chip`. Change it to `style?: StyleProp<ViewStyle>`; inside, `[styles.chip, style]` is still valid because `Pressable` takes `StyleProp<ViewStyle>`. The general rule: a style prop that a component accepts from outside uses `StyleProp<…>`, while `ViewStyle` or `TextStyle` describes one concrete object, such as a typed style variable."
+    }
+  },
+  {
+    "id": "typescript-react-007",
+    "type": "spot-bug",
+    "topics": [
+      "typescript/react"
+    ],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 110,
+    "lessons": [
+      "typescript-react-core"
+    ],
+    "prompt": {
+      "vi": "`tsc` pass, nhưng một màn hình cài đặt mà đồng nghiệp đăng ký bên ngoài `AuthProvider` crash với `signOut is not a function` khi người dùng bấm Đăng xuất. Dòng nào đã để lỗi này lọt qua?",
+      "en": "`tsc` passes, but a settings screen that a teammate registered outside `AuthProvider` crashes with `signOut is not a function` when the user taps Sign out. Which line let this ship?"
+    },
+    "code": "import { createContext, useContext, useState, type ReactNode } from 'react';\nimport type { User } from './types';\n\ntype AuthContextValue = {\n  user: User | null;\n  signOut: () => void;\n};\n\nconst AuthContext = createContext<AuthContextValue>({} as AuthContextValue);\n\nexport function AuthProvider({ children }: { children: ReactNode }) {\n  const [user, setUser] = useState<User | null>(null);\n  const value = { user, signOut: () => setUser(null) };\n  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;\n}\n\nexport function useAuth() {\n  return useContext(AuthContext);\n}",
+    "answerLine": 9,
+    "causeOptions": [
+      {
+        "text": {
+          "vi": "Ép kiểu khẳng định đã có giá trị đầy đủ, nên nơi dùng ngoài provider nhận `{}` mà không bị báo",
+          "en": "The cast claims a full value exists, so consumers outside the provider get `{}` unchecked"
+        }
+      },
+      {
+        "text": {
+          "vi": "`useContext` cần generic, nếu không nó trả về giá trị không có kiểu",
+          "en": "`useContext` needs a generic, or it returns a value with no useful type"
+        },
+        "misconception": {
+          "id": "tsreact-usecontext-needs-generic",
+          "text": {
+            "vi": "Nghĩ rằng `useContext` mất kiểu nếu không có generic. Nó suy kiểu giá trị từ object context; vấn đề là kiểu của giá trị mặc định đang nói dối.",
+            "en": "Believing `useContext` loses the type without a generic. It infers the value type from the context object; the problem is that the default value's type is a lie."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`value` là object mới mỗi lần render, nên consumer thoáng thấy giá trị mặc định",
+          "en": "`value` is a new object every render, so consumers briefly see the default"
+        },
+        "misconception": {
+          "id": "tsreact-new-value-shows-default",
+          "text": {
+            "vi": "Nghĩ rằng value mới làm consumer quay về giá trị mặc định. Object mới chỉ làm consumer re-render; giá trị mặc định chỉ được dùng khi phía trên không có provider nào.",
+            "en": "Believing a new provider value makes consumers fall back to the default. A new object only re-renders consumers; the default is used only when no provider sits above them."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Navigator render mỗi màn hình trong một root riêng, nên context không tới được",
+          "en": "The navigator renders each screen in a separate root, so context never reaches it"
+        },
+        "misconception": {
+          "id": "tsreact-navigator-separate-root",
+          "text": {
+            "vi": "Nghĩ rằng màn hình của navigator nằm ngoài cây React. Màn hình được render bên trong navigator, nên vẫn đọc được provider bọc navigator; màn hình này lỗi vì nó nằm ngoài provider.",
+            "en": "Believing navigator screens live outside the React tree. Screens render inside the navigator, so they read any provider that wraps it; this screen fails because it sits outside the provider."
+          }
+        }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "Dòng 9 dùng `{} as AuthContextValue` làm giá trị mặc định. Ép kiểu bảo TypeScript rằng `user` và `signOut` luôn tồn tại, nên `useAuth()` trả về một kiểu \"đầy đủ\" ở mọi nơi. Khi không có provider phía trên, React trả về đúng object rỗng đó, và `signOut()` crash. Cách sửa: `createContext<AuthContextValue | null>(null)`, rồi trong `useAuth` kiểm tra `null` và ném lỗi rõ ràng như \"useAuth must be used inside AuthProvider\". Hook trả về `AuthContextValue` không null, nên nơi dùng không phải kiểm tra lại, còn lỗi sai cây component hiện ra ngay ở lần render đầu.",
+      "en": "Line 9 uses `{} as AuthContextValue` as the default. The cast tells TypeScript that `user` and `signOut` always exist, so `useAuth()` returns a \"complete\" type everywhere. With no provider above, React returns that empty object, and `signOut()` crashes. The fix: `createContext<AuthContextValue | null>(null)`, then have `useAuth` check for `null` and throw a clear error such as \"useAuth must be used inside AuthProvider\". The hook returns a non-null `AuthContextValue`, so consumers need no checks of their own, and a wrong tree shows up on the first render."
+    }
+  },
+  {
+    "id": "typescript-react-008",
+    "type": "spot-bug",
+    "topics": [
+      "typescript/react"
+    ],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 130,
+    "lessons": [
+      "typescript-react-core"
+    ],
+    "prompt": {
+      "vi": "`OrderScreen` tìm đơn bằng `orders.find((o) => o.id === route.params.orderId)`. Bấm vào đơn trong app thì chạy đúng, nhưng mở `shop://orders/42` từ push notification thì luôn hiện \"Không tìm thấy đơn\". `tsc` pass. Dòng nào gây lỗi?",
+      "en": "`OrderScreen` looks up `orders.find((o) => o.id === route.params.orderId)`. Tapping an order inside the app works, but opening `shop://orders/42` from a push notification always shows \"Order not found\". `tsc` passes. Which line causes it?"
+    },
+    "code": "import type { LinkingOptions } from '@react-navigation/native';\n\nexport type RootStackParamList = {\n  Home: undefined;\n  Order: { orderId: number };\n  Settings: undefined;\n};\n\nexport const linking: LinkingOptions<RootStackParamList> = {\n  prefixes: ['shop://', 'https://shop.example.com'],\n  config: {\n    screens: {\n      Home: '',\n      Order: 'orders/:orderId',\n      Settings: 'settings',\n    },\n  },\n};",
+    "answerLine": 14,
+    "causeOptions": [
+      {
+        "text": {
+          "vi": "Path param đến dưới dạng string; không có `parse` thì `orderId` là `'42'` dù kiểu ghi number",
+          "en": "Path params arrive as strings; with no `parse`, `orderId` is `'42'` though typed as number"
+        }
+      },
+      {
+        "text": {
+          "vi": "`LinkingOptions` có kiểu sẽ đổi `orderId` sang number, nên lỗi nằm ở chỗ khác",
+          "en": "The typed `LinkingOptions` converts `orderId` to a number, so the bug is elsewhere"
+        },
+        "misconception": {
+          "id": "tsreact-params-typed-coerced",
+          "text": {
+            "vi": "Nghĩ rằng kiểu của param sẽ chuyển đổi giá trị từ deep link. Kiểu bị xoá lúc build; path param và query param luôn đến dưới dạng string, trừ khi linking config có hàm `parse` cho chúng.",
+            "en": "Believing param types convert deep-link values. Types are erased at build time; path and query params arrive as strings unless the linking config has a `parse` function for them."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`Home: ''` khớp với mọi path trước, nên link luôn mở `Home`",
+          "en": "`Home: ''` matches every path first, so the link always opens `Home`"
+        },
+        "misconception": {
+          "id": "tsreact-empty-path-catches-all",
+          "text": {
+            "vi": "Nghĩ rằng path rỗng khớp mọi URL. `''` chỉ khớp với prefix không có gì phía sau; `orders/42` khớp pattern của `Order`, và màn hình đó vẫn mở ra.",
+            "en": "Believing an empty path matches every URL. `''` matches only the bare prefix; `orders/42` matches the `Order` pattern, and that screen does open."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Param list phải khai báo `orderId: string` thì linking config mới compile",
+          "en": "The param list must declare `orderId: string` for the linking config to compile"
+        },
+        "misconception": {
+          "id": "tsreact-linking-checks-param-types",
+          "text": {
+            "vi": "Nghĩ rằng linking config được kiểm tra theo kiểu của param. TypeScript chỉ kiểm tra tên màn hình trong `config.screens`, không biết một đoạn URL sẽ chứa gì; config này compile được, và đó chính là vấn đề.",
+            "en": "Believing the linking config is checked against param types. TypeScript checks the screen names in `config.screens`, not what a URL segment will contain; this config compiles, which is exactly the problem."
+          }
+        }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "Dòng 14 map `orders/:orderId` mà không có `parse`, nên React Navigation đưa `orderId` vào dưới dạng string `'42'`. Kiểu vẫn ghi `number`, nên `tsc` không thấy gì, nhưng `o.id === '42'` luôn sai. Trong app thì chạy đúng vì `navigate('Order', { orderId: 42 })` truyền number thật. Sửa thành `Order: { path: 'orders/:orderId', parse: { orderId: Number } }`, và vẫn kiểm tra trong màn hình, vì `shop://orders/abc` cho ra `NaN`. Bẫy chính là coi param list là dữ liệu đã được kiểm tra, trong khi nó chỉ mô tả các lời gọi `navigate` trong app.",
+      "en": "Line 14 maps `orders/:orderId` with no `parse`, so React Navigation passes `orderId` as the string `'42'`. The type still says `number`, so `tsc` sees nothing, but `o.id === '42'` is always false. In-app taps work because `navigate('Order', { orderId: 42 })` passes a real number. Change it to `Order: { path: 'orders/:orderId', parse: { orderId: Number } }`, and still validate in the screen, because `shop://orders/abc` produces `NaN`. The main trap is treating the param list as validated data, when it only describes the `navigate` calls made inside the app."
+    }
+  },
+  {
+    "id": "typescript-react-009",
+    "type": "mcq",
+    "topics": [
+      "typescript/react"
+    ],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 50,
+    "lessons": [
+      "typescript-react-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Bạn tách handler ra: `const handleChange = (e: ???) => setQuery(e.nativeEvent.text);`, rồi truyền vào `<TextInput onChange={handleChange} />`. Kiểu nào thay cho `???`?",
+      "en": "You extract a handler, `const handleChange = (e: ???) => setQuery(e.nativeEvent.text);`, and pass it as `<TextInput onChange={handleChange} />`. Which type replaces `???`?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "`NativeSyntheticEvent<TextInputChangeEventData>`",
+          "en": "`NativeSyntheticEvent<TextInputChangeEventData>`"
+        }
+      },
+      {
+        "text": {
+          "vi": "`React.ChangeEvent<HTMLInputElement>`, giống như trên web",
+          "en": "`React.ChangeEvent<HTMLInputElement>`, as on the web"
+        },
+        "misconception": {
+          "id": "tsreact-dom-event-types",
+          "text": {
+            "vi": "Nghĩ rằng event của RN dùng kiểu của React DOM. RN không có DOM; event của nó là `NativeSyntheticEvent<T>` với dữ liệu native nằm trong `nativeEvent`, cùng các alias như `GestureResponderEvent` và `LayoutChangeEvent`.",
+            "en": "Believing RN events use the React DOM types. RN has no DOM; its events are `NativeSyntheticEvent<T>` with the native payload in `nativeEvent`, plus aliases such as `GestureResponderEvent` and `LayoutChangeEvent`."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`GestureResponderEvent`, kiểu event dùng chung của RN",
+          "en": "`GestureResponderEvent`, the shared RN event type"
+        },
+        "misconception": {
+          "id": "tsreact-one-event-type",
+          "text": {
+            "vi": "Nghĩ rằng một kiểu event dùng cho mọi handler của RN. `GestureResponderEvent` dành cho handler chạm như `onPress`; mỗi component định kiểu event riêng, ví dụ `LayoutChangeEvent` cho `onLayout`.",
+            "en": "Believing one event type covers every RN handler. `GestureResponderEvent` is for touch handlers such as `onPress`; each component types its own events, for example `LayoutChangeEvent` for `onLayout`."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`string`, cùng kiểu mà `onChangeText` nhận",
+          "en": "`string`, the same type that `onChangeText` receives"
+        },
+        "misconception": {
+          "id": "tsreact-onchange-is-text",
+          "text": {
+            "vi": "Nhầm `onChange` với `onChangeText`. `onChangeText` nhận chuỗi mới; `onChange` nhận một event có `nativeEvent` chứa `text`, `eventCount` và `target`.",
+            "en": "Mixing up `onChange` and `onChangeText`. `onChangeText` receives the new string; `onChange` receives an event whose `nativeEvent` holds `text`, `eventCount` and `target`."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0
+    ],
+    "explanation": {
+      "vi": "Event của RN là `NativeSyntheticEvent<T>`, với `T` là dữ liệu native trong `nativeEvent`. Với `onChange` của `TextInput`, `T` là `TextInputChangeEventData`, nên `e.nativeEvent.text` có kiểu string. RN còn export sẵn alias cho các trường hợp hay gặp: `GestureResponderEvent` cho `onPress`, `LayoutChangeEvent` cho `onLayout`. Khi không nhớ tên, viết handler inline rồi hover vào tham số, hoặc dùng `ComponentProps<typeof TextInput>['onChange']` cho cả hàm. Bẫy chính là mang kiểu event của web sang RN.",
+      "en": "RN events are `NativeSyntheticEvent<T>`, where `T` is the native payload in `nativeEvent`. For `TextInput`'s `onChange`, `T` is `TextInputChangeEventData`, so `e.nativeEvent.text` is a string. RN also exports aliases for the common cases: `GestureResponderEvent` for `onPress` and `LayoutChangeEvent` for `onLayout`. If you forget the name, write the handler inline and hover the parameter, or type the whole function as `ComponentProps<typeof TextInput>['onChange']`. The main trap is bringing web event types into RN."
+    }
+  },
+  {
+    "id": "typescript-react-010",
+    "type": "mcq",
+    "topics": [
+      "typescript/react"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 80,
+    "lessons": [
+      "typescript-react-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Một màn hình có `const inputRef = useRef<TextInput>(null);` cho `<TextInput ref={inputRef} />`, và `const timerRef = useRef<ReturnType<typeof setTimeout>>();` để giữ id của timeout. Sau khi nâng lên `@types/react` 19, `tsc` báo gì?",
+      "en": "A screen has `const inputRef = useRef<TextInput>(null);` for `<TextInput ref={inputRef} />`, and `const timerRef = useRef<ReturnType<typeof setTimeout>>();` to hold a timeout id. After upgrading to `@types/react` 19, what does `tsc` report?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Lỗi ở `timerRef`: `useRef` giờ bắt buộc phải có giá trị khởi tạo",
+          "en": "An error on `timerRef`: `useRef` now requires an initial value argument"
+        }
+      },
+      {
+        "text": {
+          "vi": "Lỗi ở `inputRef`: ref tới host component phải viết `useRef<TextInput | null>`",
+          "en": "An error on `inputRef`: host refs must be written `useRef<TextInput | null>`"
+        },
+        "misconception": {
+          "id": "tsreact-host-ref-needs-null",
+          "text": {
+            "vi": "Nghĩ rằng `null` phải nằm trong generic. Với `@types/react` 19, `useRef<TextInput>(null)` trả về `RefObject<TextInput | null>`, nên dòng cũ vẫn qua kiểm tra kiểu.",
+            "en": "Believing the `null` must go in the generic. With `@types/react` 19, `useRef<TextInput>(null)` returns `RefObject<TextInput | null>`, so the existing line still type-checks."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Lỗi ở cả hai, vì `RefObject.current` đã thành read-only",
+          "en": "Errors on both, because `RefObject.current` became read-only"
+        },
+        "misconception": {
+          "id": "tsreact-refobject-readonly-19",
+          "text": {
+            "vi": "Hiểu ngược thay đổi. Trong `@types/react` 18, `RefObject.current` là read-only; ở bản 19 nó mutable, và `MutableRefObject` bị deprecate.",
+            "en": "Getting the change backwards. In `@types/react` 18, `RefObject.current` was read-only; in 19 it is mutable, and `MutableRefObject` is deprecated."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Không lỗi: thay đổi về ref trong bản 19 chỉ áp dụng cho class component",
+          "en": "No errors: the ref changes in version 19 only apply to class components"
+        },
+        "misconception": {
+          "id": "tsreact-ref-types-class-only",
+          "text": {
+            "vi": "Nghĩ rằng thay đổi kiểu ref không đụng tới function component. Chính chữ ký của `useRef` đã đổi, nên mọi lời gọi không có tham số đều báo lỗi.",
+            "en": "Believing the ref type changes skip function components. The `useRef` signature itself changed, so every call without an argument now fails."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0
+    ],
+    "explanation": {
+      "vi": "Trong `@types/react` 19, `useRef` bắt buộc có tham số, nên `useRef<T>()` báo lỗi; viết `useRef<ReturnType<typeof setTimeout> | undefined>(undefined)`. Ref tới `TextInput` không đổi cách viết: `useRef<TextInput>(null)` vẫn hợp lệ. Bản 19 cũng làm `RefObject.current` mutable và deprecate `MutableRefObject`, nên ranh giới cũ giữa \"ref cho DOM-like node\" và \"ref giữ một giá trị\" chỉ còn là cách bạn dùng, không còn là hai kiểu khác nhau. Đây là thay đổi về type, runtime của `useRef` không đổi. Bẫy chính là nhớ ngược hướng thay đổi của `current`.",
+      "en": "In `@types/react` 19, `useRef` requires an argument, so `useRef<T>()` fails; write `useRef<ReturnType<typeof setTimeout> | undefined>(undefined)`. The `TextInput` ref needs no change: `useRef<TextInput>(null)` is still valid. Version 19 also makes `RefObject.current` mutable and deprecates `MutableRefObject`, so the old split between \"a ref to a host node\" and \"a ref holding a value\" is now about how you use it, not two different types. This is a type change; the runtime behaviour of `useRef` is the same. The main trap is remembering the `current` change the wrong way round."
+    }
+  },
+  {
+    "id": "typescript-react-011",
+    "type": "open",
+    "topics": [
+      "typescript/react"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 300,
+    "lessons": [
+      "typescript-react-core"
+    ],
+    "prompt": {
+      "vi": "Hãy thiết kế kiểu props cho `Button` của design system, bọc `Pressable`. Nút `variant: 'primary' | 'secondary'` cần `onPress`; nút `variant: 'link'` cần `href` và không được nhận `onPress`. Người gọi vẫn phải truyền được mọi prop khác của `Pressable` và một mảng style. Bạn trình bày kiểu đó và cách component dùng nó.",
+      "en": "Design the props type for a design-system `Button` that wraps `Pressable`. `variant: 'primary' | 'secondary'` buttons need `onPress`; a `variant: 'link'` button needs an `href` and must not take `onPress`. Callers must still be able to pass any other `Pressable` prop and a style array. Walk me through the type and how the component uses it."
+    },
+    "keyPoints": [
+      {
+        "vi": "Dùng discriminated union theo `variant`, mỗi hình dạng một member, thay vì một object với mọi field đều optional",
+        "en": "A discriminated union on `variant`, one member per shape, instead of one object with every field optional"
+      },
+      {
+        "vi": "Đặt `?: never` cho field mà member đó không được có (`onPress?: never` ở member link), để truyền cả hai thì báo lỗi",
+        "en": "`?: never` on fields a member must not have (`onPress?: never` on the link member), so passing both fails"
+      },
+      {
+        "vi": "Kiểu nền chung từ `Omit<PressableProps, 'onPress' | 'style'>` (hoặc `ComponentProps<typeof Pressable>`) cộng `style?: StyleProp<ViewStyle>`, và chuyển phần props còn lại xuống `Pressable`",
+        "en": "A shared base from `Omit<PressableProps, 'onPress' | 'style'>` (or `ComponentProps<typeof Pressable>`) plus `style?: StyleProp<ViewStyle>`, with the rest props forwarded to `Pressable`"
+      },
+      {
+        "vi": "Narrow trong component bằng `props.variant === 'link'` trước khi đọc `href` hay `onPress`",
+        "en": "Narrow inside the component with `props.variant === 'link'` before reading `href` or `onPress`"
+      },
+      {
+        "vi": "Kiểu chỉ bảo vệ người gọi viết bằng TS; code JS hoặc ép kiểu `as` vẫn truyền sai được, nên giữ một kiểm tra ở dev hoặc fallback an toàn",
+        "en": "Types only protect TS callers; JS code or `as` casts can still pass bad combinations, so keep a dev-time check or a safe fallback"
+      }
+    ],
+    "modelAnswer": {
+      "vi": "Mình bắt đầu từ một kiểu nền: `Omit<PressableProps, 'onPress' | 'style'>` cộng `style?: StyleProp<ViewStyle>`, để người gọi truyền được `testID`, `accessibilityLabel`, `hitSlop` và mảng style. Mình bỏ `style` gốc vì nó còn nhận dạng hàm, trong khi mình cần ghép style của variant. Trên kiểu nền đó là một union: member `{ variant: 'primary' | 'secondary'; onPress: () => void; href?: never }` và member `{ variant: 'link'; href: string; onPress?: never }`. Field `never` làm việc truyền cả `href` lẫn `onPress` báo lỗi ngay. Trong component, mình không destructure hết từ đầu mà kiểm tra `props.variant === 'link'` trước, để TypeScript narrow ra `href`, rồi spread phần còn lại xuống `Pressable`. Cuối cùng, kiểu không bảo vệ code JS hay chỗ dùng `as`, nên ở dev mình vẫn cảnh báo nếu nhận tổ hợp sai.",
+      "en": "I start from a base type: `Omit<PressableProps, 'onPress' | 'style'>` plus `style?: StyleProp<ViewStyle>`, so callers can pass `testID`, `accessibilityLabel`, `hitSlop` and style arrays. I drop the original `style` because it also accepts a function, and I need to compose the variant styles. On top of that sits a union: `{ variant: 'primary' | 'secondary'; onPress: () => void; href?: never }` and `{ variant: 'link'; href: string; onPress?: never }`. The `never` fields make passing both `href` and `onPress` an error straight away. Inside the component I do not destructure everything up front; I check `props.variant === 'link'` first so TypeScript narrows to `href`, then spread the rest onto `Pressable`. Finally, types do not protect JS code or `as` casts, so in development I still warn on a bad combination."
+    },
+    "followUps": [
+      {
+        "vi": "Bạn sẽ làm thế nào để `href` dùng route có kiểu của React Navigation thay vì một chuỗi tuỳ ý?",
+        "en": "How would you make `href` use React Navigation's typed routes instead of an arbitrary string?"
+      },
+      {
+        "vi": "Trên React 19, bạn đưa ref của `Pressable` bên trong ra ngoài thế nào, và kiểu props đổi ra sao?",
+        "en": "On React 19, how do you expose the inner `Pressable` ref, and how does the props type change?"
+      }
+    ]
+  },
+  {
+    "id": "typescript-react-012",
+    "type": "open",
+    "topics": [
+      "typescript/react"
+    ],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 330,
+    "lessons": [
+      "typescript-react-core"
+    ],
+    "prompt": {
+      "vi": "CI chạy `tsc --noEmit` và pass, vậy mà production crash với `undefined is not an object (evaluating 'user.address.city')`. Crash chỉ xảy ra khi mở màn hình từ push notification, và với một số người dùng ngay sau khi cập nhật app. TypeScript đang \"nói dối\" ở đâu, và bạn làm gì để chặn loại lỗi này?",
+      "en": "CI runs `tsc --noEmit` and passes, yet production crashes with `undefined is not an object (evaluating 'user.address.city')`. It only happens when the screen is opened from a push notification, and for some users right after an app update. Where is TypeScript lying, and what do you do to stop this class of bug?"
+    },
+    "keyPoints": [
+      {
+        "vi": "Kiểu bị xoá lúc build, nên dữ liệu đi vào từ ranh giới không được kiểm tra: response API ép bằng `as User`, `JSON.parse` từ storage, payload push và route params từ deep link",
+        "en": "Types are erased at build time, so data entering at the boundaries is unchecked: API responses cast with `as User`, `JSON.parse` from storage, push payloads and deep-link route params"
+      },
+      {
+        "vi": "Kiểm tra dữ liệu ở ranh giới bằng schema lúc runtime (ví dụ zod) và suy kiểu từ schema bằng `z.infer`, để kiểu và kiểm tra không lệch nhau",
+        "en": "Validate at the boundary with a runtime schema (for example zod) and derive the type with `z.infer`, so the type and the check cannot drift"
+      },
+      {
+        "vi": "Dữ liệu đã persist từ bản app cũ có hình dạng cũ: đánh version và viết migration, hoặc bỏ cache khi không parse được",
+        "en": "Persisted data from an older app version has the old shape: version it and write migrations, or drop the cache when it fails to parse"
+      },
+      {
+        "vi": "Dùng lint để hạn chế `any`, `as` và non-null `!`, những chỗ tắt kiểm tra của compiler",
+        "en": "Use lint rules to limit `any`, `as` and the non-null `!`, the places where the compiler is switched off"
+      },
+      {
+        "vi": "Thư viện không có kiểu thì viết `declare module` với kiểu thật hẹp, không phải `any`; cân nhắc bật `noUncheckedIndexedAccess`",
+        "en": "For untyped libraries, write a `declare module` with real, narrow types rather than `any`; consider turning on `noUncheckedIndexedAccess`"
+      },
+      {
+        "vi": "Tái hiện bằng đúng đường vào lỗi (mở deep link, cài đè từ bản cũ) và thêm test cho dữ liệu sai hình dạng",
+        "en": "Reproduce through the failing entry points (open the deep link, upgrade from the old build) and add tests for malformed data"
+      }
+    ],
+    "modelAnswer": {
+      "vi": "TypeScript chỉ đúng với những gì nó nhìn thấy, và kiểu bị xoá trước khi app chạy. Hai đường vào lỗi này đều là ranh giới. Push notification đưa vào params mà màn hình tin là `User` đầy đủ, trong khi payload chỉ có id. Sau khi cập nhật, app đọc cache cũ bằng `JSON.parse(raw) as User`, mà object cũ chưa có `address`. Cách sửa của mình là kiểm tra ở mọi ranh giới: schema zod cho response API, cache, payload push và route params, và suy kiểu bằng `z.infer` để không lệch. Cache có version và migration; không parse được thì bỏ và fetch lại. Màn hình mở từ notification chỉ nhận id rồi tự tải dữ liệu. Mình thêm lint cho `as`, `any` và `!`, và test với dữ liệu sai hình dạng, gồm cả bản cache của phiên bản trước.",
+      "en": "TypeScript is only right about what it can see, and the types are gone before the app runs. Both failing paths are boundaries. The push notification hands the screen params it trusts as a full `User`, while the payload only carries an id. After the update, the app reads the old cache with `JSON.parse(raw) as User`, and the old object has no `address`. My fix is to validate at every boundary: zod schemas for API responses, the cache, push payloads and route params, with types derived through `z.infer` so they cannot drift. The cache gets a version and migrations; if it fails to parse, I drop it and refetch. A screen opened from a notification takes only an id and loads its own data. I add lint rules for `as`, `any` and `!`, and tests with malformed data, including a cache written by the previous version."
+    },
+    "followUps": [
+      {
+        "vi": "Kiểm tra bằng schema ở mọi response có tốn chi phí không, và bạn giới hạn nó thế nào trên máy yếu?",
+        "en": "Does schema validation on every response have a cost, and how would you keep it in check on low-end devices?"
+      },
+      {
+        "vi": "Bạn bật `strict` cho một codebase lớn đang tắt nó theo từng bước như thế nào?",
+        "en": "How would you turn on `strict` step by step in a large codebase that has it off?"
+      }
+    ]
+  }
+]

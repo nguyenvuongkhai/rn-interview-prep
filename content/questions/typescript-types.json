@@ -1,0 +1,841 @@
+[
+  {
+    "id": "typescript-types-001",
+    "type": "mcq",
+    "topics": [
+      "typescript/types"
+    ],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": [
+      "typescript-types-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Với `type Style = { color: string }`, bạn viết `const a: Style = { color: 'red', colour: 'red' };`, rồi `const extra = { color: 'red', colour: 'red' }; const b: Style = extra;`. Compiler báo lỗi ở đâu?",
+      "en": "Given `type Style = { color: string }`, you write `const a: Style = { color: 'red', colour: 'red' };`, then `const extra = { color: 'red', colour: 'red' }; const b: Style = extra;`. Where does the compiler report an error?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Chỉ ở `a`, vì excess property check chỉ áp dụng cho object literal mới",
+          "en": "Only on `a`, because excess property checks apply only to fresh object literals"
+        }
+      },
+      {
+        "text": {
+          "vi": "Ở cả `a` và `b`, vì `colour` không có trong `Style`",
+          "en": "On both `a` and `b`, because `colour` is not part of `Style`"
+        },
+        "misconception": {
+          "id": "tstypes-excess-check-everywhere",
+          "text": {
+            "vi": "Nghĩ rằng mọi property thừa đều bị chặn. TypeScript dùng structural typing: một giá trị có đủ property cần thiết thì gán được, property thừa vẫn hợp lệ. Excess property check chỉ là kiểm tra bổ sung cho object literal viết trực tiếp tại chỗ gán.",
+            "en": "Believing every extra property is rejected. TypeScript is structural: a value with all the required properties is assignable, and extras are allowed. The excess property check is an extra rule only for an object literal written directly at the assignment."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Chỉ ở `b`, vì biến `extra` đã được suy ra kiểu riêng",
+          "en": "Only on `b`, because the variable `extra` has its own inferred type"
+        },
+        "misconception": {
+          "id": "tstypes-excess-check-on-variables",
+          "text": {
+            "vi": "Hiểu ngược phạm vi của excess property check. Kiểm tra này chạy trên object literal mới (`a`); khi gán qua một biến đã có kiểu (`b`), chỉ còn kiểm tra cấu trúc, và property thừa được chấp nhận.",
+            "en": "Reversing where the excess property check applies. It runs on a fresh object literal (`a`); assigning through an already-typed variable (`b`) only checks structure, and extra properties are accepted."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Không ở đâu cả, vì structural typing luôn cho phép property thừa",
+          "en": "Nowhere, because structural typing always allows extra properties"
+        },
+        "misconception": {
+          "id": "tstypes-no-excess-check",
+          "text": {
+            "vi": "Không biết có excess property check. Với object literal mới gán vào một kiểu cụ thể, TypeScript báo `Object literal may only specify known properties`, chính là thứ bắt lỗi gõ nhầm như `colour`.",
+            "en": "Not knowing about excess property checks. A fresh object literal assigned to a specific type gets `Object literal may only specify known properties`, which is exactly what catches typos like `colour`."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0
+    ],
+    "explanation": {
+      "vi": "TypeScript so sánh theo cấu trúc: `extra` có `color: string` nên gán được cho `Style`, property `colour` thừa không làm sai kiểu. Riêng object literal mới gán thẳng vào một kiểu thì có thêm excess property check, vì property thừa ở đó gần như chắc chắn là gõ nhầm. Bẫy chính là tưởng kiểm tra này luôn chạy: style hay config đi qua một biến trung gian, hoặc được spread từ chỗ khác, sẽ để lọt lỗi gõ nhầm tên property.",
+      "en": "TypeScript compares structure: `extra` has `color: string`, so it is assignable to `Style`, and the extra `colour` does not break the type. A fresh object literal assigned straight to a type gets an additional excess property check, because an extra property there is almost certainly a typo. The trap is assuming the check always runs: a style or config object that goes through an intermediate variable, or is spread from elsewhere, lets misspelt property names through."
+    }
+  },
+  {
+    "id": "typescript-types-002",
+    "type": "mcq",
+    "topics": [
+      "typescript/types"
+    ],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": [
+      "typescript-types-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Project bật `strict: true` và dùng TypeScript 4.4 trở lên. Bạn viết `try { await api.save(draft); } catch (e) { showToast(e.message); }`. Compiler báo gì?",
+      "en": "The project has `strict: true` and TypeScript 4.4 or later. You write `try { await api.save(draft); } catch (e) { showToast(e.message); }`. What does the compiler report?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Lỗi: `e` là `unknown`, cần narrow trước khi dùng",
+          "en": "An error: `e` is `unknown` and must be narrowed before use"
+        }
+      },
+      {
+        "text": {
+          "vi": "Không lỗi: biến trong `catch` luôn có kiểu `any`",
+          "en": "No error: a `catch` variable is always typed `any`"
+        },
+        "misconception": {
+          "id": "tstypes-catch-is-any",
+          "text": {
+            "vi": "Nhớ hành vi cũ. Từ TypeScript 4.4, `strict` bật `useUnknownInCatchVariables`, nên biến trong `catch` có kiểu `unknown`. Chỉ khi tắt flag đó hoặc dùng bản cũ hơn thì nó mới là `any`.",
+            "en": "Remembering the old behaviour. Since TypeScript 4.4, `strict` enables `useUnknownInCatchVariables`, so a `catch` variable is `unknown`. It is `any` only with that flag off or on an older version."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Không lỗi: biến trong `catch` được suy ra là `Error`",
+          "en": "No error: the `catch` variable is inferred as `Error`"
+        },
+        "misconception": {
+          "id": "tstypes-catch-is-error",
+          "text": {
+            "vi": "Nghĩ rằng thứ bị throw luôn là `Error`. JavaScript cho phép throw bất kỳ giá trị nào (string, object, `undefined`), nên TypeScript không thể suy ra `Error` cho biến trong `catch`.",
+            "en": "Believing whatever is thrown is always an `Error`. JavaScript lets you throw any value (a string, an object, `undefined`), so TypeScript cannot infer `Error` for a `catch` variable."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Lỗi: phải khai báo kiểu tường minh `catch (e: Error)`",
+          "en": "An error: you must annotate it explicitly as `catch (e: Error)`"
+        },
+        "misconception": {
+          "id": "tstypes-catch-annotate-error",
+          "text": {
+            "vi": "Nghĩ rằng có thể gắn kiểu `Error` cho biến trong `catch`. TypeScript chỉ cho phép annotation `any` hoặc `unknown` ở đó; `catch (e: Error)` chính nó là lỗi compile.",
+            "en": "Believing a `catch` variable can be annotated as `Error`. TypeScript only allows `any` or `unknown` there; `catch (e: Error)` is itself a compile error."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0
+    ],
+    "explanation": {
+      "vi": "Từ TypeScript 4.4, `strict` bao gồm `useUnknownInCatchVariables`, nên `e` có kiểu `unknown` và `e.message` bị báo lỗi cho tới khi bạn narrow. Cách viết thường gặp: `const message = e instanceof Error ? e.message : String(e);`. Đây là ý định của flag: một thư viện có thể throw string hoặc object thuần, và `e.message` sẽ âm thầm thành `undefined` trên toast. Bẫy chính là nghĩ `catch (e: Error)` sửa được; annotation đó không được phép.",
+      "en": "Since TypeScript 4.4, `strict` includes `useUnknownInCatchVariables`, so `e` is `unknown` and `e.message` is an error until you narrow. A common pattern is `const message = e instanceof Error ? e.message : String(e);`. That is the point of the flag: a library can throw a string or a plain object, and `e.message` would silently show `undefined` in the toast. The trap is thinking `catch (e: Error)` fixes it; that annotation is not allowed."
+    }
+  },
+  {
+    "id": "typescript-types-003",
+    "type": "mcq",
+    "topics": [
+      "typescript/types"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": [
+      "typescript-types-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "So sánh `const routes: Record<string, string> = { home: '/', profile: '/profile' };` với `const routes = { home: '/', profile: '/profile' } satisfies Record<string, string>;` (TypeScript 4.9 trở lên). Khác biệt nào là đúng?",
+      "en": "Compare `const routes: Record<string, string> = { home: '/', profile: '/profile' };` with `const routes = { home: '/', profile: '/profile' } satisfies Record<string, string>;` (TypeScript 4.9 or later). Which difference is correct?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Với `satisfies`, `routes.settings` là lỗi compile; với annotation thì nó compile được",
+          "en": "With `satisfies`, `routes.settings` is a compile error; with the annotation it compiles"
+        }
+      },
+      {
+        "text": {
+          "vi": "Không khác gì nhau, `satisfies` chỉ là cú pháp khác của annotation",
+          "en": "No difference; `satisfies` is just another syntax for an annotation"
+        },
+        "misconception": {
+          "id": "tstypes-satisfies-same-as-annotation",
+          "text": {
+            "vi": "Nghĩ rằng `satisfies` đổi kiểu của biến. Annotation thay kiểu suy ra bằng kiểu khai báo; `satisfies` chỉ kiểm tra giá trị có khớp kiểu đó không, rồi giữ nguyên kiểu suy ra hẹp hơn.",
+            "en": "Believing `satisfies` changes the variable's type. An annotation replaces the inferred type with the declared one; `satisfies` only checks that the value matches, then keeps the narrower inferred type."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Với `satisfies`, `routes.home` có kiểu literal `'/'` như khi dùng `as const`",
+          "en": "With `satisfies`, `routes.home` has the literal type `'/'`, as with `as const`"
+        },
+        "misconception": {
+          "id": "tstypes-satisfies-implies-const",
+          "text": {
+            "vi": "Nhầm `satisfies` với `as const`. `satisfies` giữ kiểu suy ra bình thường, mà property của object mutable được widen thành `string`. Muốn literal và readonly thì viết `as const satisfies ...`.",
+            "en": "Confusing `satisfies` with `as const`. `satisfies` keeps the normal inferred type, and properties of a mutable object widen to `string`. For literal, readonly types write `as const satisfies ...`."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Với `satisfies`, giá trị sai kiểu như `home: 1` vẫn qua được, giống `as`",
+          "en": "With `satisfies`, a wrongly typed value such as `home: 1` still passes, like `as`"
+        },
+        "misconception": {
+          "id": "tstypes-satisfies-unchecked",
+          "text": {
+            "vi": "Nhầm `satisfies` với type assertion. `as` không kiểm tra giá trị; `satisfies` thì có, nên `home: 1` bị báo lỗi vì `number` không gán được cho `string`.",
+            "en": "Confusing `satisfies` with a type assertion. `as` does not check the value; `satisfies` does, so `home: 1` is reported because `number` is not assignable to `string`."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0
+    ],
+    "explanation": {
+      "vi": "Annotation `Record<string, string>` làm biến mất thông tin về các key cụ thể: mọi key đều hợp lệ, nên gõ nhầm `routes.settings` vẫn compile (kiểu `string`, hoặc `string | undefined` với `noUncheckedIndexedAccess`). `satisfies` kiểm tra object khớp `Record<string, string>` nhưng giữ kiểu suy ra `{ home: string; profile: string }`, nên key không tồn tại bị báo lỗi và autocomplete vẫn biết từng key. Bẫy chính là nghĩ `satisfies` cũng tạo kiểu literal; cái đó cần `as const`.",
+      "en": "The `Record<string, string>` annotation throws away the specific keys: any key is valid, so the typo `routes.settings` compiles (as `string`, or `string | undefined` with `noUncheckedIndexedAccess`). `satisfies` checks that the object matches `Record<string, string>` but keeps the inferred `{ home: string; profile: string }`, so a missing key is an error and autocomplete still knows each key. The trap is thinking `satisfies` also produces literal types; that needs `as const`."
+    }
+  },
+  {
+    "id": "typescript-types-004",
+    "type": "mcq",
+    "topics": [
+      "typescript/types"
+    ],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": [
+      "typescript-types-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Code có `type User = { id: string; name: string }` và `const user = (await res.json()) as User; label = user.name.toUpperCase();`. Backend đổi response thành `{ id, fullName }`. Chuyện gì xảy ra?",
+      "en": "The code has `type User = { id: string; name: string }` and `const user = (await res.json()) as User; label = user.name.toUpperCase();`. The backend changes the response to `{ id, fullName }`. What happens?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Vẫn compile; lúc chạy `user.name` là `undefined` và `toUpperCase` ném TypeError",
+          "en": "It still compiles; at runtime `user.name` is `undefined` and `toUpperCase` throws a TypeError"
+        }
+      },
+      {
+        "text": {
+          "vi": "`as User` ném lỗi lúc chạy vì hình dạng dữ liệu không khớp",
+          "en": "`as User` throws at runtime because the data shape does not match"
+        },
+        "misconception": {
+          "id": "tstypes-as-runtime-check",
+          "text": {
+            "vi": "Nghĩ rằng type assertion kiểm tra lúc chạy. Kiểu bị xoá khi compile; `as User` không sinh ra code nào, nó chỉ bảo compiler tin bạn.",
+            "en": "Believing a type assertion is checked at runtime. Types are erased at compile time; `as User` emits no code at all, it only tells the compiler to trust you."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Compiler báo response thiếu property `name`",
+          "en": "The compiler reports that the response lacks `name`"
+        },
+        "misconception": {
+          "id": "tstypes-compiler-sees-api",
+          "text": {
+            "vi": "Nghĩ rằng compiler biết dữ liệu thật từ API. Compiler chỉ thấy kiểu khai báo; `res.json()` trả về `Promise<any>`, nên nó không thể biết backend đã đổi gì.",
+            "en": "Believing the compiler knows the real API data. It only sees declared types; `res.json()` returns `Promise<any>`, so it cannot know what the backend changed."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Với `strict`, compiler không cho ép kiểu kết quả `any` của `res.json()`",
+          "en": "Under `strict`, the compiler refuses to assert the `any` result of `res.json()`"
+        },
+        "misconception": {
+          "id": "tstypes-strict-blocks-any-cast",
+          "text": {
+            "vi": "Nghĩ rằng `strict` cấm `any` tường minh. `noImplicitAny` chỉ bắt `any` ngầm định; `any` từ thư viện như `res.json()` vẫn ép được sang mọi kiểu. Muốn chặn thì cần lint, ví dụ các rule `no-unsafe-*` của typescript-eslint.",
+            "en": "Believing `strict` bans explicit `any`. `noImplicitAny` only catches implicit `any`; an `any` coming from a library such as `res.json()` can still be asserted to anything. Blocking it needs lint, for example typescript-eslint's `no-unsafe-*` rules."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0
+    ],
+    "explanation": {
+      "vi": "Kiểu của TypeScript bị xoá hoàn toàn khi compile, nên `as User` không kiểm tra gì lúc chạy. Dữ liệu thiếu `name` đi qua mà không ai biết, và app crash ở chỗ dùng nó, thường xa nơi gọi API. Ranh giới với API (cũng như storage, deep link, push payload) cần kiểm tra lúc chạy, ví dụ schema zod với `safeParse`, rồi suy ra kiểu từ schema. Bẫy chính là tin rằng `strict` bảo vệ được dữ liệu từ bên ngoài.",
+      "en": "TypeScript types are erased entirely at compile time, so `as User` checks nothing at runtime. Data without `name` flows through unnoticed and the app crashes where it is used, often far from the API call. Boundaries such as the API (and storage, deep links, push payloads) need a runtime check, for example a zod schema with `safeParse`, with the type inferred from the schema. The trap is trusting `strict` to protect data from outside."
+    }
+  },
+  {
+    "id": "typescript-types-005",
+    "type": "mcq",
+    "topics": [
+      "typescript/types"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 75,
+    "lessons": [
+      "typescript-types-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Cho `type A = { id: string }`. Bạn khai báo `type B = A & { id: number };` và `interface C extends A { id: number }`. Compiler báo gì?",
+      "en": "Given `type A = { id: string }`, you declare `type B = A & { id: number };` and `interface C extends A { id: number }`. What does the compiler report?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Chỉ `C` lỗi; `B` compile được nhưng không giá trị thật nào gán được cho nó",
+          "en": "Only `C` errors; `B` compiles, but no real value can be assigned to it"
+        }
+      },
+      {
+        "text": {
+          "vi": "Chỉ `B` lỗi, vì intersection không được khai báo lại `id`",
+          "en": "Only `B` errors, because an intersection cannot redeclare `id`"
+        },
+        "misconception": {
+          "id": "tstypes-intersection-conflict-errors",
+          "text": {
+            "vi": "Nghĩ rằng intersection kiểm tra xung đột lúc khai báo. `&` chỉ giao các kiểu lại; `string & number` thành `never` mà không có lỗi, và lỗi chỉ hiện ra muộn hơn ở chỗ tạo giá trị.",
+            "en": "Believing intersections check for conflicts when declared. `&` just intersects the types; `string & number` becomes `never` with no error, and the error only surfaces later, where a value is created."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Không lỗi; trong cả hai, `id: number` khai báo sau sẽ ghi đè",
+          "en": "No errors; in both, the later `id: number` overrides the original"
+        },
+        "misconception": {
+          "id": "tstypes-override-property",
+          "text": {
+            "vi": "Nghĩ rằng property khai báo sau ghi đè property trước. `extends` yêu cầu property mới phải gán được cho property cũ, còn `&` giao hai kiểu lại; không cái nào ghi đè. Muốn thay kiểu thì dùng `Omit<A, 'id'> & { id: number }`.",
+            "en": "Believing a later property overrides an earlier one. `extends` requires the new property to be assignable to the old one, and `&` intersects both; neither overrides. To replace a type, use `Omit<A, 'id'> & { id: number }`."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Cả hai cùng lỗi, với cùng một thông báo property không tương thích",
+          "en": "Both error, with the same incompatible-property message"
+        },
+        "misconception": {
+          "id": "tstypes-extends-same-as-intersection",
+          "text": {
+            "vi": "Nghĩ rằng `extends` và `&` tương đương. `interface extends` kiểm tra tính tương thích ngay khi khai báo và báo `incorrectly extends`; intersection thì không kiểm tra gì cho tới khi dùng.",
+            "en": "Believing `extends` and `&` are equivalent. `interface extends` checks compatibility at the declaration and reports `incorrectly extends`; an intersection checks nothing until it is used."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0
+    ],
+    "explanation": {
+      "vi": "`interface C extends A` yêu cầu `id: number` gán được cho `id: string`, nên compiler báo ngay `Interface 'C' incorrectly extends interface 'A'`. Intersection thì không kiểm tra: `id` thành `string & number`, tức `never`, và lỗi chỉ hiện ra khi bạn tạo object, thường kèm thông báo khó hiểu. Đây là một lý do để dùng `interface extends` cho kiểu object được mở rộng: lỗi báo ở đúng chỗ khai báo. Bẫy chính là tưởng khai báo sau sẽ ghi đè; muốn thay kiểu thì `Omit` trước.",
+      "en": "`interface C extends A` requires `id: number` to be assignable to `id: string`, so the compiler reports `Interface 'C' incorrectly extends interface 'A'` straight away. An intersection does no such check: `id` becomes `string & number`, which is `never`, and the error only appears when you build an object, usually with a confusing message. That is one reason to use `interface extends` for object types you extend: the error lands at the declaration. The trap is expecting the later declaration to override; to replace a type, `Omit` it first."
+    }
+  },
+  {
+    "id": "typescript-types-006",
+    "type": "mcq",
+    "topics": [
+      "typescript/types"
+    ],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": [
+      "typescript-types-core"
+    ],
+    "multi": true,
+    "prompt": {
+      "vi": "tsconfig bật `strict: true`, không bật `noUncheckedIndexedAccess`. Những dòng nào compile không lỗi nhưng có thể ném lỗi lúc chạy? (Chọn tất cả đáp án đúng)",
+      "en": "tsconfig has `strict: true` and no `noUncheckedIndexedAccess`. Which lines compile without errors but can throw at runtime? (Select all that apply)"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "`const title = items[0].title;` với `items: Item[]`",
+          "en": "`const title = items[0].title;` with `items: Item[]`"
+        }
+      },
+      {
+        "text": {
+          "vi": "`const name = user!.name;` với `user: User | undefined`",
+          "en": "`const name = user!.name;` with `user: User | undefined`"
+        }
+      },
+      {
+        "text": {
+          "vi": "`const url = (JSON.parse(raw) as Config).api.url;`",
+          "en": "`const url = (JSON.parse(raw) as Config).api.url;`"
+        }
+      },
+      {
+        "text": {
+          "vi": "`const v: unknown = JSON.parse(raw); const url = v.api;`",
+          "en": "`const v: unknown = JSON.parse(raw); const url = v.api;`"
+        },
+        "misconception": {
+          "id": "tstypes-unknown-like-any",
+          "text": {
+            "vi": "Nghĩ rằng `unknown` dễ dãi như `any`. `unknown` nhận mọi giá trị nhưng không cho đọc property hay gọi method khi chưa narrow, nên `v.api` là lỗi compile.",
+            "en": "Believing `unknown` is as permissive as `any`. `unknown` accepts any value but allows no property access or calls until narrowed, so `v.api` is a compile error."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`function len(x?: string) { return x.length; }`",
+          "en": "`function len(x?: string) { return x.length; }`"
+        },
+        "misconception": {
+          "id": "tstypes-optional-unchecked",
+          "text": {
+            "vi": "Nghĩ rằng tham số optional không bị kiểm tra. Với `strictNullChecks`, `x` có kiểu `string | undefined`, nên `x.length` bị báo `'x' is possibly 'undefined'`.",
+            "en": "Believing optional parameters are not checked. Under `strictNullChecks`, `x` is `string | undefined`, so `x.length` is reported as `'x' is possibly 'undefined'`."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0,
+      1,
+      2
+    ],
+    "explanation": {
+      "vi": "Ba dòng đầu đều là chỗ compiler tin bạn. Không có `noUncheckedIndexedAccess`, `items[0]` có kiểu `Item` dù mảng rỗng; bật flag đó thì nó thành `Item | undefined`. Non-null assertion `!` chỉ xoá `undefined` khỏi kiểu, không kiểm tra gì lúc chạy. `as Config` trên kết quả `any` của `JSON.parse` cũng không kiểm tra. Hai dòng cuối bị compiler chặn: `unknown` phải narrow trước khi dùng, và tham số optional có kiểu `string | undefined`. Bẫy chính là coi `strict` là đủ an toàn trong khi `!`, `as` và index truy cập vẫn mở.",
+      "en": "The first three lines are all places where the compiler trusts you. Without `noUncheckedIndexedAccess`, `items[0]` is typed `Item` even for an empty array; with the flag it becomes `Item | undefined`. The non-null assertion `!` only removes `undefined` from the type and checks nothing at runtime. `as Config` on the `any` result of `JSON.parse` checks nothing either. The last two lines are rejected: `unknown` must be narrowed before use, and an optional parameter is `string | undefined`. The trap is treating `strict` as fully safe while `!`, `as` and index access stay open."
+    }
+  },
+  {
+    "id": "typescript-types-007",
+    "type": "mcq",
+    "topics": [
+      "typescript/types"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": [
+      "typescript-types-core"
+    ],
+    "multi": true,
+    "prompt": {
+      "vi": "Bạn so sánh `enum Theme { Light = 'light', Dark = 'dark' }`, `enum Size { Small, Large }` và `type ThemeName = 'light' | 'dark'`. Những phát biểu nào đúng? (Chọn tất cả đáp án đúng)",
+      "en": "You compare `enum Theme { Light = 'light', Dark = 'dark' }`, `enum Size { Small, Large }` and `type ThemeName = 'light' | 'dark'`. Which statements are true? (Select all that apply)"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "`enum` thường sinh ra một object lúc chạy, còn `ThemeName` bị xoá hoàn toàn",
+          "en": "A regular `enum` emits a runtime object, while `ThemeName` is erased entirely"
+        }
+      },
+      {
+        "text": {
+          "vi": "`const t: ThemeName = 'dark'` compile được mà không cần import gì",
+          "en": "`const t: ThemeName = 'dark'` compiles without importing anything"
+        }
+      },
+      {
+        "text": {
+          "vi": "`const t: Theme = 'dark'` compile được, vì `Theme.Dark` bằng `'dark'`",
+          "en": "`const t: Theme = 'dark'` compiles, because `Theme.Dark` equals `'dark'`"
+        },
+        "misconception": {
+          "id": "tstypes-string-enum-accepts-literal",
+          "text": {
+            "vi": "Nghĩ rằng string enum tương thích với string literal. String enum là nominal: `const t: Theme = 'dark'` là lỗi compile, bạn phải viết `Theme.Dark`. Đây là lý do union string literal tiện hơn với dữ liệu từ bên ngoài.",
+            "en": "Believing string enums are compatible with string literals. String enums are nominal: `const t: Theme = 'dark'` is a compile error and you must write `Theme.Dark`. That is why literal unions are easier with outside data."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Tham số kiểu `Size` từ chối mọi biến có kiểu `number`",
+          "en": "A `Size` parameter rejects any variable typed `number`"
+        },
+        "misconception": {
+          "id": "tstypes-numeric-enum-strict",
+          "text": {
+            "vi": "Nghĩ rằng numeric enum chặt như string enum. Một giá trị kiểu `number` vẫn gán được cho numeric enum, nên `Size` không bảo vệ được bạn khỏi một số bất kỳ đọc từ storage.",
+            "en": "Believing numeric enums are as strict as string enums. A value typed `number` is still assignable to a numeric enum, so `Size` does not protect you from an arbitrary number read from storage."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Union string literal không kiểm tra exhaustive được bằng `never` trong `switch`",
+          "en": "A string literal union cannot be checked exhaustively with `never` in a `switch`"
+        },
+        "misconception": {
+          "id": "tstypes-union-no-exhaustive",
+          "text": {
+            "vi": "Nghĩ rằng chỉ enum mới kiểm tra exhaustive được. `switch` trên union literal narrow từng nhánh như enum; ở `default`, giá trị còn lại có kiểu `never` nếu đã xử lý đủ mọi trường hợp.",
+            "en": "Believing only enums support exhaustiveness checks. A `switch` on a literal union narrows each branch just like an enum; in `default` the remaining value is `never` once every case is handled."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0,
+      1
+    ],
+    "explanation": {
+      "vi": "`enum` là một trong số ít cú pháp TypeScript sinh ra code lúc chạy: một object, và với numeric enum còn có reverse mapping. Union string literal bị xoá hoàn toàn và nhận thẳng chuỗi từ JSON hay AsyncStorage sau khi bạn kiểm tra. String enum là nominal nên `'dark'` không gán được cho `Theme`. Numeric enum lại lỏng: một `number` bất kỳ vẫn gán được. Cả hai đều kiểm tra exhaustive được bằng `never`. Bẫy chính là tưởng enum an toàn hơn union trong mọi trường hợp.",
+      "en": "`enum` is one of the few TypeScript constructs that emits runtime code: an object, plus a reverse mapping for numeric enums. A string literal union is erased entirely and accepts strings straight from JSON or AsyncStorage once you have checked them. String enums are nominal, so `'dark'` is not assignable to `Theme`. Numeric enums are loose: any `number` is still assignable. Both support exhaustiveness checks with `never`. The trap is assuming enums are always safer than unions."
+    }
+  },
+  {
+    "id": "typescript-types-008",
+    "type": "spot-bug",
+    "topics": [
+      "typescript/types"
+    ],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 105,
+    "lessons": [
+      "typescript-types-core"
+    ],
+    "prompt": {
+      "vi": "Sau khi refactor, `loadProfile` luôn throw, kể cả với profile hợp lệ, và message của lỗi là chuỗi rỗng. Type-check vẫn pass. Dòng nào gây lỗi, và vì sao?",
+      "en": "After a refactor, `loadProfile` always throws, even for valid profiles, and the error message is empty. The type check still passes. Which line causes it, and why?"
+    },
+    "code": "type ApiError = { code: string; message: string };\ntype Profile = { id: string; name: string };\n\nfunction isApiError(value: unknown): value is ApiError {\n  return typeof value === 'object' && value !== null;\n}\n\nasync function loadProfile(id: string): Promise<Profile> {\n  const res = await fetch(`/api/profiles/${id}`);\n  const body: unknown = await res.json();\n  if (isApiError(body)) {\n    throw new Error(body.message);\n  }\n  return body as Profile;\n}",
+    "answerLine": 5,
+    "causeOptions": [
+      {
+        "text": {
+          "vi": "Guard trả về `true` với mọi object khác null, nên mọi body đều bị coi là `ApiError`",
+          "en": "The guard returns `true` for any non-null object, so every body is treated as `ApiError`"
+        }
+      },
+      {
+        "text": {
+          "vi": "Guard đúng vì TypeScript kiểm tra thân guard theo `ApiError`; lỗi nằm ở `res.json()`",
+          "en": "The guard is fine because TypeScript checks its body against `ApiError`; the bug is in `res.json()`"
+        },
+        "misconception": {
+          "id": "tstypes-guard-checked-by-compiler",
+          "text": {
+            "vi": "Nghĩ rằng compiler kiểm tra logic của type guard. Với `value is ApiError`, compiler chỉ yêu cầu hàm trả về boolean và tin kết quả đó; guard sai sẽ nói dối compiler mà không có cảnh báo nào.",
+            "en": "Believing the compiler verifies a type guard's logic. For `value is ApiError` it only requires a boolean return and trusts it; a wrong guard lies to the compiler with no warning."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Narrowing mất sau `await`, nên trong `if` thì `body` lại là `unknown`",
+          "en": "Narrowing is lost after `await`, so inside the `if` `body` is `unknown` again"
+        },
+        "misconception": {
+          "id": "tstypes-narrowing-lost-after-await",
+          "text": {
+            "vi": "Nghĩ rằng `await` xoá narrowing. Narrowing của biến `const` giữ nguyên qua `await` trong cùng hàm; thứ làm mất narrowing là callback hoặc gán lại biến `let`.",
+            "en": "Believing `await` resets narrowing. Narrowing of a `const` survives `await` within the same function; what loses it is a callback or reassigning a `let`."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Guard phải là `asserts value is ApiError` thì mới narrow được trong `if`",
+          "en": "The guard must be `asserts value is ApiError` to narrow inside an `if`"
+        },
+        "misconception": {
+          "id": "tstypes-guard-needs-asserts",
+          "text": {
+            "vi": "Nhầm hai loại guard. `value is T` narrow trong nhánh `if`; `asserts value is T` dùng cho hàm throw khi sai và narrow phần code sau lời gọi.",
+            "en": "Confusing the two kinds of guard. `value is T` narrows inside an `if` branch; `asserts value is T` is for functions that throw when false and narrows the code after the call."
+          }
+        }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "Dòng 5 chỉ kiểm tra `body` là object, mà profile hợp lệ cũng là object. Compiler tin chữ ký `value is ApiError` nên type-check pass, rồi dòng 12 tạo `Error` từ `body.message`, vốn là `undefined`, nên message rỗng. Guard phải kiểm tra property phân biệt, ví dụ `'code' in value && typeof value.code === 'string'`. Dòng 14 cũng là một assertion không kiểm tra; một schema zod cho cả hai nhánh sẽ an toàn hơn.",
+      "en": "Line 5 only checks that `body` is an object, and a valid profile is an object too. The compiler trusts the `value is ApiError` signature, so the type check passes, then line 12 builds an `Error` from `body.message`, which is `undefined`, hence the empty message. The guard must test a distinguishing property, for example `'code' in value && typeof value.code === 'string'`. Line 14 is an unchecked assertion as well; a zod schema for both branches would be safer."
+    }
+  },
+  {
+    "id": "typescript-types-009",
+    "type": "spot-bug",
+    "topics": [
+      "typescript/types"
+    ],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": [
+      "typescript-types-core"
+    ],
+    "prompt": {
+      "vi": "Màn hình thanh toán có nút \"Không tip\" đặt `percent` thành `0`. Sau khi bấm, nút Pay đã bật nhưng label vẫn hiện \"Choose a tip\". Dòng nào gây lỗi, và vì sao?",
+      "en": "The checkout screen has a \"No tip\" button that sets `percent` to `0`. After tapping it, Pay is enabled but the label still says \"Choose a tip\". Which line causes it, and why?"
+    },
+    "code": "type TipState = { percent: number | null; billCents: number };\n\nfunction tipLabel({ percent, billCents }: TipState): string {\n  if (!percent) {\n    return 'Choose a tip';\n  }\n  const tipCents = Math.round((billCents * percent) / 100);\n  return `Tip ${percent}%: ${(tipCents / 100).toFixed(2)}`;\n}\n\nfunction canPay(state: TipState): boolean {\n  return state.percent !== null;\n}",
+    "answerLine": 4,
+    "causeOptions": [
+      {
+        "text": {
+          "vi": "`!percent` cũng đúng với `0`, nên lựa chọn 0% hợp lệ bị xử lý như `null`",
+          "en": "`!percent` is also true for `0`, so the valid 0% choice is handled like `null`"
+        }
+      },
+      {
+        "text": {
+          "vi": "`!` không narrow `number | null`, nên phía dưới `percent` vẫn có thể là `null`",
+          "en": "`!` does not narrow `number | null`, so below it `percent` can still be `null`"
+        },
+        "misconception": {
+          "id": "tstypes-bang-no-narrow",
+          "text": {
+            "vi": "Nghĩ rằng truthiness check không narrow. Sau `if (!percent) return`, compiler narrow `percent` thành `number`. Vấn đề là nó loại cả `0` lúc chạy, điều kiểu không thể hiện ra.",
+            "en": "Believing truthiness checks do not narrow. After `if (!percent) return`, the compiler narrows `percent` to `number`. The problem is that it also drops `0` at runtime, which the type does not show."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`canPay` phải dùng `!!state.percent` để hai hàm kiểm tra giống nhau",
+          "en": "`canPay` should use `!!state.percent` so both functions check the same way"
+        },
+        "misconception": {
+          "id": "tstypes-match-truthiness-fix",
+          "text": {
+            "vi": "Sửa sai hướng. Đổi `canPay` sang truthiness sẽ làm cả nút Pay cũng từ chối 0%. Cách đúng là đổi `tipLabel` sang `percent === null`, kiểm tra đúng giá trị \"chưa chọn\".",
+            "en": "Fixing in the wrong direction. Switching `canPay` to truthiness makes Pay reject 0% as well. The fix is to change `tipLabel` to `percent === null`, which tests exactly the \"not chosen\" value."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Template literal biến `0` thành chuỗi rỗng, nên label rơi về giá trị mặc định",
+          "en": "The template literal turns `0` into an empty string, so the label falls back to the default"
+        },
+        "misconception": {
+          "id": "tstypes-template-zero-empty",
+          "text": {
+            "vi": "Nghĩ rằng `0` trong template literal thành chuỗi rỗng. `${0}` cho ra `\"0\"`; label sai vì hàm đã return ở dòng 5 trước khi tới template.",
+            "en": "Believing `0` becomes an empty string in a template literal. `${0}` gives `\"0\"`; the label is wrong because the function returned on line 5 before reaching the template."
+          }
+        }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "Dòng 4 dùng truthiness để loại `null`, nhưng `0` cũng falsy, nên 0% đi vào nhánh \"Choose a tip\". Compiler không báo gì vì sau check đó `percent` được narrow đúng thành `number`. `canPay` dùng `!== null` nên hai hàm lệch nhau. Sửa bằng `if (percent === null)`. Cùng lỗi này xảy ra với `''`, và trong JSX `{count && <Badge />}` với `count = 0` còn render chữ `0`, trên RN thường gây lỗi text phải nằm trong `<Text>`.",
+      "en": "Line 4 uses truthiness to exclude `null`, but `0` is falsy too, so 0% goes down the \"Choose a tip\" branch. The compiler stays quiet because after that check `percent` is correctly narrowed to `number`. `canPay` uses `!== null`, so the two functions disagree. Fix it with `if (percent === null)`. The same bug happens with `''`, and in JSX `{count && <Badge />}` with `count = 0` renders the text `0`, which on RN usually triggers the error that text strings must be rendered within `<Text>`."
+    }
+  },
+  {
+    "id": "typescript-types-010",
+    "type": "spot-bug",
+    "topics": [
+      "typescript/types"
+    ],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 135,
+    "lessons": [
+      "typescript-types-core"
+    ],
+    "prompt": {
+      "vi": "Một đồng nghiệp thêm trạng thái `'idle'` vào `RequestState`. Type-check trên CI vẫn pass, nhưng màn hình crash ngay lần render đầu với lỗi `Unhandled state: {\"status\":\"idle\"}`. Dòng nào gây lỗi, và vì sao?",
+      "en": "A teammate adds an `'idle'` status to `RequestState`. The CI type check still passes, but the screen crashes on first render with `Unhandled state: {\"status\":\"idle\"}`. Which line causes it, and why?"
+    },
+    "code": "type RequestState<T> =\n  | { status: 'idle' }\n  | { status: 'loading' }\n  | { status: 'success'; data: T }\n  | { status: 'error'; error: string };\n\nfunction assertNever(x: never): never {\n  throw new Error(`Unhandled state: ${JSON.stringify(x)}`);\n}\n\nfunction statusText(state: RequestState<string[]>): string {\n  switch (state.status) {\n    case 'loading': return 'Loading';\n    case 'success': return `${state.data.length} items`;\n    case 'error': return state.error;\n    default:\n      return assertNever(state as never);\n  }\n}",
+    "answerLine": 17,
+    "causeOptions": [
+      {
+        "text": {
+          "vi": "`state as never` che mất nhánh `idle` chưa xử lý, nên lỗi chỉ lộ ra lúc chạy",
+          "en": "`state as never` hides the unhandled `idle` member, so the gap only shows at runtime"
+        }
+      },
+      {
+        "text": {
+          "vi": "`assertNever` phải trả về `void`; kiểu `never` làm TS bỏ qua nhánh `default`",
+          "en": "`assertNever` should return `void`; the `never` return makes TS skip the `default` branch"
+        },
+        "misconception": {
+          "id": "tstypes-never-skips-branch",
+          "text": {
+            "vi": "Hiểu sai kiểu trả về `never`. Nó chỉ nói hàm không bao giờ return bình thường, ở đây là luôn throw; nó không làm compiler bỏ qua nhánh nào. Tham số `x: never` mới là phần kiểm tra exhaustive.",
+            "en": "Misreading the `never` return type. It only says the function never returns normally, here because it always throws; it does not make the compiler skip any branch. The `x: never` parameter is what checks exhaustiveness."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Discriminated union không narrow trong `switch`, chỉ narrow trong chuỗi `if`",
+          "en": "Discriminated unions do not narrow inside `switch`, only inside `if` chains"
+        },
+        "misconception": {
+          "id": "tstypes-switch-no-narrow",
+          "text": {
+            "vi": "Nghĩ rằng `switch` không narrow. `switch (state.status)` narrow `state` trong từng `case`, chính vì vậy `state.data` ở nhánh `success` compile được.",
+            "en": "Believing `switch` does not narrow. `switch (state.status)` narrows `state` in each `case`, which is exactly why `state.data` compiles in the `success` branch."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Generic `T` chặn narrowing theo `status`, nên `default` nhận mọi trạng thái",
+          "en": "The generic `T` blocks narrowing on `status`, so `default` receives every state"
+        },
+        "misconception": {
+          "id": "tstypes-generic-blocks-narrowing",
+          "text": {
+            "vi": "Nghĩ rằng tham số generic làm mất narrowing. `status` là literal cố định ở mọi member, không phụ thuộc `T`, nên narrowing vẫn hoạt động; chỉ `idle` rơi xuống `default`.",
+            "en": "Believing a generic parameter breaks narrowing. `status` is a fixed literal in every member and does not depend on `T`, so narrowing works; only `idle` falls through to `default`."
+          }
+        }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "Pattern `assertNever(state)` hoạt động vì ở `default`, `state` chỉ còn những member chưa xử lý. Khi có `idle`, `state` có kiểu `{ status: 'idle' }`, không gán được cho `never`, và compiler sẽ báo lỗi ngay ở dòng 17. `state as never` ép kiểu nên lỗi đó biến mất, và trạng thái mới chỉ lộ ra khi crash. Bỏ `as never`, thêm `case 'idle'`. Đây là ví dụ điển hình của việc assertion tắt đúng kiểm tra bạn đang dựa vào.",
+      "en": "The `assertNever(state)` pattern works because in `default`, `state` holds only the unhandled members. With `idle` added, `state` is `{ status: 'idle' }`, which is not assignable to `never`, so the compiler would flag line 17 immediately. `state as never` asserts that error away, and the new status only surfaces as a crash. Remove `as never` and add `case 'idle'`. It is a textbook case of an assertion switching off the very check you rely on."
+    }
+  },
+  {
+    "id": "typescript-types-011",
+    "type": "open",
+    "topics": [
+      "typescript/types"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 270,
+    "lessons": [
+      "typescript-types-core"
+    ],
+    "prompt": {
+      "vi": "Các màn hình trong app RN của bạn mô tả request bằng `{ isLoading: boolean; isError: boolean; data?: Order[]; error?: string }`. QA báo spinner và thông báo lỗi hiện cùng lúc, và có crash vì `data` là `undefined` khi `isLoading` đã là `false`. Bạn sẽ mô hình lại bằng TypeScript thế nào?",
+      "en": "Screens in your RN app describe requests with `{ isLoading: boolean; isError: boolean; data?: Order[]; error?: string }`. QA reports a spinner and an error message showing together, and crashes because `data` is `undefined` once `isLoading` is `false`. How would you remodel it in TypeScript?"
+    },
+    "keyPoints": [
+      {
+        "vi": "Chỉ ra rằng các cờ boolean độc lập cho phép những tổ hợp vô nghĩa (loading và error cùng lúc, xong mà không có data)",
+        "en": "Point out that independent boolean flags allow impossible combinations (loading and error together, done with no data)"
+      },
+      {
+        "vi": "Dùng discriminated union theo `status`: `idle`, `loading`, `success` kèm `data`, `error` kèm `error`",
+        "en": "Use a discriminated union on `status`: `idle`, `loading`, `success` with `data`, `error` with `error`"
+      },
+      {
+        "vi": "Narrow theo `status` để `data` chỉ truy cập được trong nhánh `success`, không cần `!` hay `?.`",
+        "en": "Narrow on `status` so `data` is only reachable in the `success` branch, with no `!` or `?.`"
+      },
+      {
+        "vi": "Kiểm tra exhaustive bằng `never` trong `default`, để thêm trạng thái mới sẽ báo lỗi ở mọi chỗ chưa xử lý",
+        "en": "Check exhaustiveness with `never` in `default`, so adding a status flags every place that does not handle it"
+      },
+      {
+        "vi": "Cập nhật state bằng cách thay cả object (reducer hoặc setState), không bật tắt từng cờ riêng",
+        "en": "Update state by replacing the whole object (reducer or setState), not by toggling flags one at a time"
+      },
+      {
+        "vi": "Cân nhắc giữ dữ liệu cũ khi refetch bằng một trạng thái riêng hoặc dùng React Query thay vì tự viết",
+        "en": "Consider keeping stale data during refetch with a dedicated state, or using React Query instead of hand-rolling it"
+      }
+    ],
+    "modelAnswer": {
+      "vi": "Vấn đề gốc là bốn field độc lập mô tả được những trạng thái không thể có, ví dụ vừa loading vừa error, hoặc xong mà không có data. Mình đổi sang discriminated union theo `status`: `idle`, `loading`, `success` có `data`, `error` có `error`. Khi component `switch` theo `status`, compiler chỉ cho đọc `data` trong nhánh `success`, nên crash vì `undefined` biến mất mà không cần `!`. Ở `default` mình gọi `assertNever(state)`, nên khi ai đó thêm trạng thái mới, mọi màn hình chưa xử lý sẽ báo lỗi compile. Mỗi lần cập nhật mình thay cả object trong reducer, nên không còn chuyện quên tắt một cờ. Nếu cần hiện dữ liệu cũ trong lúc refetch, mình thêm trạng thái `refreshing` có `data`, hoặc cân nhắc React Query vì nó đã giải bài này.",
+      "en": "The root problem is that four independent fields can describe states that cannot exist, such as loading and error at once, or done with no data. I switch to a discriminated union on `status`: `idle`, `loading`, `success` with `data`, and `error` with `error`. When a component switches on `status`, the compiler only lets it read `data` in the `success` branch, so the `undefined` crash goes away without any `!`. In `default` I call `assertNever(state)`, so when someone adds a status every screen that ignores it fails to compile. Each update replaces the whole object in a reducer, so nobody forgets to clear a flag. If we need stale data during a refetch, I add a `refreshing` state that carries `data`, or consider React Query, which already solves this."
+    },
+    "followUps": [
+      {
+        "vi": "Bạn sẽ type một hook `useRequest<T>()` trả về union này thế nào để component vẫn narrow được sau khi destructure?",
+        "en": "How would you type a `useRequest<T>()` hook returning this union so components can still narrow after destructuring?"
+      },
+      {
+        "vi": "Khi nào bạn vẫn giữ một cờ boolean thay vì thêm một member vào union?",
+        "en": "When would you keep a boolean flag instead of adding another member to the union?"
+      }
+    ]
+  },
+  {
+    "id": "typescript-types-012",
+    "type": "open",
+    "topics": [
+      "typescript/types"
+    ],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 330,
+    "lessons": [
+      "typescript-types-core"
+    ],
+    "prompt": {
+      "vi": "Crashlytics báo `TypeError: Cannot read property 'url' of undefined` trên màn hình profile, sau một lần backend deploy. Kiểu `Profile` khai báo `avatar: { url: string }`, project bật `strict`, và CI type-check pass. Hãy giải thích vì sao TypeScript không bắt được lỗi này, và bạn sẽ thay đổi gì.",
+      "en": "Crashlytics reports `TypeError: Cannot read property 'url' of undefined` on the profile screen after a backend deploy. The `Profile` type declares `avatar: { url: string }`, the project uses `strict`, and the CI type check passes. Explain why TypeScript did not catch this and what you would change."
+    },
+    "keyPoints": [
+      {
+        "vi": "Kiểu bị xoá lúc chạy; TypeScript chỉ kiểm tra code của bạn, không kiểm tra dữ liệu từ mạng",
+        "en": "Types are erased at runtime; TypeScript checks your code, not data arriving over the network"
+      },
+      {
+        "vi": "Tìm chỗ dữ liệu vào: `res.json()` trả về `any`, rồi `as Profile` hoặc generic của client HTTP biến nó thành kiểu đẹp mà không kiểm tra",
+        "en": "Find the entry point: `res.json()` returns `any`, then `as Profile` or an HTTP client generic turns it into a nice type with no check"
+      },
+      {
+        "vi": "Coi response là `unknown` và validate ở ranh giới bằng schema (zod `safeParse`), suy ra kiểu bằng `z.infer` để type và check không lệch nhau",
+        "en": "Treat the response as `unknown` and validate at the boundary with a schema (zod `safeParse`), deriving the type with `z.infer` so type and check cannot drift"
+      },
+      {
+        "vi": "Quyết định cách xử lý khi validate fail: log kèm tên field, hiện trạng thái lỗi hoặc fallback, không crash",
+        "en": "Decide what happens on failure: log the failing field, show an error state or a fallback, not a crash"
+      },
+      {
+        "vi": "Siết các lỗ hổng khác: lint chặn `any` và `as` không an toàn (`no-explicit-any`, `no-unsafe-*` của typescript-eslint), bật `noUncheckedIndexedAccess`",
+        "en": "Close other gaps: lint against `any` and unsafe `as` (typescript-eslint `no-explicit-any`, `no-unsafe-*`), enable `noUncheckedIndexedAccess`"
+      },
+      {
+        "vi": "Phòng ngừa từ phía contract: kiểu sinh từ OpenAPI hoặc contract test, và xem field nào thật sự optional",
+        "en": "Prevent it at the contract level: types generated from OpenAPI or contract tests, and review which fields are really optional"
+      }
+    ],
+    "modelAnswer": {
+      "vi": "TypeScript không thấy được mạng. Kiểu bị xoá khi build, nên `Profile` chỉ là lời hứa. Mình sẽ tìm chỗ dữ liệu vào app: thường là `res.json()` trả về `any`, rồi `as Profile` hoặc generic của axios đổi nó thành kiểu đẹp mà không kiểm tra gì. Backend bỏ `avatar` với user chưa có ảnh, và crash xảy ra ở màn hình, xa nơi gọi API. Cách sửa là coi response là `unknown` và validate ở ranh giới bằng zod: `safeParse`, rồi `z.infer` để kiểu luôn khớp schema. Khi fail, mình log tên field lên Crashlytics và hiện trạng thái lỗi thay vì crash. Ở đây `avatar` thật ra là optional, nên schema và UI phải xử lý thiếu ảnh. Thêm lint chặn `any` và `as` không an toàn, và về lâu dài sinh kiểu từ OpenAPI.",
+      "en": "TypeScript cannot see the network. Types are erased at build time, so `Profile` is only a promise. I would find where the data enters the app: usually `res.json()` returns `any`, then `as Profile` or an axios generic turns it into a nice type without checking anything. The backend dropped `avatar` for users without a photo, and the crash happened in the screen, far from the API call. The fix is to treat the response as `unknown` and validate it at the boundary with zod: `safeParse`, then `z.infer` so the type always matches the schema. On failure I log the field name to Crashlytics and show an error state instead of crashing. Here `avatar` really is optional, so the schema and UI must handle a missing photo. I add lint against `any` and unsafe `as`, and longer term generate types from OpenAPI."
+    },
+    "followUps": [
+      {
+        "vi": "Validate mọi response có tốn chi phí đáng kể trên JS thread không, và bạn giảm nó thế nào với list lớn?",
+        "en": "Does validating every response cost much on the JS thread, and how would you reduce it for large lists?"
+      },
+      {
+        "vi": "Khi validate fail ở một field không quan trọng, bạn chặn cả màn hình hay chấp nhận dữ liệu một phần?",
+        "en": "When validation fails on an unimportant field, do you block the whole screen or accept partial data?"
+      }
+    ]
+  }
+]

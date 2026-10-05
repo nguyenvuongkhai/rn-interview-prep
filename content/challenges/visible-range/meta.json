@@ -1,0 +1,15 @@
+{
+  "id": "visible-range",
+  "type": "challenge",
+  "topics": ["performance/lists"],
+  "kind": "advanced",
+  "difficulty": 3,
+  "estSeconds": 900,
+  "lessons": ["performance-lists-core"],
+  "title": { "vi": "Tính cửa sổ render của một danh sách dài", "en": "Compute the render window of a long list" },
+  "hints": [
+    { "vi": "Tính mảng `starts` một lần trong `createLayout`: `starts[0] = 0`, `starts[i + 1] = starts[i] + heights[i]`. Khi đó `offsetOf(i)` là `starts[i]`, và `totalHeight` là phần tử cuối.", "en": "Build a `starts` array once in `createLayout`: `starts[0] = 0`, `starts[i + 1] = starts[i] + heights[i]`. Then `offsetOf(i)` is `starts[i]` and `totalHeight` is the last entry." },
+    { "vi": "Vùng render là `[offset - ext, offset + viewport + ext]` với `ext = viewport * (windowSize - 1) / 2`, rồi kẹp vào `[0, totalHeight]`.", "en": "The render region is `[offset - ext, offset + viewport + ext]` with `ext = viewport * (windowSize - 1) / 2`, clamped to `[0, totalHeight]`." },
+    { "vi": "`starts` tăng dần nên tìm được bằng binary search. `first` là item đầu tiên có điểm cuối lớn hơn đầu vùng; `last` là item cuối cùng có điểm đầu nhỏ hơn cuối vùng.", "en": "`starts` is sorted, so binary search it. `first` is the first item whose end is past the region start; `last` is the last item whose start is before the region end." }
+  ]
+}

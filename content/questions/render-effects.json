@@ -1,0 +1,832 @@
+[
+  {
+    "id": "render-effects-001",
+    "type": "mcq",
+    "topics": [
+      "render/effects"
+    ],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 45,
+    "lessons": [
+      "render-effects-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Hàm truyền vào `useEffect` chạy vào lúc nào so với quá trình render?",
+      "en": "When does the function passed to `useEffect` run, relative to rendering?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Trong lúc render, ngay sau khi hàm component trả về JSX",
+          "en": "During render, right after the component function returns JSX"
+        },
+        "misconception": {
+          "id": "effects-run-during-render",
+          "text": {
+            "vi": "Nghĩ rằng effect chạy như một phần của render. Render phải thuần; React chỉ gọi effect sau khi đã commit kết quả render.",
+            "en": "Believing effects run as part of render. Render must stay pure; React calls effects only after it has committed the result."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Sau khi React commit cập nhật, thường là khi frame mới đã hiện lên",
+          "en": "After React commits the update, usually once the new frame is on screen"
+        }
+      },
+      {
+        "text": {
+          "vi": "Trước khi React commit, để effect còn có thể huỷ cập nhật",
+          "en": "Before React commits, so the effect can still cancel the update"
+        },
+        "misconception": {
+          "id": "effects-run-before-commit",
+          "text": {
+            "vi": "Nghĩ rằng effect chạy trước commit và có thể chặn cập nhật. Khi effect chạy, UI đã được commit; effect chỉ có thể lên lịch một cập nhật mới.",
+            "en": "Believing effects run before commit and can block the update. By the time an effect runs, the UI is committed; it can only schedule another update."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Chỉ sau lần render đầu; các lần cập nhật sau phải dùng `useLayoutEffect`",
+          "en": "Only after the first render; later updates need `useLayoutEffect`"
+        },
+        "misconception": {
+          "id": "effects-mount-only-default",
+          "text": {
+            "vi": "Nghĩ rằng effect mặc định chỉ chạy lúc mount. Không có mảng deps, effect chạy sau mọi lần commit; có deps thì chạy lại mỗi khi một dep đổi.",
+            "en": "Believing effects run only on mount by default. Without a deps array an effect runs after every commit; with deps it re-runs whenever one changes."
+          }
+        }
+      }
+    ],
+    "answer": [
+      1
+    ],
+    "explanation": {
+      "vi": "React render, commit thay đổi xuống cây view native, rồi mới chạy effect. Với cập nhật không đến từ một tương tác rời rạc như tap, React thường để frame được hiện lên trước rồi mới chạy effect, nên effect không chặn việc vẽ. Bẫy chính là nghĩ effect chạy trong render: code trong thân component chạy lúc render, còn code trong effect chạy sau commit. Nếu bạn cần đọc layout và sửa trước khi người dùng thấy, đó là việc của `useLayoutEffect`.",
+      "en": "React renders, commits the changes to the native view tree, and only then runs effects. For updates that do not come from a discrete interaction such as a tap, React usually lets the frame be shown first, so effects do not block drawing. The main trap is thinking effects run during render: code in the component body runs while rendering, code in an effect runs after commit. If you need to read layout and fix it before the user sees it, that is what `useLayoutEffect` is for."
+    }
+  },
+  {
+    "id": "render-effects-002",
+    "type": "mcq",
+    "topics": [
+      "render/effects"
+    ],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": [
+      "render-effects-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Component có `useEffect(() => { connect(roomId); return () => disconnect(roomId); }, [roomId]);`. `roomId` đổi từ `a` sang `b`. Thứ tự các bước là gì?",
+      "en": "A component has `useEffect(() => { connect(roomId); return () => disconnect(roomId); }, [roomId]);`. `roomId` changes from `a` to `b`. In what order do things happen?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "`disconnect('a')`, rồi render lại với `b`, rồi `connect('b')`",
+          "en": "`disconnect('a')`, then the re-render with `b`, then `connect('b')`"
+        },
+        "misconception": {
+          "id": "effects-cleanup-before-render",
+          "text": {
+            "vi": "Nghĩ rằng cleanup chạy trước lần render mới. React render và commit với giá trị mới trước, sau đó mới chạy cleanup của effect cũ.",
+            "en": "Believing the cleanup runs before the next render. React renders and commits with the new value first, then runs the old effect's cleanup."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Render lại với `b`, commit, `disconnect('a')`, rồi `connect('b')`",
+          "en": "Re-render with `b`, commit, `disconnect('a')`, then `connect('b')`"
+        }
+      },
+      {
+        "text": {
+          "vi": "Render lại với `b`, commit, `connect('b')`, rồi `disconnect('a')`",
+          "en": "Re-render with `b`, commit, `connect('b')`, then `disconnect('a')`"
+        },
+        "misconception": {
+          "id": "effects-cleanup-after-new-effect",
+          "text": {
+            "vi": "Nghĩ rằng effect mới chạy trước rồi mới dọn effect cũ. React luôn chạy cleanup của lần trước rồi mới chạy effect mới, nên hai kết nối không bao giờ cùng tồn tại.",
+            "en": "Believing the new effect runs before the old one is cleaned up. React always runs the previous cleanup first, so the two connections never overlap."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Render lại với `b`, rồi `connect('b')`; `disconnect` chỉ chạy khi unmount",
+          "en": "Re-render with `b`, then `connect('b')`; `disconnect` runs only on unmount"
+        },
+        "misconception": {
+          "id": "effects-cleanup-unmount-only",
+          "text": {
+            "vi": "Nghĩ rằng cleanup chỉ chạy khi unmount. React chạy cleanup trước mỗi lần effect chạy lại do deps đổi, và một lần nữa khi unmount.",
+            "en": "Believing cleanup runs only on unmount. React runs it before every re-run caused by a deps change, and once more on unmount."
+          }
+        }
+      }
+    ],
+    "answer": [
+      1
+    ],
+    "explanation": {
+      "vi": "Khi deps đổi, React render với `roomId` mới và commit. Sau đó nó chạy cleanup của lần trước, với closure của lần render cũ nên vẫn thấy `a`, rồi mới chạy effect với `b`. Vì cleanup giữ closure cũ, `disconnect('a')` đúng phòng cũ mà không cần ref. Bẫy chính là nghĩ cleanup chỉ chạy lúc unmount: thực tế nó chạy trước mỗi lần chạy lại.",
+      "en": "When deps change, React renders with the new `roomId` and commits. It then runs the previous cleanup, which closes over the old render and still sees `a`, and only then runs the effect with `b`. Because the cleanup keeps the old closure, `disconnect('a')` targets the right room without a ref. The main trap is thinking cleanup runs only on unmount: it runs before every re-run."
+    }
+  },
+  {
+    "id": "render-effects-003",
+    "type": "mcq",
+    "topics": [
+      "render/effects",
+      "architecture/new-arch"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 75,
+    "lessons": [
+      "render-effects-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Một tooltip phải hiện ngay trên một nút, nên bạn đo nút rồi đặt vị trí cho tooltip. Trên RN 0.76 trở lên với kiến trúc mới, cách nào tránh được việc tooltip hiện sai chỗ trong một frame?",
+      "en": "A tooltip must appear just above a button, so you measure the button and then position the tooltip. On RN 0.76 or later with the New Architecture, which approach avoids the tooltip showing in the wrong place for a frame?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Đo và set state trong `useEffect`; RN gộp nó vào cùng frame",
+          "en": "Measure and set state in `useEffect`; RN batches it into the same frame"
+        },
+        "misconception": {
+          "id": "effects-useeffect-same-frame",
+          "text": {
+            "vi": "Nghĩ rằng cập nhật từ useEffect luôn vào cùng frame. useEffect thường chạy sau khi frame đã hiện, nên vị trí cũ có thể được thấy trước khi cập nhật thứ hai tới.",
+            "en": "Believing updates from useEffect always land in the same frame. useEffect usually runs after the frame is shown, so the old position can be seen before the second update arrives."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Đo và set state trong `useLayoutEffect`, chạy trước khi frame hiện",
+          "en": "Measure and set state in `useLayoutEffect`, which runs before the frame is shown"
+        }
+      },
+      {
+        "text": {
+          "vi": "Dùng `useLayoutEffect` vì nó chạy trên UI thread chứ không phải JS thread",
+          "en": "Use `useLayoutEffect`, because it runs on the UI thread, not the JS thread"
+        },
+        "misconception": {
+          "id": "effects-layout-effect-ui-thread",
+          "text": {
+            "vi": "Nghĩ rằng useLayoutEffect chạy trên UI thread. Mọi effect đều chạy trên JS thread; khác biệt là thời điểm: useLayoutEffect chạy đồng bộ sau commit, trước khi frame hiện.",
+            "en": "Believing useLayoutEffect runs on the UI thread. Every effect runs on the JS thread; the difference is timing: useLayoutEffect runs synchronously after commit, before the frame is shown."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Đọc kích thước trong `onLayout`, vì nó luôn bắn trước lần vẽ đầu tiên",
+          "en": "Read the size in `onLayout`, because it always fires before the first paint"
+        },
+        "misconception": {
+          "id": "effects-onlayout-before-paint",
+          "text": {
+            "vi": "Nghĩ rằng onLayout bắn trước lần vẽ đầu. onLayout báo layout sau khi đã tính xong, nên vị trí đặt theo nó thường cần thêm một lần render và có thể thấy một frame sai.",
+            "en": "Believing onLayout fires before the first paint. onLayout reports layout after it is computed, so a position set from it usually needs another render and a wrong frame can show."
+          }
+        }
+      }
+    ],
+    "answer": [
+      1
+    ],
+    "explanation": {
+      "vi": "Từ RN 0.76, kiến trúc mới (Fabric) bật mặc định và layout được tính đồng bộ. `useLayoutEffect` chạy ngay sau commit và trước khi frame hiện; đo layout ở đây cho kết quả đã cập nhật, và cập nhật state bên trong nó được xử lý đồng bộ trước khi người dùng thấy gì. Ở kiến trúc cũ, phép đo đi qua bridge và trả về bất đồng bộ, nên vẫn có thể thấy một frame sai. Bẫy chính là nghĩ `useLayoutEffect` chạy trên UI thread: nó vẫn chạy trên JS thread, chỉ khác thời điểm, và vì chặn việc hiện frame nên chỉ dùng cho việc đo rồi chỉnh.",
+      "en": "From RN 0.76 the New Architecture (Fabric) is on by default and layout is computed synchronously. `useLayoutEffect` runs right after commit and before the frame is shown; measuring there returns up-to-date layout, and a state update inside it is processed synchronously before the user sees anything. On the old architecture the measurement crossed the bridge and came back asynchronously, so a wrong frame could still appear. The main trap is thinking `useLayoutEffect` runs on the UI thread: it still runs on the JS thread, only earlier, and because it blocks the frame you keep it for measure-then-adjust work."
+    }
+  },
+  {
+    "id": "render-effects-004",
+    "type": "mcq",
+    "topics": [
+      "render/effects"
+    ],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": [
+      "render-effects-core"
+    ],
+    "multi": true,
+    "prompt": {
+      "vi": "Những effect nào khiến component re-render mãi không dừng? (chọn tất cả đáp án đúng)",
+      "en": "Which of these effects keep the component re-rendering forever? (select all that apply)"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "`useEffect(() => { setVisible(items.filter(isOpen)); });` không có mảng deps",
+          "en": "`useEffect(() => { setVisible(items.filter(isOpen)); });` with no deps array"
+        }
+      },
+      {
+        "text": {
+          "vi": "`useEffect(() => { setCount(count + 1); }, [count]);`",
+          "en": "`useEffect(() => { setCount(count + 1); }, [count]);`"
+        }
+      },
+      {
+        "text": {
+          "vi": "`useEffect(() => { setFilters({ ...options }); }, [options]);`, `options` tạo trong render",
+          "en": "`useEffect(() => { setFilters({ ...options }); }, [options]);`, `options` built in render"
+        }
+      },
+      {
+        "text": {
+          "vi": "`useEffect(() => { setReady(true); });` không có mảng deps, `ready` ban đầu là `false`",
+          "en": "`useEffect(() => { setReady(true); });` with no deps array, `ready` starting as `false`"
+        },
+        "misconception": {
+          "id": "effects-no-deps-always-loops",
+          "text": {
+            "vi": "Nghĩ rằng mọi setState trong effect không deps đều lặp vô hạn. React bỏ qua cập nhật khi giá trị mới bằng giá trị hiện tại theo Object.is, nên set lại cùng một primitive sẽ dừng sau nhiều nhất một lần render thêm.",
+            "en": "Believing any setState in an effect without deps loops forever. React bails out when the new value is Object.is-equal to the current one, so setting the same primitive stops after one extra render at most."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`useEffect(() => { setItems(loadCached()); }, []);`, `loadCached` trả về mảng mới",
+          "en": "`useEffect(() => { setItems(loadCached()); }, []);`, `loadCached` returning a new array"
+        },
+        "misconception": {
+          "id": "effects-setstate-on-mount-loops",
+          "text": {
+            "vi": "Nghĩ rằng set state trong effect chạy lúc mount sẽ lặp. Với deps rỗng, effect chỉ chạy sau lần mount (thêm một lần khi dev trong Strict Mode), nên không thể lặp.",
+            "en": "Believing setting state in a mount-only effect loops. With empty deps the effect runs only after mount (once more in development under Strict Mode), so it cannot loop."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0,
+      1,
+      2
+    ],
+    "explanation": {
+      "vi": "Một vòng lặp cần hai điều: effect chạy lại sau mỗi render, và mỗi lần chạy lại tạo ra một giá trị state khác theo `Object.is`. `filter` luôn trả mảng mới, `count + 1` luôn khác `count`, và `{ ...options }` là object mới; trong trường hợp thứ ba `options` còn là tham chiếu mới ở mỗi render nên effect luôn chạy lại. `setReady(true)` lần thứ hai đặt đúng giá trị đang có nên React dừng lại. Cách sửa chung: tính giá trị dẫn xuất ngay trong render thay vì sao chép vào state bằng effect.",
+      "en": "A loop needs two things: the effect re-runs after every render, and each run produces a state value that differs by `Object.is`. `filter` always returns a new array, `count + 1` always differs from `count`, and `{ ...options }` is a new object; in the third case `options` is also a new reference each render, so the effect always re-runs. The second `setReady(true)` sets the value already there, so React stops. The general fix is to compute derived values during render instead of copying them into state from an effect."
+    }
+  },
+  {
+    "id": "render-effects-005",
+    "type": "mcq",
+    "topics": [
+      "render/effects"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 75,
+    "lessons": [
+      "render-effects-core"
+    ],
+    "multi": true,
+    "prompt": {
+      "vi": "Root của app render `<StrictMode>`. Khi dev, effect của một màn hình log `subscribe`, `unsubscribe`, `subscribe` lúc mount. Những phát biểu nào đúng? (chọn tất cả đáp án đúng)",
+      "en": "Your app root renders `<StrictMode>`. In development, a screen's effect logs `subscribe`, `unsubscribe`, `subscribe` on mount. Which statements are true? (select all that apply)"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "React cố ý mount, unmount rồi mount lại component để kiểm tra cleanup",
+          "en": "React mounts, unmounts and remounts the component on purpose to test the cleanup"
+        }
+      },
+      {
+        "text": {
+          "vi": "Bản release chỉ chạy effect một lần, vì kiểm tra này chỉ có khi dev",
+          "en": "Release builds run the effect once, because this check is development-only"
+        }
+      },
+      {
+        "text": {
+          "vi": "Cleanup huỷ hết những gì setup đã làm thì người dùng không phân biệt được hai lần chạy",
+          "en": "If the cleanup fully undoes the setup, users cannot tell the two runs apart"
+        }
+      },
+      {
+        "text": {
+          "vi": "Chặn lần chạy thứ hai bằng một ref `didRun` là cách sửa được khuyến nghị",
+          "en": "Guarding the effect with a `didRun` ref is the recommended fix"
+        },
+        "misconception": {
+          "id": "effects-ref-guard-strictmode",
+          "text": {
+            "vi": "Nghĩ rằng nên dùng ref để chặn lần chạy thứ hai. Ref guard chỉ giấu lỗi mà Strict Mode đang chỉ ra; lỗi đó vẫn xảy ra khi component thật sự remount. Cách đúng là viết cleanup đầy đủ.",
+            "en": "Believing a ref should block the second run. A ref guard hides the bug Strict Mode is pointing at, and the bug still happens when the component really remounts. The fix is a complete cleanup."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "React lặp lại chu kỳ thêm này ở mọi lần re-render, không chỉ lúc mount",
+          "en": "React repeats the extra cycle on every re-render, not only on mount"
+        },
+        "misconception": {
+          "id": "effects-strictmode-every-render",
+          "text": {
+            "vi": "Nghĩ rằng Strict Mode chạy effect hai lần ở mọi lần render. Chu kỳ setup, cleanup, setup thêm chỉ xảy ra khi component mount; các lần chạy lại sau đó theo deps như bình thường.",
+            "en": "Believing Strict Mode doubles effects on every render. The extra setup, cleanup, setup cycle happens only when the component mounts; later re-runs follow the deps as usual."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0,
+      1,
+      2
+    ],
+    "explanation": {
+      "vi": "Từ React 18, khi dev Strict Mode chạy thêm một chu kỳ setup, cleanup ngay lúc mount. Mục đích là mô phỏng việc component bị unmount rồi mount lại, điều vẫn xảy ra thật khi quay lại màn hình hoặc khi state được giữ lại. Effect có cleanup đúng thì lần chạy thứ hai không có khác biệt nào nhìn thấy được. Bẫy chính là dùng ref để chặn lần chạy thứ hai: log biến mất nhưng subscription rò rỉ vẫn còn ở lần remount thật.",
+      "en": "Since React 18, Strict Mode in development runs one extra setup and cleanup cycle right on mount. It simulates the component being unmounted and mounted again, which really happens when you return to a screen or state is preserved. With a correct cleanup the second run has no visible difference. The main trap is a ref that blocks the second run: the log goes away, but the leaking subscription is still there on a real remount."
+    }
+  },
+  {
+    "id": "render-effects-006",
+    "type": "mcq",
+    "topics": [
+      "render/effects"
+    ],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": [
+      "render-effects-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Một effect chỉ dùng `user.id` và có deps `[user.id]`. Sau mỗi lần poll, cha truyền xuống một object `user` mới với cùng `id`. Điều gì xảy ra?",
+      "en": "An effect uses only `user.id` and has deps `[user.id]`. After every poll, the parent passes a new `user` object with the same `id`. What happens?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Effect chạy lại, vì object `user` là tham chiếu mới",
+          "en": "The effect re-runs, because the `user` object is a new reference"
+        },
+        "misconception": {
+          "id": "effects-deps-track-parent-object",
+          "text": {
+            "vi": "Nghĩ rằng React theo dõi cả object chứa dep. React chỉ so sánh đúng các giá trị được liệt kê; user.id vẫn là cùng một string nên Object.is cho kết quả bằng nhau.",
+            "en": "Believing React watches the object a dep was read from. React compares only the listed values; user.id is the same string, so Object.is says they are equal."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Effect không chạy lại, vì `user.id` vẫn bằng nhau theo `Object.is`",
+          "en": "The effect does not re-run, because `user.id` is still `Object.is`-equal"
+        }
+      },
+      {
+        "text": {
+          "vi": "React so sánh sâu `user`, nên chỉ chạy lại khi có field đổi",
+          "en": "React deep-compares `user`, so it re-runs only when a field changes"
+        },
+        "misconception": {
+          "id": "deps-compared-by-value",
+          "text": {
+            "vi": "Nghĩ rằng mảng deps được so sánh theo giá trị. React so sánh từng dep bằng Object.is, nên một mảng hoặc object mới luôn được xem là khác.",
+            "en": "Believing dependency arrays compare by value. React compares each dep with Object.is, so a new array or object always counts as changed."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Khi dev React báo lỗi, vì phải liệt kê cả object `user`",
+          "en": "React throws in development, because `user` itself must be listed"
+        },
+        "misconception": {
+          "id": "effects-deps-must-list-object",
+          "text": {
+            "vi": "Nghĩ rằng phải liệt kê cả object. React không có kiểm tra nào như vậy, và rule exhaustive-deps chấp nhận user.id khi effect chỉ đọc user.id.",
+            "en": "Believing the whole object must be listed. React has no such check, and the exhaustive-deps rule accepts user.id when the effect reads only user.id."
+          }
+        }
+      }
+    ],
+    "answer": [
+      1
+    ],
+    "explanation": {
+      "vi": "React so sánh từng phần tử trong mảng deps với giá trị của lần render trước bằng `Object.is`. Phần tử ở đây là string `user.id`, không phải object `user`, nên object mới với cùng id không làm effect chạy lại. Đây cũng là cách sửa phổ biến khi prop là object được tạo lại liên tục: chỉ phụ thuộc vào primitive mà effect thật sự đọc. Bẫy chính là nghĩ React theo dõi object gốc hoặc so sánh sâu.",
+      "en": "React compares each entry in the deps array with its value from the previous render using `Object.is`. The entry here is the string `user.id`, not the `user` object, so a new object with the same id does not re-run the effect. This is also the usual fix when a prop object is recreated all the time: depend only on the primitive the effect actually reads. The main trap is thinking React watches the parent object or deep-compares it."
+    }
+  },
+  {
+    "id": "render-effects-007",
+    "type": "mcq",
+    "topics": [
+      "render/effects"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 75,
+    "lessons": [
+      "render-effects-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Effect của `ChatRoom` kết nối tới `roomId` và khi kết nối xong thì hiện toast theo `theme` hiện tại. Thêm `theme` vào deps làm app kết nối lại mỗi khi đổi theme. Phát biểu nào về `useEffectEvent` là đúng?",
+      "en": "A `ChatRoom` effect connects to `roomId` and, once connected, shows a toast styled with the current `theme`. Adding `theme` to the deps reconnects whenever the theme changes. Which statement about `useEffectEvent` is accurate?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Có từ React 19.2; chỉ gọi nó bên trong effect và không đưa vào deps",
+          "en": "It exists from React 19.2; call it only inside the effect, not in deps"
+        }
+      },
+      {
+        "text": {
+          "vi": "Có sẵn trong React 18.3, nên mọi app RN 0.76 đều dùng được",
+          "en": "It ships with React 18.3, so every RN 0.76 app can already use it"
+        },
+        "misconception": {
+          "id": "effects-effectevent-react18",
+          "text": {
+            "vi": "Nghĩ rằng useEffectEvent có từ React 18. Nó chỉ ổn định từ React 19.2; RN 0.76 và 0.77 đi kèm React 18.3, nên phải kiểm tra bản React mà bản RN của bạn đi kèm.",
+            "en": "Believing useEffectEvent exists in React 18. It is stable only from React 19.2; RN 0.76 and 0.77 ship React 18.3, so check which React your RN release ships."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Hàm nó trả về phải nằm trong deps của effect để luôn mới",
+          "en": "The function it returns must go in the effect's deps to stay fresh"
+        },
+        "misconception": {
+          "id": "effects-effectevent-in-deps",
+          "text": {
+            "vi": "Nghĩ rằng Effect Event phải nằm trong deps. Nó luôn đọc props và state mới nhất, và rule lint của React Hooks biết không cần liệt kê nó; đưa vào deps chỉ làm mất mục đích.",
+            "en": "Believing an Effect Event belongs in deps. It always reads the latest props and state, and the React Hooks lint rule knows not to require it; listing it defeats the purpose."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Nó là bản ổn định hơn của `useCallback`, nên truyền nó cho prop `onPress`",
+          "en": "It is a more stable `useCallback`, so pass it to `onPress` props"
+        },
+        "misconception": {
+          "id": "effects-effectevent-as-callback",
+          "text": {
+            "vi": "Nghĩ rằng useEffectEvent thay cho useCallback. Effect Event chỉ được gọi từ bên trong effect, không truyền cho component khác hay gọi lúc render; handler cho UI vẫn là hàm thường hoặc useCallback.",
+            "en": "Believing useEffectEvent replaces useCallback. An Effect Event may only be called from inside effects, never passed to other components or called during render; UI handlers stay plain functions or useCallback."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0
+    ],
+    "explanation": {
+      "vi": "`useEffectEvent` tách phần logic \"phản ứng với sự kiện\" ra khỏi phần đồng bộ của effect. Bọc phần hiện toast trong nó, gọi nó bên trong effect, và effect chỉ còn phụ thuộc vào `roomId`; toast vẫn đọc `theme` mới nhất mà không kết nối lại. Nó ổn định từ React 19.2, và RN chỉ có React 19 từ 0.78, nên phải kiểm tra phiên bản React thực tế. Trên bản cũ hơn, một ref được cập nhật sau mỗi lần render cho cùng hiệu quả. Bẫy chính là dùng nó như một `useCallback` ổn định hơn và truyền đi nơi khác.",
+      "en": "`useEffectEvent` splits the \"react to an event\" logic out of the synchronising part of an effect. Wrap the toast logic in it, call it inside the effect, and the effect depends only on `roomId`; the toast still reads the latest `theme` without reconnecting. It is stable from React 19.2, and RN ships React 19 only from 0.78, so check the actual React version. On older versions a ref updated after each render gives the same result. The main trap is treating it as a more stable `useCallback` and passing it around."
+    }
+  },
+  {
+    "id": "render-effects-008",
+    "type": "spot-bug",
+    "topics": [
+      "render/effects"
+    ],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 105,
+    "lessons": [
+      "render-effects-core"
+    ],
+    "prompt": {
+      "vi": "Sau vài lần mở rồi đóng màn hình chat, mỗi lần bàn phím hiện lên app gọi `setBottom` nhiều lần, và khi dev có warning về giá trị effect trả về. Dòng nào gây lỗi, và vì sao?",
+      "en": "After opening and closing the chat screen a few times, every keyboard show calls `setBottom` several times, and development shows a warning about what an effect returned. Which line causes it, and why?"
+    },
+    "code": "type Props = { userId: string };\n\nfunction ChatInput({ userId }: Props) {\n  const [bottom, setBottom] = useState(0);\n\n  useEffect(async () => {\n    const prefs = await loadPrefs(userId);\n    if (!prefs.liftOnKeyboard) return;\n    const sub = Keyboard.addListener('keyboardDidShow', (e) => {\n      setBottom(e.endCoordinates.height);\n    });\n    return () => sub.remove();\n  }, [userId]);\n\n  return <Composer style={{ marginBottom: bottom }} />;\n}",
+    "answerLine": 6,
+    "causeOptions": [
+      {
+        "text": {
+          "vi": "Hàm async trả về Promise, nên React không bao giờ nhận được cleanup",
+          "en": "An async function returns a Promise, so React never receives the cleanup"
+        }
+      },
+      {
+        "text": {
+          "vi": "Listener của Keyboard phải được gỡ bằng `Keyboard.removeListener`",
+          "en": "Keyboard listeners must be removed with `Keyboard.removeListener`"
+        },
+        "misconception": {
+          "id": "effects-keyboard-removelistener",
+          "text": {
+            "vi": "Nghĩ rằng phải gỡ listener bằng Keyboard.removeListener. API đó bị deprecate từ RN 0.65 và đã bị gỡ; cách đúng là gọi remove() trên subscription mà addListener trả về.",
+            "en": "Believing listeners are removed with Keyboard.removeListener. That API was deprecated in RN 0.65 and has since been removed; the right way is remove() on the subscription addListener returns."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`await` bên trong effect chặn JS thread cho tới khi prefs tải xong",
+          "en": "`await` inside the effect blocks the JS thread until prefs load"
+        },
+        "misconception": {
+          "id": "effects-await-blocks-thread",
+          "text": {
+            "vi": "Nghĩ rằng await chặn JS thread. await chỉ tạm dừng hàm async đó; JS thread vẫn chạy các việc khác cho tới khi Promise resolve.",
+            "en": "Believing await blocks the JS thread. await only suspends that async function; the JS thread keeps running other work until the Promise resolves."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Không được gọi `setBottom` từ callback của một sự kiện native",
+          "en": "`setBottom` cannot be called from a native event callback"
+        },
+        "misconception": {
+          "id": "effects-setstate-native-event",
+          "text": {
+            "vi": "Nghĩ rằng callback của sự kiện native không được cập nhật state. Listener chạy trên JS thread như mọi callback khác, nên gọi setState trong đó là bình thường.",
+            "en": "Believing native event callbacks cannot update state. Listeners run on the JS thread like any other callback, so calling setState there is normal."
+          }
+        }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "Dòng 6 truyền một hàm async cho `useEffect`. Hàm async luôn trả về Promise, nên `return () => sub.remove()` chỉ trở thành giá trị resolve của Promise đó. React chờ một hàm cleanup hoặc `undefined`, nên nó bỏ qua Promise, báo warning khi dev, và không bao giờ gỡ listener. Mỗi lần mount, hoặc mỗi khi `userId` đổi, để lại thêm một listener. TypeScript cũng báo lỗi kiểu ở đây. Sửa: khai báo `let sub` và `let cancelled = false`, gọi một hàm async bên trong effect, chỉ đăng ký listener khi `!cancelled`, và trả về `() => { cancelled = true; sub?.remove(); }`.",
+      "en": "Line 6 passes an async function to `useEffect`. An async function always returns a Promise, so `return () => sub.remove()` only becomes that Promise's resolved value. React expects a cleanup function or `undefined`, so it ignores the Promise, warns in development, and never removes the listener. Every mount, or every `userId` change, leaves one more listener behind. TypeScript also reports a type error here. Fix: declare `let sub` and `let cancelled = false`, call an async function inside the effect, add the listener only when `!cancelled`, and return `() => { cancelled = true; sub?.remove(); }`."
+    }
+  },
+  {
+    "id": "render-effects-009",
+    "type": "spot-bug",
+    "topics": [
+      "render/effects"
+    ],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 105,
+    "lessons": [
+      "render-effects-core"
+    ],
+    "prompt": {
+      "vi": "Màn hình download có một progress bar cho mỗi file. Khi một dòng tải xong và bị xoá khỏi danh sách, mọi progress bar khác ngừng chạy, dù native module vẫn tiếp tục bắn sự kiện. Dòng nào gây lỗi, và vì sao?",
+      "en": "The downloads screen shows a progress bar per file. When one row finishes and is removed from the list, every other bar stops moving, although the native module keeps emitting events. Which line causes it, and why?"
+    },
+    "code": "const emitter = new NativeEventEmitter(NativeModules.Downloader);\n\ntype Progress = { id: string; percent: number };\n\nexport function useDownloadProgress(id: string): number {\n  const [percent, setPercent] = useState(0);\n\n  useEffect(() => {\n    emitter.addListener('onProgress', (e: Progress) => {\n      if (e.id === id) setPercent(e.percent);\n    });\n    return () => emitter.removeAllListeners('onProgress');\n  }, [id]);\n\n  return percent;\n}",
+    "answerLine": 12,
+    "causeOptions": [
+      {
+        "text": {
+          "vi": "Cleanup gỡ mọi listener `onProgress`, kể cả của các dòng khác",
+          "en": "The cleanup removes every `onProgress` listener, including other rows'"
+        }
+      },
+      {
+        "text": {
+          "vi": "Mỗi dòng phải tự tạo emitter riêng bên trong hook",
+          "en": "Each row must create its own emitter inside the hook"
+        },
+        "misconception": {
+          "id": "effects-emitter-per-hook",
+          "text": {
+            "vi": "Nghĩ rằng mỗi component cần một emitter riêng. Một emitter ở cấp module là ổn; mỗi lần addListener trả về subscription riêng để gỡ đúng listener đó.",
+            "en": "Believing each component needs its own emitter. One module-level emitter is fine; each addListener call returns its own subscription that removes just that listener."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Phải thêm `emitter` vào deps, nếu không effect đọc emitter cũ",
+          "en": "`emitter` must be in the deps, or the effect reads a stale one"
+        },
+        "misconception": {
+          "id": "effects-module-const-deps",
+          "text": {
+            "vi": "Nghĩ rằng hằng số cấp module phải nằm trong deps. Giá trị ở cấp module không đổi giữa các lần render, nên không thuộc deps và không thể bị cũ.",
+            "en": "Believing module-level constants belong in deps. They never change between renders, so they are not deps and cannot go stale."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Sự kiện native chỉ tới listener được đăng ký đầu tiên",
+          "en": "Native events reach only the first listener that was added"
+        },
+        "misconception": {
+          "id": "effects-native-event-single-listener",
+          "text": {
+            "vi": "Nghĩ rằng sự kiện native chỉ tới một listener. NativeEventEmitter gửi mỗi sự kiện tới mọi listener đang đăng ký cho tên sự kiện đó.",
+            "en": "Believing a native event reaches only one listener. NativeEventEmitter delivers each event to every listener registered for that event name."
+          }
+        }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "Dòng 12 gọi `removeAllListeners('onProgress')`, gỡ mọi listener của sự kiện đó trên emitter dùng chung, không chỉ listener của hook này. Khi một dòng unmount, hoặc `id` của nó đổi, các dòng còn lại mất listener và progress đứng yên. Sửa: giữ subscription mà `addListener` trả về và cleanup bằng `const sub = emitter.addListener(...); return () => sub.remove();`. Quy tắc chung: cleanup chỉ huỷ đúng những gì setup của chính nó đã tạo.",
+      "en": "Line 12 calls `removeAllListeners('onProgress')`, which removes every listener for that event on the shared emitter, not just this hook's. When one row unmounts, or its `id` changes, the remaining rows lose their listeners and progress freezes. Fix: keep the subscription `addListener` returns and clean up with `const sub = emitter.addListener(...); return () => sub.remove();`. The general rule: a cleanup undoes only what its own setup created."
+    }
+  },
+  {
+    "id": "render-effects-010",
+    "type": "spot-bug",
+    "topics": [
+      "render/effects"
+    ],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 135,
+    "lessons": [
+      "render-effects-core"
+    ],
+    "prompt": {
+      "vi": "Log backend cho thấy endpoint trạng thái đơn hàng vẫn bị poll mỗi 3 giây rất lâu sau khi người dùng đã tới `Receipt` và đi tiếp sang các màn hình khác. Polling chỉ dừng khi người dùng thoát hẳn khỏi luồng thanh toán. Dòng nào gây lỗi, và vì sao?",
+      "en": "Backend logs show the order status endpoint still polled every 3 seconds long after users reach `Receipt` and move on to other screens. Polling stops only when they leave the payment flow entirely. Which line causes it, and why?"
+    },
+    "code": "type Props = NativeStackScreenProps<RootStackParamList, 'Payment'>;\n\nfunction PaymentScreen({ navigation, route }: Props) {\n  const { orderId } = route.params;\n  const [status, setStatus] = useState<OrderStatus>('pending');\n\n  useEffect(() => {\n    const id = setInterval(async () => {\n      const next = await fetchOrderStatus(orderId);\n      setStatus(next);\n      if (next === 'paid') navigation.navigate('Receipt', { orderId });\n    }, 3000);\n    return () => clearInterval(id);\n  }, [orderId, navigation]);\n\n  return <StatusBanner status={status} />;\n}",
+    "answerLine": 7,
+    "causeOptions": [
+      {
+        "text": {
+          "vi": "Trong stack, `PaymentScreen` vẫn mount bên dưới `Receipt`, nên cleanup không chạy",
+          "en": "In a stack, `PaymentScreen` stays mounted under `Receipt`, so its cleanup never runs"
+        }
+      },
+      {
+        "text": {
+          "vi": "`navigation` đổi ở mỗi lần render, nên mỗi lần lại có một interval mới",
+          "en": "`navigation` changes on every render, so each render starts a new interval"
+        },
+        "misconception": {
+          "id": "effects-navigation-unstable",
+          "text": {
+            "vi": "Nghĩ rằng prop navigation đổi ở mỗi lần render. Nó ổn định với một màn hình; và kể cả khi đổi, cleanup vẫn huỷ interval cũ trước khi tạo interval mới.",
+            "en": "Believing the navigation prop changes every render. It is stable for a screen; and even if it changed, the cleanup would clear the old interval before a new one starts."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`clearInterval` không dừng được timer có callback là hàm `async`",
+          "en": "`clearInterval` cannot stop a timer whose callback is an `async` function"
+        },
+        "misconception": {
+          "id": "effects-async-interval-uncancellable",
+          "text": {
+            "vi": "Nghĩ rằng callback async làm interval không huỷ được. clearInterval luôn chặn các lần gọi sau; chỉ request đang chạy dở là vẫn hoàn tất.",
+            "en": "Believing an async callback makes an interval uncancellable. clearInterval always stops future ticks; only a request already in flight still completes."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`navigate` unmount màn hình, nên `setStatus` chạy trên component đã unmount",
+          "en": "`navigate` unmounts the screen, so `setStatus` runs on an unmounted component"
+        },
+        "misconception": {
+          "id": "effects-navigate-unmounts",
+          "text": {
+            "vi": "Nghĩ rằng navigate unmount màn hình trước đó. Stack giữ màn hình cũ mount ở bên dưới; nó chỉ unmount khi bị pop khỏi stack.",
+            "en": "Believing navigate unmounts the previous screen. A stack keeps it mounted underneath; it unmounts only when it is popped."
+          }
+        }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "Dòng 7 gắn polling với vòng đời mount của màn hình. Trong một stack navigator, đẩy `Receipt` lên không unmount `PaymentScreen`: nó vẫn mount, chỉ mất focus, nên cleanup không chạy và interval tiếp tục cho tới khi màn hình bị pop. Sửa bằng `useFocusEffect(useCallback(() => { ...; return () => clearInterval(id); }, [orderId, navigation]))` của React Navigation: effect chạy khi màn hình được focus và cleanup khi mất focus. Nên dừng polling ngay khi trạng thái là `paid`. Bẫy chính là nghĩ `navigate` unmount màn hình cũ như khi đổi trang trên web.",
+      "en": "Line 7 ties polling to the screen's mount lifetime. In a stack navigator, pushing `Receipt` does not unmount `PaymentScreen`: it stays mounted and only loses focus, so the cleanup never runs and the interval keeps going until the screen is popped. Fix it with React Navigation's `useFocusEffect(useCallback(() => { ...; return () => clearInterval(id); }, [orderId, navigation]))`: the effect runs when the screen gains focus and cleans up when it loses it. Also stop polling as soon as the status is `paid`. The main trap is thinking `navigate` unmounts the previous screen the way a web page change does."
+    }
+  },
+  {
+    "id": "render-effects-011",
+    "type": "open",
+    "topics": [
+      "render/effects"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 270,
+    "lessons": [
+      "render-effects-core"
+    ],
+    "prompt": {
+      "vi": "Một form checkout có ba effect: một effect chép `product.defaultSize` vào state `size` mỗi khi `product` đổi, một effect tính lại state `total` từ `size` và `quantity`, và một effect gửi analytics `add_to_cart` khi `cart.length` tăng. Người dùng thấy tổng tiền cũ trong một frame, và analytics đôi khi gửi `add_to_cart` chỉ vì màn hình được mở lại với giỏ hàng đã có đồ. Bạn refactor thế nào?",
+      "en": "A checkout form has three effects: one copies `product.defaultSize` into `size` state whenever `product` changes, one recomputes `total` state from `size` and `quantity`, and one sends an `add_to_cart` analytics event when `cart.length` increases. Users see the old total for a frame, and analytics sometimes sends `add_to_cart` just because the screen reopened with items already in the cart. How would you refactor it?"
+    },
+    "keyPoints": [
+      {
+        "vi": "Mỗi setState trong effect thêm một lần render và commit; frame tổng tiền cũ đến từ chuỗi cập nhật này",
+        "en": "Every setState in an effect adds another render and commit; the stale-total frame comes from that chain"
+      },
+      {
+        "vi": "`total` là giá trị dẫn xuất: tính ngay trong render, chỉ dùng `useMemo` khi phép tính đo được là tốn kém",
+        "en": "`total` is derived: compute it during render, with `useMemo` only if the calculation is measurably expensive"
+      },
+      {
+        "vi": "Reset theo sản phẩm bằng `key={product.id}` cho form, hoặc lưu lựa chọn của người dùng và dùng `selectedSize ?? product.defaultSize` lúc render",
+        "en": "Reset per product with `key={product.id}` on the form, or store only the user's choice and use `selectedSize ?? product.defaultSize` during render"
+      },
+      {
+        "vi": "Analytics `add_to_cart` thuộc về event handler của nút thêm vào giỏ, vì nó do một hành động cụ thể gây ra chứ không phải do màn hình được hiển thị",
+        "en": "The `add_to_cart` event belongs in the add-to-cart handler, because a specific action causes it, not the screen being displayed"
+      },
+      {
+        "vi": "Giữ effect cho việc đồng bộ với hệ thống bên ngoài như subscription hay native SDK, không dùng để biến đổi dữ liệu hay phản ứng với sự kiện",
+        "en": "Keep effects for synchronising with external systems such as subscriptions or native SDKs, not for transforming data or reacting to events"
+      }
+    ],
+    "modelAnswer": {
+      "vi": "Cả ba effect đều không đồng bộ với hệ thống bên ngoài nào, nên mình bỏ cả ba. Frame tổng tiền cũ xuất hiện vì React render với `total` cũ, commit, rồi effect mới set `total` mới và render thêm lần nữa. `total` là giá trị dẫn xuất nên mình tính ngay trong render, và chỉ thêm `useMemo` nếu profile cho thấy nó tốn kém. Với size, mình chỉ lưu lựa chọn của người dùng và dùng `selectedSize ?? product.defaultSize`, hoặc đặt `key={product.id}` để form reset khi đổi sản phẩm. Analytics thì chuyển vào handler của nút thêm vào giỏ, vì sự kiện đó do người dùng bấm gây ra. Effect dựa trên `cart.length` không phân biệt được \"vừa thêm\" với \"mở lại màn hình\", nên mới gửi sai.",
+      "en": "None of the three effects synchronises with an external system, so I would remove all of them. The stale total shows because React renders with the old `total`, commits, and only then does the effect set the new `total` and render again. `total` is derived, so I compute it during render and add `useMemo` only if profiling shows it is expensive. For size I store just the user's choice and use `selectedSize ?? product.defaultSize`, or put `key={product.id}` on the form so it resets when the product changes. Analytics moves into the add-to-cart handler, because a tap causes that event. An effect keyed on `cart.length` cannot tell \"just added\" from \"screen reopened\", which is why it misfires."
+    },
+    "followUps": [
+      {
+        "vi": "Khi nào việc gửi analytics nằm trong effect là đúng?",
+        "en": "When is sending analytics from an effect the right call?"
+      },
+      {
+        "vi": "Đặt `key` cho form có nhược điểm gì so với tính giá trị lúc render?",
+        "en": "What are the downsides of a `key` reset compared with deriving the value during render?"
+      }
+    ]
+  },
+  {
+    "id": "render-effects-012",
+    "type": "open",
+    "topics": [
+      "render/effects"
+    ],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 330,
+    "lessons": [
+      "render-effects-core"
+    ],
+    "prompt": {
+      "vi": "Bạn bọc một video SDK native kiểu imperative trong hook `useVideoPlayer(source, { muted })`. SDK có `createPlayer(source)`, `player.setMuted(value)`, `player.release()` và `player.addListener('progress', cb)` trả về một subscription. Có ba lỗi: đổi `muted` làm video phát lại từ đầu; khi dev, âm thanh phát hai lần ngay lúc mở màn hình; và ở production, crash \"player released\" xuất hiện khi một sự kiện progress tới muộn sau khi rời màn hình. Bạn thiết kế lại hook thế nào?",
+      "en": "You wrap an imperative native video SDK in a `useVideoPlayer(source, { muted })` hook. The SDK has `createPlayer(source)`, `player.setMuted(value)`, `player.release()` and `player.addListener('progress', cb)`, which returns a subscription. There are three bugs: changing `muted` restarts the video from zero; in development the audio plays twice as soon as the screen opens; and in production a \"player released\" crash appears when a late progress event arrives after leaving the screen. How would you redesign the hook?"
+    },
+    "keyPoints": [
+      {
+        "vi": "Tạo player trong một effect chỉ phụ thuộc vào `source` và gọi `release()` trong cleanup của chính effect đó, không tạo trong render hay `useMemo`",
+        "en": "Create the player in an effect that depends only on `source`, and call `release()` in that same effect's cleanup; never create it in render or `useMemo`"
+      },
+      {
+        "vi": "Tách một effect riêng cho `muted`, gọi `player.setMuted` trên instance đang có, để đổi prop là cập nhật chứ không tạo lại player",
+        "en": "Use a separate effect for `muted` that calls `player.setMuted` on the existing instance, so a prop change updates rather than recreates"
+      },
+      {
+        "vi": "Xem âm thanh phát hai lần khi dev là dấu hiệu cleanup chưa huỷ hết: sửa cleanup, không thêm ref để chặn lần chạy thứ hai của Strict Mode",
+        "en": "Treat the double audio in development as a sign the cleanup does not fully undo setup: fix the cleanup, do not add a ref to block Strict Mode's second run"
+      },
+      {
+        "vi": "Trong cleanup gọi `sub.remove()` trước `release()`, và bỏ qua mọi callback tới sau khi đã release bằng một cờ cục bộ",
+        "en": "In the cleanup call `sub.remove()` before `release()`, and ignore any callback that arrives after release with a local flag"
+      },
+      {
+        "vi": "Giữ instance trong state hoặc ref để effect thứ hai dùng; các effect chạy theo thứ tự khai báo, và cleanup của một effect luôn chạy trước lần chạy lại của nó",
+        "en": "Keep the instance in state or a ref for the second effect; effects run in declaration order, and an effect's cleanup always runs before its own re-run"
+      },
+      {
+        "vi": "Xác minh bằng cách đếm số lần create và release trong log khi dev, kể cả chu kỳ thêm của Strict Mode",
+        "en": "Verify by counting create and release calls in a development log, including Strict Mode's extra cycle"
+      }
+    ],
+    "modelAnswer": {
+      "vi": "Mình nghĩ về hook theo các mối đồng bộ riêng. Thứ nhất là sự tồn tại của player: một effect phụ thuộc vào `source`, gọi `createPlayer` và `release()` trong cleanup. Thứ hai là `muted`: một effect khác gọi `setMuted` trên instance đang có, nên đổi `muted` không còn tạo lại player và phát lại từ đầu. Âm thanh phát hai lần khi dev là Strict Mode chạy setup, cleanup, setup; nếu cleanup không release thì có hai player, nên mình sửa cleanup chứ không chặn lần chạy thứ hai. Crash do sự kiện tới muộn thì mình gỡ subscription bằng `sub.remove()` trước khi release, và dùng một cờ `released` trong closure để callback tới muộn không chạm vào player. Cuối cùng mình đếm create và release trong log để chắc chúng luôn cân bằng.",
+      "en": "I think of the hook as separate things to keep in sync. First, the player's existence: one effect depends on `source`, calls `createPlayer`, and calls `release()` in its cleanup. Second, `muted`: another effect calls `setMuted` on the existing instance, so changing `muted` no longer recreates the player and restarts playback. The double audio in development is Strict Mode running setup, cleanup, setup; if the cleanup does not release, two players exist, so I fix the cleanup rather than block the second run. For the late-event crash I remove the subscription with `sub.remove()` before releasing, and keep a `released` flag in the closure so a late callback never touches the player. Finally I count creates and releases in a log to make sure they always balance."
+    },
+    "followUps": [
+      {
+        "vi": "Nếu màn hình vẫn mount trong stack khi người dùng đi tiếp, bạn tạm dừng video thế nào?",
+        "en": "If the screen stays mounted in a stack when the user moves on, how do you pause the video?"
+      },
+      {
+        "vi": "Vì sao không tạo player trong `useMemo` hoặc `useState(() => createPlayer(source))`?",
+        "en": "Why not create the player in `useMemo` or `useState(() => createPlayer(source))`?"
+      }
+    ]
+  }
+]

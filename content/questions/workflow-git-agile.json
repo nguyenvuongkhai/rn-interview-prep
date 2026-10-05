@@ -1,0 +1,820 @@
+[
+  {
+    "id": "workflow-git-agile-001",
+    "type": "mcq",
+    "topics": [
+      "workflow/git-agile"
+    ],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": [
+      "workflow-git-agile-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Production đang chạy 3.4.0, build từ tag `v3.4.0`. `main` đã có code 3.5 làm dở. Một crash ở checkout cần bản sửa native ngay hôm nay. Bạn bắt đầu hotfix từ đâu?",
+      "en": "Production runs 3.4.0, built from the tag `v3.4.0`. `main` already holds half-finished 3.5 work. A crash in checkout needs a native fix today. Where do you start the hotfix?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Một branch tạo từ `main`, để bản sửa nằm trên code mới nhất",
+          "en": "A branch from `main`, so the fix sits on the newest code"
+        },
+        "misconception": {
+          "id": "git-hotfix-from-main",
+          "text": {
+            "vi": "Nghĩ rằng hotfix nên bắt đầu từ code mới nhất. Branch từ `main` mang theo mọi thay đổi 3.5 còn dở cùng với bản sửa; hotfix phải bắt đầu từ đúng thứ đang chạy ở production.",
+            "en": "Believing a hotfix should start from the newest code. A branch from `main` ships every unfinished 3.5 change along with the fix; a hotfix starts from exactly what is in production."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Một branch tạo từ tag `v3.4.0`, sau đó phát hành thành `v3.4.1`",
+          "en": "A branch from the `v3.4.0` tag, released later as `v3.4.1`"
+        }
+      },
+      {
+        "text": {
+          "vi": "Reset `main` về `v3.4.0`, sửa ở đó, rồi force-push `main`",
+          "en": "Reset `main` to `v3.4.0`, fix it there, then force-push `main`"
+        },
+        "misconception": {
+          "id": "git-reset-shared-branch",
+          "text": {
+            "vi": "Nghĩ rằng có thể quay ngược một branch dùng chung. Reset rồi force-push `main` làm mất commit của đồng đội trên remote và làm lệch mọi bản clone; hãy để yên `main` và tạo branch từ tag.",
+            "en": "Believing it is fine to rewind a shared branch. Resetting and force-pushing `main` drops teammates' commits from the remote and leaves every clone out of step; leave `main` alone and branch from the tag."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Amend commit mà `v3.4.0` trỏ tới rồi dời tag sang commit mới",
+          "en": "Amend the commit under `v3.4.0` and move the tag onto it"
+        },
+        "misconception": {
+          "id": "git-move-release-tag",
+          "text": {
+            "vi": "Nghĩ rằng có thể dời tag release. `v3.4.0` ghi lại đúng thứ đã lên store; dời nó làm mất dấu vết đó, và các bản clone đã fetch tag vẫn giữ tag cũ. Bản sửa phải có tag mới.",
+            "en": "Believing a release tag can be moved. `v3.4.0` records exactly what went to the stores; moving it breaks that record, and clones that already fetched the tag keep the old one. A fix gets a new tag."
+          }
+        }
+      }
+    ],
+    "answer": [
+      1
+    ],
+    "explanation": {
+      "vi": "Hotfix chỉ được chứa code đang chạy ở production cộng với bản sửa, nên nó bắt đầu từ tag mà bản build trên store được tạo ra: `git switch -c hotfix/3.4.1 v3.4.0`. Bạn tăng version và build number, gắn tag `v3.4.1`, rồi build từ tag đó. Bước hay bị quên là đưa bản sửa ngược về `main` bằng merge hoặc cherry-pick, nếu không lỗi sẽ quay lại ở 3.5.0. Branch từ `main` kéo code dở dang lên store; viết lại `main` hay dời tag release thì phá lịch sử dùng chung.",
+      "en": "A hotfix must contain the production code plus the fix and nothing else, so it starts from the tag the store build came from: `git switch -c hotfix/3.4.1 v3.4.0`. You bump the version and build number, tag `v3.4.1` and build from that tag. The step teams forget is bringing the fix back to `main` with a merge or cherry-pick, or the bug returns in 3.5.0. Branching from `main` drags unfinished work into the store; rewriting `main` or moving a release tag destroys shared history."
+    }
+  },
+  {
+    "id": "workflow-git-agile-002",
+    "type": "mcq",
+    "topics": [
+      "workflow/git-agile"
+    ],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": [
+      "workflow-git-agile-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Bạn đã push lên `main` một commit làm hỏng build Android, và ba đồng đội đã pull nó về. Bạn hoàn tác commit đó thế nào?",
+      "en": "You pushed a commit to `main` that breaks the Android build, and three teammates have already pulled it. How do you undo it?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Chạy `git revert <sha>` rồi push commit mới tạo ra",
+          "en": "Run `git revert <sha>` and push the new commit it creates"
+        }
+      },
+      {
+        "text": {
+          "vi": "Chạy `git reset --hard HEAD~1`, rồi `git push --force`",
+          "en": "Run `git reset --hard HEAD~1`, then `git push --force`"
+        },
+        "misconception": {
+          "id": "git-reset-pushed-commit",
+          "text": {
+            "vi": "Nghĩ rằng reset là cách hoàn tác một commit đã push. Reset viết lại lịch sử; đồng đội đã pull vẫn giữ commit đó, và lần push tiếp theo của họ sẽ đưa nó trở lại hoặc gây xung đột. Trên branch dùng chung, hãy thêm một commit revert.",
+            "en": "Believing reset is how you undo a pushed commit. Reset rewrites history; teammates who pulled still have the commit, and their next push brings it back or conflicts. On a shared branch, add a revert commit instead."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Bỏ nó bằng `git rebase -i`, rồi push với `--force-with-lease`",
+          "en": "Drop it with `git rebase -i`, then push with `--force-with-lease`"
+        },
+        "misconception": {
+          "id": "git-lease-makes-rewrite-safe",
+          "text": {
+            "vi": "Nghĩ rằng `--force-with-lease` làm cho việc viết lại branch dùng chung trở nên an toàn. Nó chỉ từ chối khi remote đã thay đổi kể từ lần fetch gần nhất của bạn; nó không giúp gì cho những đồng đội đã pull các commit cũ.",
+            "en": "Believing `--force-with-lease` makes rewriting a shared branch safe. It only refuses when the remote moved since your last fetch; it does nothing for teammates who already pulled the old commits."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Sửa bằng `git commit --amend` rồi push lại như bình thường",
+          "en": "Fix it with `git commit --amend` and push again as usual"
+        },
+        "misconception": {
+          "id": "git-amend-pushed-commit",
+          "text": {
+            "vi": "Nghĩ rằng amend sửa commit đã push ngay tại chỗ. Amend tạo commit mới với hash mới, nên push thường bị từ chối vì không phải fast-forward, còn force push thì viết lại lịch sử dùng chung.",
+            "en": "Believing amend edits a pushed commit in place. Amend creates a new commit with a new hash, so a plain push is rejected as non-fast-forward, and a force push rewrites shared history."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0
+    ],
+    "explanation": {
+      "vi": "`git revert` tạo một commit mới áp dụng thay đổi ngược lại, nên lịch sử chỉ đi tới và mọi người pull bình thường. Các cách còn lại đều viết lại commit đã chia sẻ: reset, rebase hay amend đều đổi hash, cần force push, và đồng đội đã pull sẽ bị lệch. `--force-with-lease` chỉ chống ghi đè commit bạn chưa thấy trên remote, không làm việc viết lại `main` an toàn hơn. Một lưu ý: revert một merge commit cần `-m 1` để chọn parent, và nếu sau này muốn merge lại branch đó, bạn phải revert chính commit revert.",
+      "en": "`git revert` creates a new commit that applies the inverse change, so history only moves forward and everyone pulls normally. The other options all rewrite a shared commit: reset, rebase and amend change hashes, need a force push and leave teammates who pulled out of step. `--force-with-lease` only guards against overwriting remote commits you have not seen; it does not make rewriting `main` any safer. One caveat: reverting a merge commit needs `-m 1` to pick the parent, and if you later want to merge that branch again you must revert the revert."
+    }
+  },
+  {
+    "id": "workflow-git-agile-003",
+    "type": "mcq",
+    "topics": [
+      "workflow/git-agile"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 75,
+    "lessons": [
+      "workflow-git-agile-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Cuộn feed bắt đầu giật trong khoảng từ 3.3.0 tới 3.4.0, cách nhau khoảng 400 commit. Bạn chạy `git bisect` và thử từng bước trên máy thật. Một commit nó chọn không build được vì `Podfile.lock` hỏng, không liên quan tới lỗi giật. Bạn làm gì?",
+      "en": "Feed scrolling got janky somewhere between 3.3.0 and 3.4.0, about 400 commits apart. You run `git bisect` and test each step on a device. One commit it picks does not build, because of a broken `Podfile.lock` unrelated to the jank. What do you do?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Đánh dấu `git bisect bad`, vì commit không build được là commit hỏng",
+          "en": "Mark it `git bisect bad`, since a commit that does not build is broken"
+        },
+        "misconception": {
+          "id": "git-bisect-unbuildable-bad",
+          "text": {
+            "vi": "Coi \"không build được\" là \"có lỗi\". Đánh dấu bad báo cho bisect rằng regression nằm ở commit này hoặc trước nó, nên việc tìm kiếm có thể dừng ở sai commit. Bạn không biết câu trả lời, nên đừng trả lời.",
+            "en": "Treating \"does not build\" as \"has the bug\". Marking it bad tells bisect the regression is at or before this commit, so the search can end on the wrong one. You do not know the answer, so do not give one."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Đánh dấu `git bisect good`, vì lỗi build không liên quan tới bug",
+          "en": "Mark it `git bisect good`, since the build failure is unrelated"
+        },
+        "misconception": {
+          "id": "git-bisect-unbuildable-good",
+          "text": {
+            "vi": "Coi \"lỗi không liên quan\" là \"không có bug\". Bạn chưa hề thử cuộn trên commit này, nên đánh dấu good là đoán, và có thể đẩy việc tìm kiếm vượt qua commit thủ phạm.",
+            "en": "Treating \"unrelated failure\" as \"no bug\". You never ran the scroll test on this commit, so marking it good is a guess that can push the search past the real culprit."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Chạy `git bisect skip` để git chọn một commit gần đó",
+          "en": "Run `git bisect skip` so git picks a nearby commit to test"
+        }
+      },
+      {
+        "text": {
+          "vi": "Sửa lockfile bằng `git commit --amend`, rồi bisect tiếp",
+          "en": "Fix the lockfile with `git commit --amend`, then keep bisecting"
+        },
+        "misconception": {
+          "id": "git-bisect-amend",
+          "text": {
+            "vi": "Nghĩ rằng có thể vá lịch sử giữa lúc bisect. Amend tạo một commit mới nằm ngoài dải đang tìm; bisect vẫn theo dõi các commit gốc, nên bản vá không giúp gì. Hãy skip commit đó.",
+            "en": "Believing you can patch history mid-bisect. Amending creates a new commit outside the range being searched; bisect keeps tracking the original commits, so the patch does not help. Skip the commit instead."
+          }
+        }
+      }
+    ],
+    "answer": [
+      2
+    ],
+    "explanation": {
+      "vi": "Bisect chia đôi dải commit sau mỗi bước, nên 400 commit cần khoảng 9 lần thử (2^9 = 512). Commit không thử được thì dùng `git bisect skip`: git ghi nhận là không biết và chọn một commit khác gần đó. Nếu thủ phạm nằm cạnh các commit bị skip, bisect sẽ báo một nhóm commit nghi vấn thay vì một commit. Khi kiểm tra viết được thành script, `git bisect run <script>` tự chạy hết, với exit code 125 nghĩa là skip. Xong thì chạy `git bisect reset` để quay về branch ban đầu.",
+      "en": "Bisect halves the range at each step, so 400 commits take about 9 tests (2^9 = 512). For a commit you cannot test, use `git bisect skip`: git records that you do not know and picks another nearby commit. If the culprit sits next to skipped commits, bisect reports a set of candidates instead of one. When the check can be scripted, `git bisect run <script>` does the whole search, with exit code 125 meaning skip. When you finish, `git bisect reset` returns you to the original branch."
+    }
+  },
+  {
+    "id": "workflow-git-agile-004",
+    "type": "mcq",
+    "topics": [
+      "workflow/git-agile"
+    ],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": [
+      "workflow-git-agile-core"
+    ],
+    "multi": true,
+    "prompt": {
+      "vi": "Bạn rebase branch của mình lên `main`. Cả hai bên đều thêm package npm, và cả `package-lock.json` lẫn `ios/Podfile.lock` đều xung đột. Những bước nào hợp lý? (chọn tất cả đáp án đúng)",
+      "en": "You rebase your branch onto `main`. Both sides added npm packages, and both `package-lock.json` and `ios/Podfile.lock` conflict. Which steps are sound? (select all that apply)"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Gộp `package.json` bằng tay trước, giữ dependency của cả hai bên",
+          "en": "Merge `package.json` by hand first, keeping both sides' dependencies"
+        }
+      },
+      {
+        "text": {
+          "vi": "Lấy lockfile của `main`, rồi chạy `npm install` để thêm lại package của bạn",
+          "en": "Take `main`'s lockfile, then run `npm install` to add your packages back"
+        }
+      },
+      {
+        "text": {
+          "vi": "Lấy `Podfile.lock` của `main`, rồi tạo lại nó bằng `pod install` sau bước npm",
+          "en": "Take `main`'s `Podfile.lock` and regenerate it with `pod install` after npm"
+        }
+      },
+      {
+        "text": {
+          "vi": "Sửa tay các dấu xung đột trong `package-lock.json`, giữ dòng của cả hai bên",
+          "en": "Edit the conflict markers in `package-lock.json` by hand, keeping both sides"
+        },
+        "misconception": {
+          "id": "git-hand-merge-lockfile",
+          "text": {
+            "vi": "Nghĩ rằng lockfile gộp được như code. Các entry trong đó phụ thuộc lẫn nhau (version đã resolve, hash integrity, cây dependency), nên file gộp tay có thể là JSON hợp lệ mà vẫn mô tả một cây npm chưa từng resolve. Hãy để package manager tạo lại nó.",
+            "en": "Believing a lockfile can be merged like code. Its entries depend on each other (resolved versions, integrity hashes, the dependency tree), so a hand-merged file can be valid JSON and still describe a tree npm never resolved. Let the package manager regenerate it."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Xoá các lockfile và thêm chúng vào `.gitignore` để khỏi xung đột về sau",
+          "en": "Delete the lockfiles and add them to `.gitignore` to avoid future conflicts"
+        },
+        "misconception": {
+          "id": "git-ignore-lockfile",
+          "text": {
+            "vi": "Nghĩ rằng lockfile là thứ không cần thiết. Không có nó, mỗi lần cài lại resolve version mới, nên CI và đồng đội build ra những cây dependency khác nhau, và `npm ci` báo lỗi ngay khi thiếu lockfile.",
+            "en": "Believing lockfiles are optional noise. Without them every install resolves fresh versions, so CI and teammates build different dependency trees, and `npm ci` fails outright when the lockfile is missing."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0,
+      1,
+      2
+    ],
+    "explanation": {
+      "vi": "Lockfile là output được tạo ra: hãy gộp input (`package.json`, `Podfile`) bằng tay, rồi để công cụ tạo lại output. Bắt đầu từ lockfile của `main` và chạy `npm install` giữ nguyên các version mà `main` đã resolve và chỉ thêm thay đổi của bạn. Chạy `pod install` sau bước đó, vì autolinking đọc native module từ `node_modules`. Commit cả hai lockfile, rồi kiểm tra `npm ci` và một bản build iOS sạch vẫn chạy. Gộp tay lockfile hay bỏ hẳn lockfile đều làm mất tính tái lập của bản build.",
+      "en": "A lockfile is generated output: merge the inputs (`package.json`, `Podfile`) by hand, then let the tools rebuild the outputs. Starting from `main`'s lockfile and running `npm install` keeps the versions `main` already resolved and adds only your changes. Run `pod install` after that step, since autolinking reads native modules from `node_modules`. Commit both lockfiles, then check that `npm ci` and a clean iOS build still pass. Hand-merging a lockfile or dropping lockfiles altogether both cost you reproducible builds."
+    }
+  },
+  {
+    "id": "workflow-git-agile-005",
+    "type": "mcq",
+    "topics": [
+      "workflow/git-agile"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": [
+      "workflow-git-agile-core"
+    ],
+    "multi": true,
+    "prompt": {
+      "vi": "Bạn vừa rebase feature branch của riêng mình lên `main` mới nhất để cập nhật một PR đang mở. Những phát biểu nào đúng? (chọn tất cả đáp án đúng)",
+      "en": "You rebased your own feature branch onto the latest `main` to update an open PR. Which statements are true? (select all that apply)"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Các commit sau rebase có hash mới, nên lần push này cần force push",
+          "en": "The rebased commits have new hashes, so this push needs a force push"
+        }
+      },
+      {
+        "text": {
+          "vi": "`--force-with-lease` từ chối push nếu branch trên remote đã đổi từ lần fetch cuối",
+          "en": "`--force-with-lease` refuses the push if the remote branch moved since your last fetch"
+        }
+      },
+      {
+        "text": {
+          "vi": "Đồng đội có commit trên branch này phải rebase hoặc reset theo lịch sử mới",
+          "en": "A teammate with commits on this branch must rebase or reset onto the new history"
+        }
+      },
+      {
+        "text": {
+          "vi": "Rebase `main` theo cùng cách cũng ổn, miễn là dùng `--force-with-lease`",
+          "en": "Rebasing `main` the same way is fine, as long as you use `--force-with-lease`"
+        },
+        "misconception": {
+          "id": "git-lease-makes-rewrite-safe",
+          "text": {
+            "vi": "Nghĩ rằng `--force-with-lease` làm cho việc viết lại branch dùng chung trở nên an toàn. Nó chỉ từ chối khi remote đã thay đổi kể từ lần fetch gần nhất của bạn; nó không giúp gì cho những đồng đội đã pull các commit cũ.",
+            "en": "Believing `--force-with-lease` makes rewriting a shared branch safe. It only refuses when the remote moved since your last fetch; it does nothing for teammates who already pulled the old commits."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Rebase giữ nguyên hash gốc, nên comment review vẫn gắn đúng vào commit cũ",
+          "en": "Rebase keeps the original hashes, so review comments stay on the same commits"
+        },
+        "misconception": {
+          "id": "git-rebase-keeps-hashes",
+          "text": {
+            "vi": "Nghĩ rằng rebase giữ danh tính của commit. Mỗi commit được phát lại có hash mới vì parent của nó thay đổi; đó là lý do cần force push, và comment trên commit cũ có thể hiện là outdated.",
+            "en": "Believing rebase keeps commit identity. Each replayed commit gets a new hash because its parent changes; that is why a force push is needed, and comments on old commits may show as outdated."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0,
+      1,
+      2
+    ],
+    "explanation": {
+      "vi": "Rebase phát lại từng commit lên một base mới, nên mọi commit đều có hash mới và remote chỉ nhận chúng qua force push. Trên branch của riêng bạn thì việc này ổn; `--force-with-lease` thêm một lớp bảo vệ bằng cách từ chối khi remote có commit bạn chưa fetch. Lưu ý là một công cụ tự fetch ngầm có thể làm lease mất tác dụng. Ai đã làm việc trên branch đó phải theo lịch sử mới. Quy tắc vẫn giữ nguyên: không bao giờ rebase một branch dùng chung như `main` hay `release/*`.",
+      "en": "Rebase replays each commit onto a new base, so every commit gets a new hash and the remote only accepts them through a force push. On your own branch that is fine; `--force-with-lease` adds a safety net by refusing when the remote has commits you have not fetched. Note that a tool that fetches in the background can defeat the lease. Anyone else working on that branch has to follow the new history. The rule still stands: never rebase a shared branch such as `main` or `release/*`."
+    }
+  },
+  {
+    "id": "workflow-git-agile-006",
+    "type": "spot-bug",
+    "topics": [
+      "workflow/git-agile"
+    ],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 150,
+    "lessons": [
+      "workflow-git-agile-core"
+    ],
+    "prompt": {
+      "vi": "Đây là runbook hotfix mà một đồng đội đã chạy. Bản 3.4.1 sửa được crash ở production, nhưng hai tuần sau 3.5.0 phát hành từ `main` và crash khi giỏ hàng trống quay lại. Dòng nào gây ra chuyện này?",
+      "en": "This is the hotfix runbook a teammate ran. 3.4.1 fixed the crash in production, but two weeks later 3.5.0 ships from `main` and the empty-cart crash is back. Which line causes this?"
+    },
+    "code": "git fetch --tags\ngit switch -c hotfix/3.4.1 v3.4.0\n# fix the null total in CartScreen.tsx\ngit commit -am \"fix(cart): guard empty cart total\"\n# bump to 3.4.1 in package.json, build.gradle and Info.plist\ngit commit -am \"chore(release): 3.4.1\"\ngit tag -a v3.4.1 -m \"Hotfix 3.4.1\"\ngit push origin hotfix/3.4.1 v3.4.1\n# CI builds 3.4.1 from the tag and submits it to both stores\n\n# bring the fix back to main\ngit switch main\ngit pull --ff-only\ngit cherry-pick v3.4.1\ngit push origin main",
+    "answerLine": 14,
+    "causeOptions": [
+      {
+        "text": {
+          "vi": "`v3.4.1` trỏ tới commit tăng version, nên chỉ commit đó được pick, không có bản sửa",
+          "en": "`v3.4.1` points at the version bump, so only that commit is picked, not the fix"
+        }
+      },
+      {
+        "text": {
+          "vi": "`git switch -c` bỏ qua `v3.4.0` và tạo branch từ HEAD hiện tại",
+          "en": "`git switch -c` ignores `v3.4.0` and branches from the current HEAD"
+        },
+        "misconception": {
+          "id": "git-switch-start-point",
+          "text": {
+            "vi": "Đọc sai `git switch -c`. Tham số thứ hai là điểm bắt đầu, nên branch bắt đầu đúng tại commit của `v3.4.0`, đúng thứ bạn cần cho hotfix.",
+            "en": "Misreading `git switch -c`. The second argument is the start point, so the branch begins at the `v3.4.0` commit, which is exactly what a hotfix needs."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`git commit -am` bỏ sót file CartScreen.tsx đã sửa, nên bản sửa chưa được commit",
+          "en": "`git commit -am` skips the edited CartScreen.tsx, so the fix was never committed"
+        },
+        "misconception": {
+          "id": "git-commit-a-skips-edits",
+          "text": {
+            "vi": "Đọc sai `-a`. Nó stage mọi file đã được track và có thay đổi, chỉ bỏ qua file mới chưa track; CartScreen.tsx đã có sẵn, nên bản sửa nằm trong commit. Production cũng đã nhận được bản sửa.",
+            "en": "Misreading `-a`. It stages every modified tracked file and only leaves out new untracked files; CartScreen.tsx already exists, so the fix is in the commit. Production received the fix too."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`v3.4.1` chỉ tồn tại trên branch hotfix, nên `main` không thấy được bản sửa",
+          "en": "`v3.4.1` only exists on the hotfix branch, so `main` cannot see the fix"
+        },
+        "misconception": {
+          "id": "git-tag-belongs-to-branch",
+          "text": {
+            "vi": "Nghĩ rằng tag thuộc về một branch. Tag là một ref riêng trỏ tới một commit; branch nào cũng tham chiếu được nó, và xoá branch không xoá tag hay commit mà tag trỏ tới.",
+            "en": "Believing tags belong to a branch. A tag is its own ref pointing at a commit; any branch can refer to it, and deleting a branch does not remove the tag or the commit it points to."
+          }
+        }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "`git cherry-pick` nhận một commit, và `v3.4.1` trỏ tới commit cuối của hotfix, tức commit tăng version. Bản sửa nằm ở commit trước đó nên không bao giờ tới `main`. Hãy pick đúng commit sửa lỗi, pick cả dải bằng `git cherry-pick v3.4.0..v3.4.1`, hoặc merge branch hotfix vào `main` và giữ version của `main` khi xung đột. Sau đó kiểm tra bằng `git log main --oneline --grep \"guard empty cart\"`. Cherry-pick tạo commit với hash mới, nên đừng dùng `git branch --contains` với hash gốc để xác nhận.",
+      "en": "`git cherry-pick` takes a commit, and `v3.4.1` points at the last hotfix commit, the version bump. The fix sits in the commit before it, so it never reaches `main`. Pick the fix commit itself, pick the whole range with `git cherry-pick v3.4.0..v3.4.1`, or merge the hotfix branch into `main` and keep `main`'s version on conflict. Then check with `git log main --oneline --grep \"guard empty cart\"`. Cherry-pick creates commits with new hashes, so `git branch --contains` with the original hash will not confirm it."
+    }
+  },
+  {
+    "id": "workflow-git-agile-007",
+    "type": "spot-bug",
+    "topics": [
+      "workflow/git-agile",
+      "release/android"
+    ],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 120,
+    "lessons": [
+      "workflow-git-agile-core"
+    ],
+    "prompt": {
+      "vi": "Một đợt review bảo mật phát hiện `android/app/release.keystore`, tức upload key của Play, đã bị commit vào repo. File được thêm vào tháng trước, khi `.gitignore` này đã có từ lâu. Dòng nào để nó lọt vào?",
+      "en": "A security review finds `android/app/release.keystore`, the Play upload key, committed to the repo. It was added last month, long after this `.gitignore` was in place. Which line let it in?"
+    },
+    "code": "# dependencies\nnode_modules/\n\n# iOS\nios/Pods/\nios/build/\n*.xcuserstate\n\n# Android\nandroid/app/build/\nandroid/.gradle/\n*.keystore\n!android/app/release.keystore\n\n# env\n.env\n.env.*\n!.env.example",
+    "answerLine": 13,
+    "causeOptions": [
+      {
+        "text": {
+          "vi": "Dòng `!` đưa lại release keystore mà `*.keystore` đã loại ra",
+          "en": "The `!` rule re-includes the release keystore that `*.keystore` excluded"
+        }
+      },
+      {
+        "text": {
+          "vi": "`*.keystore` chỉ khớp với file ở thư mục gốc của repo",
+          "en": "`*.keystore` only matches files at the root of the repository"
+        },
+        "misconception": {
+          "id": "git-gitignore-root-only",
+          "text": {
+            "vi": "Đọc sai phạm vi của pattern. Pattern không có dấu `/` như `*.keystore` khớp ở mọi cấp thư mục; chỉ dấu `/` ở đầu mới neo nó vào thư mục gốc.",
+            "en": "Misreading pattern scope. A pattern with no slash, like `*.keystore`, matches at any depth; only a leading `/` anchors it to the root."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`git add -A` bỏ qua `.gitignore`, nên các rule không áp dụng",
+          "en": "`git add -A` bypasses `.gitignore`, so the rules never apply"
+        },
+        "misconception": {
+          "id": "git-add-all-bypasses-ignore",
+          "text": {
+            "vi": "Nghĩ rằng `git add -A` stage cả file bị ignore. Nó tôn trọng `.gitignore`; chỉ `git add -f` mới ép thêm một file bị ignore.",
+            "en": "Believing `git add -A` stages ignored files. It respects `.gitignore`; only `git add -f` forces an ignored file in."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Dòng 13 vô hại, vì rule khớp đầu tiên mới có hiệu lực",
+          "en": "Line 13 is harmless, because the first matching rule wins"
+        },
+        "misconception": {
+          "id": "git-gitignore-first-match-wins",
+          "text": {
+            "vi": "Nghĩ rằng rule đầu tiên thắng. Trong `.gitignore`, pattern khớp cuối cùng quyết định, nên dòng `!` phía sau ghi đè rule loại trừ phía trước.",
+            "en": "Believing the first rule wins. In `.gitignore` the last matching pattern decides, so a later `!` line overrides an earlier exclude."
+          }
+        }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "Pattern khớp cuối cùng quyết định, nên `!android/app/release.keystore` đưa lại đúng file mà `*.keystore` muốn chặn. Xoá dòng đó và chạy `git rm --cached android/app/release.keystore`. Việc này chưa đủ: key vẫn nằm trong lịch sử và trong mọi bản clone, nên hãy coi như đã lộ. Với Play App Signing, bạn yêu cầu reset upload key trong Play Console, rồi lưu key mới dưới dạng secret của CI. Kiểm tra một file có bị ignore không bằng `git check-ignore -v <path>`, lệnh này in ra đúng dòng quyết định.",
+      "en": "The last matching pattern decides, so `!android/app/release.keystore` re-includes exactly the file `*.keystore` meant to block. Remove the line and run `git rm --cached android/app/release.keystore`. That is not enough: the key is still in history and in every clone, so treat it as leaked. With Play App Signing, request an upload key reset in Play Console and keep the new key as a CI secret. To check whether a file is ignored, run `git check-ignore -v <path>`, which prints the deciding line."
+    }
+  },
+  {
+    "id": "workflow-git-agile-008",
+    "type": "spot-bug",
+    "topics": [
+      "workflow/git-agile",
+      "release/ota-ci"
+    ],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 120,
+    "lessons": [
+      "workflow-git-agile-core"
+    ],
+    "prompt": {
+      "vi": "Branch protection trên `main` và `release/**` bắt buộc check `test`. Một PR làm hỏng unit test đã được merge vào `release/3.4` trong khi mọi check đều xanh. Dòng nào sai?",
+      "en": "Branch protection on `main` and `release/**` requires the `test` check. A PR that breaks a unit test was merged into `release/3.4` with every check green. Which line is wrong?"
+    },
+    "code": "name: pr-checks\non:\n  pull_request:\n    branches: [main, 'release/**']\n\njobs:\n  test:\n    runs-on: ubuntu-latest\n    if: github.ref == 'refs/heads/main'\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: 20\n          cache: npm\n      - run: npm ci\n      - run: npx tsc --noEmit\n      - run: npm test -- --ci",
+    "answerLine": 9,
+    "causeOptions": [
+      {
+        "text": {
+          "vi": "Với PR, `github.ref` là merge ref, nên job bị skip và vẫn tính là pass",
+          "en": "On a PR, `github.ref` is the merge ref, so the job is skipped and counts as passed"
+        }
+      },
+      {
+        "text": {
+          "vi": "`branches` khớp với branch nguồn của PR, nên PR từ `feature/*` không chạy",
+          "en": "`branches` matches the PR's source branch, so PRs from `feature/*` never run"
+        },
+        "misconception": {
+          "id": "git-pr-branches-filter-head",
+          "text": {
+            "vi": "Đọc sai bộ lọc. Với `pull_request`, `branches` khớp với base branch mà PR nhắm tới, nên PR vào `release/3.4` vẫn kích hoạt workflow.",
+            "en": "Misreading the filter. For `pull_request`, `branches` matches the base branch the PR targets, so a PR into `release/3.4` does trigger the workflow."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`--ci` làm Jest trả exit code 0 khi test fail để pipeline chạy tiếp",
+          "en": "`--ci` makes Jest exit with 0 on failures so the pipeline keeps going"
+        },
+        "misconception": {
+          "id": "git-jest-ci-hides-failures",
+          "text": {
+            "vi": "Đọc sai `--ci` của Jest. Nó chỉ ngăn snapshot mới tự được ghi; test fail vẫn trả exit code khác 0 và làm step fail.",
+            "en": "Misreading Jest's `--ci`. It only stops new snapshots from being written automatically; failing tests still exit non-zero and fail the step."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`cache: npm` khôi phục `node_modules` cũ, nên test chạy trên code cũ",
+          "en": "`cache: npm` restores an old `node_modules`, so tests run on stale code"
+        },
+        "misconception": {
+          "id": "git-npm-cache-stale-code",
+          "text": {
+            "vi": "Đọc sai cache của setup-node. Nó cache thư mục download của npm, không phải `node_modules`, và `npm ci` cài lại từ đầu trên bản checkout mới của code trong PR.",
+            "en": "Misreading setup-node caching. It caches npm's download cache, not `node_modules`, and `npm ci` installs from scratch on a fresh checkout of the PR's code."
+          }
+        }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "Trong event `pull_request`, `github.ref` là `refs/pull/<n>/merge`, không bao giờ là `refs/heads/main`, nên điều kiện luôn sai và job `test` bị skip. GitHub báo job bị skip là Success, kể cả khi nó là required check, nên PR vẫn merge được. Hãy bỏ điều kiện đó; nếu thật sự cần lọc theo branch đích, dùng `github.base_ref`. Mỗi khi đổi workflow, hãy mở một PR cố tình làm fail để chắc chắn gate thật sự chặn.",
+      "en": "In a `pull_request` event, `github.ref` is `refs/pull/<n>/merge`, never `refs/heads/main`, so the condition is always false and the `test` job is skipped. GitHub reports a skipped job as Success, even when it is a required check, so the PR can merge. Remove the condition; if you really need to filter on the target branch, use `github.base_ref`. Whenever you change the workflow, open a deliberately failing PR to prove the gate actually blocks."
+    }
+  },
+  {
+    "id": "workflow-git-agile-009",
+    "type": "mcq",
+    "topics": [
+      "workflow/git-agile",
+      "release/ota-ci"
+    ],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": [
+      "workflow-git-agile-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Công cụ release của bạn tính version tiếp theo từ Conventional Commits. Bản release gần nhất là `v2.3.1`, và từ đó `main` có `fix(cart): round totals`, `feat(profile): add avatar upload` và `chore: bump eslint`. Version tiếp theo là gì?",
+      "en": "Your release tool derives the next version from Conventional Commits. The last release is `v2.3.1`, and since then `main` has `fix(cart): round totals`, `feat(profile): add avatar upload` and `chore: bump eslint`. What is the next version?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "`2.3.4`, mỗi commit tăng patch một lần",
+          "en": "`2.3.4`, one patch bump for each commit"
+        },
+        "misconception": {
+          "id": "git-bump-per-commit",
+          "text": {
+            "vi": "Nghĩ rằng mỗi commit tăng version một lần. Công cụ xét mọi commit từ bản release trước và chỉ áp dụng một lần mức tăng cao nhất.",
+            "en": "Believing every commit bumps the version. The tool looks at all commits since the last release and applies the single highest bump once."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`2.4.0`, vì có `feat` nên tăng minor",
+          "en": "`2.4.0`, since a `feat` means a minor bump"
+        }
+      },
+      {
+        "text": {
+          "vi": "`3.0.0`, vì tính năng mới làm thay đổi API của app",
+          "en": "`3.0.0`, since a new feature changes the app's API"
+        },
+        "misconception": {
+          "id": "git-feat-is-major",
+          "text": {
+            "vi": "Nhầm tính năng mới với breaking change. Chỉ dấu `!` sau type hoặc footer `BREAKING CHANGE:` mới là major; `feat` là tăng minor.",
+            "en": "Confusing a feature with a breaking change. Only a `!` after the type or a `BREAKING CHANGE:` footer means major; a `feat` is a minor bump."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`2.4.1`, tăng minor cho `feat` cộng thêm patch cho `fix`",
+          "en": "`2.4.1`, a minor bump for `feat` plus a patch for `fix`"
+        },
+        "misconception": {
+          "id": "git-bumps-stack",
+          "text": {
+            "vi": "Nghĩ rằng các mức tăng cộng dồn. Tăng minor đưa patch về 0, và bản release chỉ lấy mức tăng cao nhất trong các commit của nó.",
+            "en": "Believing bumps add up. A minor bump resets the patch to 0, and a release takes only the highest bump among its commits."
+          }
+        }
+      }
+    ],
+    "answer": [
+      1
+    ],
+    "explanation": {
+      "vi": "Conventional Commits gắn type với mức tăng semver: `fix` là patch, `feat` là minor, còn `!` hoặc footer `BREAKING CHANGE:` là major. Các type như `chore` hay `docs` không tự tạo release. Công cụ lấy mức cao nhất trong mọi commit kể từ tag trước, nên ở đây là minor: `2.4.0`. Với app mobile, đây là version hiển thị; build number trên store (`versionCode`, `CFBundleVersion`) vẫn phải tăng riêng cho mỗi lần upload, kể cả hotfix.",
+      "en": "Conventional Commits map types to semver bumps: `fix` is a patch, `feat` a minor, and `!` or a `BREAKING CHANGE:` footer a major. Types such as `chore` or `docs` do not trigger a release on their own. The tool takes the highest bump across all commits since the previous tag, so here it is a minor: `2.4.0`. For a mobile app this is the marketing version; the store build number (`versionCode`, `CFBundleVersion`) still has to increase separately on every upload, hotfixes included."
+    }
+  },
+  {
+    "id": "workflow-git-agile-010",
+    "type": "open",
+    "topics": [
+      "workflow/git-agile",
+      "maintain/regression"
+    ],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 330,
+    "lessons": [
+      "workflow-git-agile-core"
+    ],
+    "prompt": {
+      "vi": "Giữa sprint, crash report cho thấy bản 3.4.0 crash ở checkout với người dùng Android 10, trong khi `main` đã có code 3.5 làm dở. Kể lại cách bạn xử lý, từ lúc nhận alert tới bản release của sprint sau.",
+      "en": "Mid-sprint, crash reports show 3.4.0 crashing at checkout for users on Android 10, while `main` already holds half-finished 3.5 work. Walk me through how you handled it, from the alert to the next sprint's release."
+    },
+    "keyPoints": [
+      {
+        "vi": "Khoanh vùng trước: xác nhận phạm vi theo version, OS và model máy; nếu có feature flag thì tắt để cầm máu",
+        "en": "Triage first: confirm the scope by version, OS and device, and switch the feature off with a flag if there is one"
+      },
+      {
+        "vi": "Chọn OTA hay binary: lỗi chỉ ở JS và cùng runtime version thì phát OTA được; sửa native thì cần bản build mới",
+        "en": "Choose OTA or binary: a JS-only fix on the same runtime version can go over the air; a native fix needs a new build"
+      },
+      {
+        "vi": "Tạo branch từ tag `v3.4.0` (hoặc release branch), giữ bản sửa nhỏ nhất, review và thử trên máy Android 10 thật",
+        "en": "Branch from the `v3.4.0` tag (or the release branch), keep the fix minimal, get it reviewed and test it on a real Android 10 device"
+      },
+      {
+        "vi": "Tăng version và build number, gắn tag `v3.4.1`, build từ tag, staged rollout và theo dõi số liệu theo version",
+        "en": "Bump the version and build number, tag `v3.4.1`, build from the tag, use a staged rollout and watch per-version metrics"
+      },
+      {
+        "vi": "Đưa bản sửa về `main` bằng merge hoặc cherry-pick, và kiểm tra nó có mặt trước khi cắt release 3.5",
+        "en": "Bring the fix back to `main` with a merge or cherry-pick, and check it is there before 3.5 is cut"
+      },
+      {
+        "vi": "Coi đây là việc ngoài kế hoạch: báo PO, rút bớt lượng việc tương đương khỏi sprint, và chạy post-mortem không đổ lỗi",
+        "en": "Treat it as unplanned work: tell the PO, pull an equal amount of work out of the sprint, and run a blameless post-mortem"
+      }
+    ],
+    "modelAnswer": {
+      "vi": "Mình khoanh vùng trước: lọc crash theo version, OS và model để chắc là chỉ 3.4.0 trên Android 10. Nếu tính năng nằm sau flag thì tắt ngay. Bản sửa cần đụng tới native, nên OTA không dùng được. Mình tạo `hotfix/3.4.1` từ tag `v3.4.0`, không phải từ `main`, vì `main` đang có code 3.5 dở. Bản sửa giữ nhỏ nhất, có review, và QA thử trên một máy Android 10 thật. Sau đó tăng version, tăng build number, gắn tag `v3.4.1`, build từ tag và rollout từ từ trong lúc theo dõi crash-free theo version. Ngay khi xong, mình đưa bản sửa về `main` và kiểm tra nó có trong log trước khi cắt 3.5. Về sprint, mình báo PO và rút bớt một story tương đương, rồi viết post-mortem.",
+      "en": "I triage first: filter crashes by version, OS and model to confirm it is only 3.4.0 on Android 10. If the feature sits behind a flag, I switch it off right away. The fix touches native code, so OTA is out. I create `hotfix/3.4.1` from the `v3.4.0` tag, not from `main`, because `main` holds unfinished 3.5 work. The fix stays minimal, gets a review, and QA tests it on a real Android 10 device. Then I bump the version and build number, tag `v3.4.1`, build from the tag and roll out gradually while watching crash-free rates per version. As soon as that is done I bring the fix back to `main` and check it is in the log before 3.5 is cut. For the sprint, I tell the PO, drop a story of similar size, and write the post-mortem."
+    },
+    "followUps": [
+      {
+        "vi": "Nếu `main` đã refactor file đó và cherry-pick bị xung đột thì bạn làm gì?",
+        "en": "What do you do if `main` has refactored that file and the cherry-pick conflicts?"
+      },
+      {
+        "vi": "Trong tình huống nào bạn sẽ phát OTA thay vì binary mới?",
+        "en": "In which case would you ship an OTA update instead of a new binary?"
+      }
+    ]
+  },
+  {
+    "id": "workflow-git-agile-011",
+    "type": "open",
+    "topics": [
+      "workflow/git-agile"
+    ],
+    "kind": "advanced",
+    "difficulty": 3,
+    "estSeconds": 300,
+    "lessons": [
+      "workflow-git-agile-core"
+    ],
+    "prompt": {
+      "vi": "Nhóm bạn dùng Git Flow: `develop` sống lâu, feature branch kéo dài hàng tuần, và trước mỗi bản release là một đợt merge vất vả. Lead nhờ bạn đề xuất chuyển app mobile sang trunk-based development. Bạn đề xuất gì, và giữ lại gì từ mô hình cũ?",
+      "en": "Your team uses Git Flow: a long-lived `develop`, feature branches that live for weeks, and a painful merge before every release. The lead asks you to propose trunk-based development for the mobile app. What do you propose, and what do you keep from the old model?"
+    },
+    "keyPoints": [
+      {
+        "vi": "Branch sống ngắn (một hai ngày), PR nhỏ, merge vào `main` sau CI bắt buộc và review",
+        "en": "Short-lived branches (a day or two) and small PRs, merged into `main` behind required CI and review"
+      },
+      {
+        "vi": "Feature flag để merge code chưa xong mà vẫn ẩn, tách việc merge khỏi việc phát hành",
+        "en": "Feature flags so unfinished work can merge while hidden, which separates merging from releasing"
+      },
+      {
+        "vi": "Giữ release branch cắt từ `main` cho mỗi version, vì store review và nhiều version cùng chạy buộc bạn phải vá bản cũ trong khi `main` đi tiếp",
+        "en": "Keep a release branch cut from `main` per version, because store review and several live versions mean patching an old version while `main` moves on"
+      },
+      {
+        "vi": "Một quy tắc chung cho bản sửa: sửa trên `main` rồi cherry-pick sang release branch, hoặc sửa trên release rồi merge ngược lại",
+        "en": "One team rule for fixes: fix on `main` and cherry-pick to the release branch, or fix on release and merge back"
+      },
+      {
+        "vi": "Release train có lịch cố định, code freeze áp dụng cho release branch chứ không phải `main`",
+        "en": "A release train on a fixed schedule, with code freeze applied to the release branch, not to `main`"
+      },
+      {
+        "vi": "Quản lý flag: mỗi flag có người phụ trách và hạn gỡ bỏ để flag không chồng chất",
+        "en": "Flag hygiene: every flag has an owner and a removal date so flags do not pile up"
+      }
+    ],
+    "modelAnswer": {
+      "vi": "Mình bỏ `develop` và để mọi người merge vào `main` ít nhất mỗi ngày một hai lần, qua PR nhỏ với CI và review bắt buộc. Tính năng chưa xong vẫn merge được, nhưng nằm sau feature flag, nên merge và phát hành là hai việc tách biệt. Thứ mình giữ lại là release branch. Web có thể deploy từ trunk, nhưng app mobile phải qua store review và nhiều version cùng chạy, nên mình cắt `release/3.5` từ `main` theo lịch release train, chỉ freeze branch đó, còn `main` đi tiếp. Bản sửa theo một quy tắc duy nhất: sửa trên `main` trước rồi cherry-pick sang release branch. Cuối cùng, mỗi flag có người phụ trách và hạn gỡ, nếu không code sẽ đầy nhánh chết.",
+      "en": "I would drop `develop` and have everyone merge into `main` at least daily, through small PRs with required CI and review. Unfinished features still merge, but behind feature flags, so merging and releasing become separate decisions. What I keep is the release branch. A web app can deploy from trunk, but a mobile app goes through store review and has several versions live, so I cut `release/3.5` from `main` on a release train schedule and freeze only that branch while `main` moves on. Fixes follow one rule: fix on `main` first, then cherry-pick to the release branch. Finally, every flag gets an owner and a removal date, or the code fills up with dead paths."
+    },
+    "followUps": [
+      {
+        "vi": "Bạn kiểm thử thế nào một tính năng đã merge nhưng flag đang tắt?",
+        "en": "How do you test a feature that is merged but whose flag is off?"
+      },
+      {
+        "vi": "Làm sao gỡ một flag khi các app version cũ vẫn còn đọc nó?",
+        "en": "How do you remove a flag when older app versions still read it?"
+      }
+    ]
+  },
+  {
+    "id": "workflow-git-agile-012",
+    "type": "open",
+    "topics": [
+      "workflow/git-agile"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 300,
+    "lessons": [
+      "workflow-git-agile-core"
+    ],
+    "prompt": {
+      "vi": "Trong sprint planning, PO muốn checkout mới tới tay người dùng trước khi sprint hai tuần này kết thúc, và riêng phần code đã ước tính khoảng chín ngày. Bạn lập kế hoạch thế nào, và \"done\" của story này nghĩa là gì?",
+      "en": "In sprint planning the PO wants the new checkout in users' hands by the end of this two-week sprint, and the coding alone is estimated at about nine days. How do you plan it, and what does \"done\" mean for this story?"
+    },
+    "keyPoints": [
+      {
+        "vi": "Tính cả store review và rollout vào kế hoạch: thời gian review thay đổi và một lần bị reject tốn thêm một vòng, nên phải submit vài ngày trước cuối sprint",
+        "en": "Count store review and rollout in the plan: review time varies and a rejection costs another round, so you submit days before the sprint ends"
+      },
+      {
+        "vi": "Nói rõ là chín ngày code cộng QA và review không vừa, rồi tách story để có phần giá trị hoàn thành trong sprint",
+        "en": "Say plainly that nine days of coding plus QA and review does not fit, and split the story so a valuable slice is done within the sprint"
+      },
+      {
+        "vi": "Code freeze và cắt release branch đủ sớm cho QA trên bản release candidate",
+        "en": "Freeze code and cut the release branch early enough for QA on a release candidate build"
+      },
+      {
+        "vi": "Definition of done gồm QA trên máy thật ở cả hai nền tảng, kể cả máy Android cấu hình thấp và OS cũ nhất được hỗ trợ, cùng analytics và crash reporting",
+        "en": "The definition of done includes QA on real devices on both platforms, including a low-end Android and the oldest supported OS, plus analytics and crash reporting"
+      },
+      {
+        "vi": "Phát hành sau feature flag để binary đi review trước khi bật tính năng, và tắt được nếu có sự cố",
+        "en": "Ship behind a feature flag so the binary can go to review before the feature is on, and can be switched off if something breaks"
+      },
+      {
+        "vi": "Dùng phased rollout và thống nhất trước các chỉ số quyết định việc lên 100%",
+        "en": "Use a phased rollout and agree up front on the metrics that decide going to 100%"
+      }
+    ],
+    "modelAnswer": {
+      "vi": "Mình nói thẳng với PO là không vừa: chín ngày code, cộng QA, cộng review của App Store và Play, mà review có thể mất từ vài giờ tới vài ngày, bị reject thì thêm một vòng. Nên mình tách story: sprint này làm luồng chính, phần còn lại sang sprint sau. Kế hoạch tính ngược từ ngày submit: cắt release branch và freeze vài ngày trước đó để QA trên bản release candidate. Với mình, done nghĩa là đã QA trên máy thật ở cả hai nền tảng, gồm một máy Android yếu và OS cũ nhất còn hỗ trợ, có analytics và crash reporting. Tính năng nằm sau flag, nên binary có thể qua review sớm và bật khi sẵn sàng. Cuối cùng là phased rollout với ngưỡng crash-free đã thống nhất.",
+      "en": "I tell the PO plainly that it does not fit: nine days of coding, plus QA, plus App Store and Play review, which can take hours or days, and a rejection adds another round. So I split the story: the main flow this sprint, the rest next sprint. The plan works backwards from the submit date: cut the release branch and freeze a few days before that so QA can test a release candidate. For me, done means tested on real devices on both platforms, including a slow Android phone and the oldest supported OS, with analytics and crash reporting in place. The feature sits behind a flag, so the binary can clear review early and be switched on when ready. Last comes a phased rollout with an agreed crash-free threshold."
+    },
+    "followUps": [
+      {
+        "vi": "Nếu Apple reject bản build vào ngày cuối sprint thì story đó có tính là done không?",
+        "en": "If Apple rejects the build on the last day of the sprint, does the story count as done?"
+      }
+    ]
+  }
+]

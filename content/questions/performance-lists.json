@@ -1,0 +1,805 @@
+[
+  {
+    "id": "performance-lists-001",
+    "type": "mcq",
+    "topics": [
+      "performance/lists"
+    ],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": [
+      "performance-lists-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "`windowSize` của FlatList mặc định là 21. Con số đó có nghĩa là gì?",
+      "en": "FlatList's `windowSize` defaults to 21. What does that number mean?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Vùng render dài khoảng 21 màn hình: màn đang thấy, 10 màn phía trên, 10 màn phía dưới",
+          "en": "About 21 viewport heights stay rendered: the visible one, 10 above and 10 below"
+        }
+      },
+      {
+        "text": {
+          "vi": "FlatList giữ tối đa 21 row được mount tại mọi thời điểm, dù cuộn tới đâu",
+          "en": "FlatList keeps at most 21 rows mounted at any one time, wherever you scroll"
+        },
+        "misconception": {
+          "id": "lists-windowsize-rows",
+          "text": {
+            "vi": "Nghĩ rằng windowSize đếm theo số row. Đơn vị của nó là chiều cao vùng hiển thị, nên số row được mount phụ thuộc vào chiều cao của từng row.",
+            "en": "Believing windowSize counts rows. Its unit is the visible length of the list, so how many rows stay mounted depends on how tall each row is."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "FlatList render thêm 21 row trong mỗi batch khi người dùng cuộn xuống dưới",
+          "en": "FlatList renders 21 more rows in each batch as the user scrolls down"
+        },
+        "misconception": {
+          "id": "lists-windowsize-batch",
+          "text": {
+            "vi": "Nhầm windowSize với maxToRenderPerBatch. Số row mỗi batch do maxToRenderPerBatch quyết định (mặc định 10); windowSize quyết định vùng được giữ render.",
+            "en": "Confusing windowSize with maxToRenderPerBatch. Rows per batch come from maxToRenderPerBatch (default 10); windowSize sets the area kept rendered."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "FlatList chờ 21 ms giữa hai batch render các row nằm ở xa viewport",
+          "en": "FlatList waits 21 ms between batches that render rows far off screen"
+        },
+        "misconception": {
+          "id": "lists-windowsize-period",
+          "text": {
+            "vi": "Nhầm windowSize với updateCellsBatchingPeriod. Khoảng chờ giữa các batch là updateCellsBatchingPeriod, tính bằng ms; windowSize là kích thước vùng render.",
+            "en": "Confusing windowSize with updateCellsBatchingPeriod. The pause between batches is updateCellsBatchingPeriod, in ms; windowSize is the size of the render area."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0
+    ],
+    "explanation": {
+      "vi": "`windowSize` đo bằng đơn vị chiều cao vùng hiển thị của list. Giá trị 21 nghĩa là FlatList cố giữ render phần đang thấy cộng tối đa 10 màn hình phía trên và 10 màn hình phía dưới; row ra ngoài vùng này bị unmount. Tăng giá trị thì ít khoảng trắng khi cuộn nhanh nhưng tốn bộ nhớ hơn; giảm thì ngược lại. Bẫy chính là đọc nó thành số row.",
+      "en": "`windowSize` is measured in visible lengths of the list. A value of 21 means FlatList tries to keep rendered the visible area plus up to 10 screens above and 10 below; rows that leave that area are unmounted. A larger value means fewer blanks on fast scrolls but more memory; a smaller one the opposite. The main trap is reading it as a row count."
+    }
+  },
+  {
+    "id": "performance-lists-002",
+    "type": "mcq",
+    "topics": [
+      "performance/lists"
+    ],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 45,
+    "lessons": [
+      "performance-lists-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Một màn hình render 1.000 row bằng `items.map` bên trong `ScrollView`. Màn hình mở chậm và tốn nhiều bộ nhớ. Lý do chính khiến FlatList tốt hơn ở đây là gì?",
+      "en": "A screen renders 1,000 rows with `items.map` inside a `ScrollView`. It opens slowly and uses a lot of memory. What is the main reason FlatList does better here?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "ScrollView mount đủ 1.000 row ngay từ đầu, còn FlatList chỉ mount một vùng quanh viewport",
+          "en": "ScrollView mounts all 1,000 rows at once; FlatList mounts only rows near the viewport"
+        }
+      },
+      {
+        "text": {
+          "vi": "ScrollView render lại mọi row con ở mỗi sự kiện scroll, còn FlatList thì không",
+          "en": "ScrollView re-renders every child on each scroll event; FlatList does not"
+        },
+        "misconception": {
+          "id": "lists-scrollview-rerenders",
+          "text": {
+            "vi": "Nghĩ rằng ScrollView re-render con khi cuộn. Cuộn là việc của native, không làm React render lại; chi phí của ScrollView nằm ở việc mount và giữ toàn bộ row ngay từ đầu.",
+            "en": "Believing ScrollView re-renders its children while scrolling. Scrolling is native and does not trigger React renders; ScrollView's cost is mounting and holding every row from the start."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "FlatList tái sử dụng một nhóm native view cố định, giống RecyclerView",
+          "en": "FlatList reuses a fixed pool of native row views, the way RecyclerView does"
+        },
+        "misconception": {
+          "id": "lists-flatlist-recycles",
+          "text": {
+            "vi": "Nghĩ rằng FlatList tái sử dụng native view như RecyclerView. FlatList mount row khi nó vào vùng render và unmount khi nó ra khỏi đó; tái sử dụng cell là cách FlashList làm.",
+            "en": "Believing FlatList reuses native views like RecyclerView. FlatList mounts a row when it enters the render window and unmounts it when it leaves; cell recycling is what FlashList does."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "FlatList render row trên UI thread thay vì JS thread",
+          "en": "FlatList renders its rows on the UI thread instead of the JS thread"
+        },
+        "misconception": {
+          "id": "lists-flatlist-ui-thread",
+          "text": {
+            "vi": "Nghĩ rằng FlatList render trên UI thread. renderItem vẫn chạy trên JS thread như mọi component React; FlatList chỉ giảm số row phải render.",
+            "en": "Believing FlatList renders on the UI thread. renderItem still runs on the JS thread like any React component; FlatList only reduces how many rows are rendered."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0
+    ],
+    "explanation": {
+      "vi": "`ScrollView` render mọi con của nó ngay lập tức, nên 1.000 row đều được tạo, layout và giữ trong bộ nhớ trước khi màn hình hiện ra. FlatList (qua `VirtualizedList`) chỉ render một vùng quanh viewport, theo `windowSize`, rồi mount và unmount row khi người dùng cuộn. Nó không tái sử dụng view và cũng không render trên UI thread; nó chỉ làm ít việc hơn.",
+      "en": "`ScrollView` renders all its children at once, so all 1,000 rows are created, laid out and held in memory before the screen appears. FlatList, through `VirtualizedList`, renders only a window around the viewport, sized by `windowSize`, and mounts and unmounts rows as the user scrolls. It does not recycle views and does not render on the UI thread; it simply does less work."
+    }
+  },
+  {
+    "id": "performance-lists-003",
+    "type": "mcq",
+    "topics": [
+      "performance/lists"
+    ],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": [
+      "performance-lists-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Mọi row trong một danh sách đều cao đúng 72 point, và bạn thêm `getItemLayout`. FlatList được lợi gì?",
+      "en": "Every row in a list is exactly 72 points tall, and you add `getItemLayout`. What does FlatList gain?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Biết offset và kích thước của mọi row mà không phải chờ row render rồi đo",
+          "en": "It knows every row's offset and size without waiting to render and measure it"
+        }
+      },
+      {
+        "text": {
+          "vi": "Tự đặt chiều cao 72 cho mọi row để row không thể cao thêm",
+          "en": "It sets each row's height to 72 so that no row can grow taller"
+        },
+        "misconception": {
+          "id": "lists-getitemlayout-sets-height",
+          "text": {
+            "vi": "Nghĩ rằng getItemLayout áp style cho row. Nó chỉ là lời hứa của bạn về kích thước; nếu row thật cao khác con số đó, list bị nhảy và scrollToIndex lệch.",
+            "en": "Believing getItemLayout styles the rows. It is only your promise about their size; if real rows differ from it, the list jumps and scrollToIndex lands in the wrong place."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Cache các row đã render để cuộn ngược lại không phải render lại",
+          "en": "It caches rendered rows so scrolling back never renders them again"
+        },
+        "misconception": {
+          "id": "lists-getitemlayout-caches",
+          "text": {
+            "vi": "Nghĩ rằng getItemLayout cache kết quả render. Nó chỉ cung cấp số đo; row ra khỏi vùng render vẫn bị unmount và phải render lại khi quay về.",
+            "en": "Believing getItemLayout caches render output. It only supplies measurements; rows that leave the window are still unmounted and render again when they return."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Bỏ qua windowing và render tất cả row trong một lượt",
+          "en": "It can skip windowing and render every row in a single pass"
+        },
+        "misconception": {
+          "id": "lists-getitemlayout-renders-all",
+          "text": {
+            "vi": "Nghĩ rằng getItemLayout tắt windowing. Windowing vẫn chạy như cũ; getItemLayout chỉ giúp FlatList tính vùng render mà không cần đo.",
+            "en": "Believing getItemLayout turns windowing off. Windowing works as before; getItemLayout only lets FlatList compute the window without measuring."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0
+    ],
+    "explanation": {
+      "vi": "`getItemLayout` trả về `{ length, offset, index }` cho từng index. Khi có nó, FlatList không phải chờ `onLayout` của từng row để biết row nằm ở đâu: nó tính được vùng render ngay, và `scrollToIndex` nhảy được tới cả row chưa từng render. Đổi lại, con số phải khớp với layout thật, kể cả separator; sai một chút là list nhảy hoặc cuộn lệch.",
+      "en": "`getItemLayout` returns `{ length, offset, index }` for each index. With it, FlatList does not wait for each row's `onLayout` to learn where it sits: it can compute the window straight away, and `scrollToIndex` can jump to rows that were never rendered. In return the numbers must match the real layout, separators included; a small mismatch makes the list jump or scroll to the wrong place."
+    }
+  },
+  {
+    "id": "performance-lists-004",
+    "type": "mcq",
+    "topics": [
+      "performance/lists"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 75,
+    "lessons": [
+      "performance-lists-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Một FlatList có `onEndReachedThreshold={0.5}`. Khi nào FlatList gọi `onEndReached`?",
+      "en": "A FlatList has `onEndReachedThreshold={0.5}`. When does FlatList call `onEndReached`?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Khi phần cuối nội dung cách mép dưới viewport chưa tới nửa chiều cao vùng hiển thị",
+          "en": "When the end of the content is within half a visible length of the viewport"
+        }
+      },
+      {
+        "text": {
+          "vi": "Khi người dùng đã cuộn qua 50% tổng chiều cao nội dung",
+          "en": "When the user has scrolled past 50% of the total content height"
+        },
+        "misconception": {
+          "id": "lists-threshold-content-percent",
+          "text": {
+            "vi": "Nghĩ rằng threshold là tỉ lệ của toàn bộ nội dung. Nó tính theo chiều cao vùng hiển thị, đo từ cuối nội dung, nên không phụ thuộc vào việc đã tải bao nhiêu row.",
+            "en": "Believing the threshold is a share of the whole content. It is measured in visible lengths from the end of the content, so it does not depend on how many rows are loaded."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Khi mép dưới nội dung cách mép dưới viewport chưa tới 0,5 point",
+          "en": "When the bottom of the content is within 0.5 points of the viewport edge"
+        },
+        "misconception": {
+          "id": "lists-threshold-points",
+          "text": {
+            "vi": "Nghĩ rằng threshold tính bằng point. Đơn vị là chiều cao vùng hiển thị, nên 0.5 là nửa màn hình, không phải nửa point.",
+            "en": "Believing the threshold is in points. Its unit is the visible length of the list, so 0.5 means half a screen, not half a point."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Một lần duy nhất, lúc vượt ngưỡng lần đầu, rồi không gọi lại cho list đó",
+          "en": "Only once, the first time the threshold is crossed, and never again"
+        },
+        "misconception": {
+          "id": "lists-endreached-once",
+          "text": {
+            "vi": "Nghĩ rằng onEndReached chỉ chạy một lần. Nó có thể chạy lại sau mỗi lần nội dung đổi độ dài, và có thể chạy nhiều lần liên tiếp, nên handler phải tự chặn lời gọi trùng.",
+            "en": "Believing onEndReached fires once. It can fire again whenever the content length changes, and several times in a row, so the handler must guard against duplicate calls."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0
+    ],
+    "explanation": {
+      "vi": "`onEndReachedThreshold` là khoảng cách tới cuối nội dung, tính bằng chiều cao vùng hiển thị của list. Với 0.5, FlatList gọi `onEndReached` khi phần cuối nội dung còn cách viewport chưa tới nửa màn hình. Nếu nội dung ban đầu ngắn hơn ngưỡng, nó có thể chạy ngay khi mount. Nó cũng có thể chạy nhiều lần, nên hãy chặn bằng một cờ đang tải trong `useRef` và kiểm tra còn trang để tải hay không.",
+      "en": "`onEndReachedThreshold` is the distance from the end of the content, measured in visible lengths of the list. With 0.5, FlatList calls `onEndReached` once the end of the content is less than half a screen away. If the first page is shorter than the threshold, it can fire right on mount. It can also fire several times, so guard it with an in-flight flag in a `useRef` and a check that more pages exist."
+    }
+  },
+  {
+    "id": "performance-lists-005",
+    "type": "mcq",
+    "topics": [
+      "performance/lists"
+    ],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 75,
+    "lessons": [
+      "performance-lists-core"
+    ],
+    "multi": true,
+    "prompt": {
+      "vi": "Một danh sách chat dùng `keyExtractor={(_, index) => String(index)}`, và tin nhắn mới được chèn vào đầu `data`. Điều này có thể gây ra những vấn đề nào? (chọn tất cả đáp án đúng)",
+      "en": "A chat list uses `keyExtractor={(_, index) => String(index)}`, and new messages are inserted at the start of `data`. Which problems can this cause? (select all that apply)"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "State cục bộ của một row, như trạng thái mở rộng, chuyển sang tin nhắn khác",
+          "en": "A row's local state, such as an expanded toggle, moves to another message"
+        }
+      },
+      {
+        "text": {
+          "vi": "Mỗi row đang mount nhận một `item` khác, nên mọi row đã memo đều re-render",
+          "en": "Every mounted row receives a different `item`, so all memoized rows re-render"
+        }
+      },
+      {
+        "text": {
+          "vi": "React log cảnh báo trùng key mỗi lần có một tin nhắn mới được chèn vào đầu",
+          "en": "React logs a duplicate-key warning each time a new message is inserted"
+        },
+        "misconception": {
+          "id": "lists-index-key-warning",
+          "text": {
+            "vi": "Nghĩ rằng key theo index gây cảnh báo của React. Index luôn khác nhau nên React không báo gì, và vì thế lỗi này thường lọt qua review.",
+            "en": "Believing index keys trigger a React warning. Indexes are always unique, so React says nothing, which is why this bug often slips through review."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "FlatList ngừng unmount các row nằm ngoài vùng render",
+          "en": "FlatList stops unmounting the rows that fall outside the render window"
+        },
+        "misconception": {
+          "id": "lists-index-key-disables-window",
+          "text": {
+            "vi": "Nghĩ rằng loại key ảnh hưởng tới windowing. Windowing dựa vào vị trí cuộn và kích thước row; key chỉ quyết định instance component nào đi với item nào.",
+            "en": "Believing the kind of key affects windowing. Windowing depends on scroll position and row sizes; keys only decide which component instance goes with which item."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0,
+      1
+    ],
+    "explanation": {
+      "vi": "Key cho React biết instance nào thuộc về item nào. Khi chèn vào đầu, key \"0\" giờ là tin nhắn mới, key \"1\" là tin nhắn trước đó từng ở vị trí 0, cứ thế tiếp. React giữ instance theo key, nên state cục bộ (mở rộng, text đang gõ, animation) ở lại vị trí cũ trong khi nội dung trượt đi. Mọi row cũng nhận `item` khác nên memo không cứu được. Hãy dùng id ổn định từ dữ liệu.",
+      "en": "Keys tell React which instance belongs to which item. After an insert at the start, key \"0\" is now the new message, key \"1\" is the message that used to be at position 0, and so on. React keeps instances by key, so local state (expanded flags, typed text, animations) stays at the old position while the content shifts. Every row also gets a different `item`, so memo cannot help. Use a stable id from the data."
+    }
+  },
+  {
+    "id": "performance-lists-006",
+    "type": "mcq",
+    "topics": [
+      "performance/lists"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": [
+      "performance-lists-core"
+    ],
+    "multi": true,
+    "prompt": {
+      "vi": "Trên một máy Android tầm trung, khi vuốt nhanh một feed ở release build, có những vùng trắng xuất hiện trước khi row kịp hiện. Những thay đổi nào có thể giảm vùng trắng? (chọn tất cả đáp án đúng)",
+      "en": "On a mid-range Android phone, flinging a feed in a release build shows blank areas before rows appear. Which changes can reduce the blanks? (select all that apply)"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Tăng `windowSize` để nội dung được render sẵn xa hơn quanh viewport",
+          "en": "Raise `windowSize` so more content is rendered ahead of the viewport"
+        }
+      },
+      {
+        "text": {
+          "vi": "Làm mỗi row rẻ hơn khi render, ví dụ layout nhẹ hơn và ảnh nhỏ hơn",
+          "en": "Make each row cheaper to render, such as lighter layout and smaller images"
+        }
+      },
+      {
+        "text": {
+          "vi": "Tăng `maxToRenderPerBatch` để mỗi batch lấp được nhiều row hơn",
+          "en": "Raise `maxToRenderPerBatch` so that each batch fills in more rows"
+        }
+      },
+      {
+        "text": {
+          "vi": "Giảm `windowSize` xuống 5 để mỗi lượt render xong nhanh hơn",
+          "en": "Lower `windowSize` to 5 so that each render pass finishes sooner"
+        },
+        "misconception": {
+          "id": "lists-small-window-fewer-blanks",
+          "text": {
+            "vi": "Nghĩ rằng vùng render nhỏ thì ít trắng hơn. Vùng nhỏ nghĩa là ít nội dung render sẵn quanh viewport, nên khi vuốt nhanh người dùng chạm tới vùng chưa render sớm hơn.",
+            "en": "Believing a smaller window means fewer blanks. A smaller window keeps less content ready around the viewport, so a fast fling reaches unrendered space sooner."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Tăng `updateCellsBatchingPeriod` để các batch mới được render dày hơn",
+          "en": "Raise `updateCellsBatchingPeriod` so that new batches render more often"
+        },
+        "misconception": {
+          "id": "lists-batching-period-inverted",
+          "text": {
+            "vi": "Hiểu ngược updateCellsBatchingPeriod. Đây là khoảng chờ giữa các batch, nên tăng nó làm batch thưa hơn và row được lấp chậm hơn.",
+            "en": "Getting updateCellsBatchingPeriod backwards. It is the wait between batches, so raising it makes batches less frequent and rows fill in more slowly."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0,
+      1,
+      2
+    ],
+    "explanation": {
+      "vi": "Vùng trắng xuất hiện khi native cuộn nhanh hơn tốc độ JS thread render row mới. Tăng `windowSize` cho thêm nội dung dự trữ, đổi lại tốn bộ nhớ. Tăng `maxToRenderPerBatch` lấp row nhanh hơn, đổi lại JS thread bận lâu hơn mỗi batch nên phản hồi chạm chậm hơn. Row rẻ hơn thì mọi batch đều nhanh hơn, và đây thường là cách sửa tốt nhất. Giảm `windowSize` hoặc tăng `updateCellsBatchingPeriod` đi theo hướng ngược lại.",
+      "en": "Blanks appear when native scrolling outruns the JS thread rendering new rows. Raising `windowSize` adds a buffer of rendered content at the cost of memory. Raising `maxToRenderPerBatch` fills rows faster, but the JS thread is busy longer per batch, so taps feel slower. Cheaper rows make every batch faster, and that is usually the best fix. Lowering `windowSize` or raising `updateCellsBatchingPeriod` pushes the other way."
+    }
+  },
+  {
+    "id": "performance-lists-007",
+    "type": "spot-bug",
+    "topics": [
+      "performance/lists"
+    ],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 105,
+    "lessons": [
+      "performance-lists-core"
+    ],
+    "prompt": {
+      "vi": "Màn hình có 3.000 sản phẩm mất vài giây mới mở được, và Profiler cho thấy mọi `ProductRow` đều được mount. Dòng nào gây lỗi, và vì sao?",
+      "en": "A screen with 3,000 products takes several seconds to open, and the profiler shows every `ProductRow` mounting. Which line causes it, and why?"
+    },
+    "code": "type Product = { id: string; name: string };\ntype Props = { products: Product[] };\n\nfunction ShopScreen({ products }: Props) {\n  return (\n    <ScrollView>\n      <Banner />\n      <CategoryChips />\n      <FlatList\n        data={products}\n        keyExtractor={(p) => p.id}\n        renderItem={({ item }) => <ProductRow product={item} />}\n      />\n    </ScrollView>\n  );\n}",
+    "answerLine": 6,
+    "causeOptions": [
+      {
+        "text": {
+          "vi": "`ScrollView` dọc bên ngoài cho FlatList cao bằng toàn bộ nội dung, nên mọi row đều render",
+          "en": "The outer vertical `ScrollView` lets the FlatList grow to full height, so every row renders"
+        }
+      },
+      {
+        "text": {
+          "vi": "`keyExtractor` inline là hàm mới mỗi lần render, nên FlatList mount lại mọi row",
+          "en": "The inline `keyExtractor` is a new function each render, so every row remounts"
+        },
+        "misconception": {
+          "id": "lists-inline-keyextractor-remounts",
+          "text": {
+            "vi": "Nghĩ rằng tham chiếu của keyExtractor quan trọng. FlatList chỉ dùng chuỗi key mà nó trả về; key giữ nguyên thì row giữ nguyên instance.",
+            "en": "Believing keyExtractor's identity matters. FlatList only uses the key string it returns; as long as the key stays the same, the row keeps its instance."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Thiếu `initialNumToRender`, nên FlatList render toàn bộ `data` ở lần đầu",
+          "en": "Without `initialNumToRender`, FlatList renders all of `data` on the first pass"
+        },
+        "misconception": {
+          "id": "lists-initialnum-default-all",
+          "text": {
+            "vi": "Nghĩ rằng initialNumToRender mặc định là toàn bộ data. Mặc định là 10; FlatList chỉ render hết khi có thứ khác phá windowing.",
+            "en": "Believing initialNumToRender defaults to all of data. The default is 10; FlatList renders everything only when something else breaks windowing."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "FlatList chỉ virtualize khi có `getItemLayout`, mà ở đây không có",
+          "en": "FlatList virtualises only when given `getItemLayout`, which is missing here"
+        },
+        "misconception": {
+          "id": "lists-getitemlayout-required",
+          "text": {
+            "vi": "Nghĩ rằng windowing cần getItemLayout. Không có nó, FlatList đo row bằng onLayout và vẫn virtualize; getItemLayout chỉ bỏ được bước đo.",
+            "en": "Believing windowing needs getItemLayout. Without it, FlatList measures rows with onLayout and still virtualises; getItemLayout only removes the measuring step."
+          }
+        }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "FlatList cần một viewport có chiều cao giới hạn để biết row nào nằm ngoài vùng render. Bên trong `ScrollView` cùng chiều, nó được phép cao bằng toàn bộ nội dung, nên mọi row đều \"thấy được\" và đều được render. Ở dev, RN cảnh báo không lồng VirtualizedList trong `ScrollView` thường cùng hướng. Hãy bỏ `ScrollView`, đưa `Banner` và `CategoryChips` vào `ListHeaderComponent`.",
+      "en": "FlatList needs a viewport of bounded height to know which rows fall outside its window. Inside a `ScrollView` with the same orientation, it is allowed to grow to the full content height, so every row counts as visible and renders. In development RN warns against nesting VirtualizedLists inside plain ScrollViews of the same orientation. Remove the `ScrollView` and move `Banner` and `CategoryChips` into `ListHeaderComponent`."
+    }
+  },
+  {
+    "id": "performance-lists-008",
+    "type": "spot-bug",
+    "topics": [
+      "performance/lists"
+    ],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 120,
+    "lessons": [
+      "performance-lists-core"
+    ],
+    "prompt": {
+      "vi": "Sau khi chuyển hộp thư từ FlatList sang FlashList v2, người dùng mở rộng một tin nhắn, cuộn xuống, và thấy những tin nhắn khác đã ở trạng thái mở rộng. Dòng nào gây lỗi, và vì sao?",
+      "en": "After moving an inbox from FlatList to FlashList v2, users expand one message, scroll down, and find other messages already expanded. Which line causes it, and why?"
+    },
+    "code": "type Message = { id: string; text: string };\ntype RowProps = { message: Message };\n\nfunction MessageRow({ message }: RowProps) {\n  const [expanded, setExpanded] = useState(false);\n  return (\n    <Pressable onPress={() => setExpanded((e) => !e)}>\n      <Text numberOfLines={expanded ? undefined : 2}>{message.text}</Text>\n    </Pressable>\n  );\n}\nfunction Inbox({ messages }: { messages: Message[] }) {\n  return (\n    <FlashList\n      data={messages}\n      keyExtractor={(m) => m.id}\n      renderItem={({ item }) => <MessageRow message={item} />}\n    />\n  );\n}",
+    "answerLine": 5,
+    "causeOptions": [
+      {
+        "text": {
+          "vi": "FlashList dùng lại `MessageRow` đã mount cho item khác, nên state `expanded` đi theo",
+          "en": "FlashList reuses a mounted `MessageRow` for another item, so `expanded` carries over"
+        }
+      },
+      {
+        "text": {
+          "vi": "`keyExtractor` trả về key trùng, nên hai tin nhắn dùng chung một state",
+          "en": "`keyExtractor` returns duplicate keys, so two messages share one state"
+        },
+        "misconception": {
+          "id": "lists-blame-key-under-recycling",
+          "text": {
+            "vi": "Đổ lỗi cho key. Id ở đây là duy nhất; khi FlashList tái sử dụng cell, cùng một instance component được giao cho item khác dù key đúng, nên state cục bộ đi theo instance đó.",
+            "en": "Blaming the keys. The ids here are unique; when FlashList recycles a cell, the same component instance is handed a different item even with correct keys, so local state goes with that instance."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`setExpanded((e) => !e)` đọc state cũ từ lần render trước của row",
+          "en": "`setExpanded((e) => !e)` reads stale state from the row's previous render"
+        },
+        "misconception": {
+          "id": "lists-functional-updater-stale",
+          "text": {
+            "vi": "Nghĩ rằng functional updater đọc state cũ. Updater luôn nhận state mới nhất; vấn đề là state đó thuộc về instance đã được giao cho item khác.",
+            "en": "Believing a functional updater reads stale state. The updater always gets the latest state; the problem is that the state belongs to an instance now showing another item."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "FlashList v2 vẫn cần `estimatedItemSize`; thiếu nó thì các row bị lẫn",
+          "en": "FlashList v2 still needs `estimatedItemSize`; without it rows get mixed up"
+        },
+        "misconception": {
+          "id": "lists-flashlist-v2-estimate",
+          "text": {
+            "vi": "Nghĩ rằng FlashList v2 vẫn cần estimatedItemSize. Bản v2 tự đo item và bỏ yêu cầu đó; state bị lẫn là do cell được tái sử dụng.",
+            "en": "Believing FlashList v2 still needs estimatedItemSize. v2 measures items itself and drops that requirement; the mixed-up state comes from cell recycling."
+          }
+        }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "FlashList không unmount row ra khỏi màn hình mà giao instance đó cho item mới, chỉ đổi prop. `useState(false)` chỉ chạy lúc mount, nên `expanded` của tin nhắn cũ đi theo instance sang tin nhắn mới. Hãy đưa trạng thái mở rộng lên cha, ví dụ một `Set` các id, hoặc reset state khi `message.id` đổi. Đừng thêm `key={message.id}` vào row, vì nó buộc remount mỗi lần và mất lợi ích của recycling.",
+      "en": "FlashList does not unmount a row that leaves the screen; it hands that instance to a new item and only changes its props. `useState(false)` runs only on mount, so the old message's `expanded` value travels with the instance to the new one. Lift the expanded state to the parent, for example a `Set` of ids, or reset it when `message.id` changes. Do not add `key={message.id}` to the row, because it forces a remount every time and throws away the benefit of recycling."
+    }
+  },
+  {
+    "id": "performance-lists-009",
+    "type": "spot-bug",
+    "topics": [
+      "performance/lists"
+    ],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 135,
+    "lessons": [
+      "performance-lists-core"
+    ],
+    "prompt": {
+      "vi": "Thanh chữ cái A–Z gọi `listRef.current?.scrollToIndex({ index })`. Với các liên hệ gần đầu danh sách, nó nhảy đúng; càng xuống sâu, liên hệ đích càng lệch xa khỏi đầu màn hình. Mỗi row cao đúng 64 point. Dòng nào gây lỗi, và vì sao?",
+      "en": "An A–Z bar calls `listRef.current?.scrollToIndex({ index })`. For contacts near the top it lands correctly; the deeper the target, the further it ends up from the top of the screen. Every row is exactly 64 points tall. Which line causes it, and why?"
+    },
+    "code": "const ROW_HEIGHT = 64;\nconst SEPARATOR_HEIGHT = 1;\nconst Separator = () => <View style={{ height: SEPARATOR_HEIGHT }} />;\n\ntype Contact = { id: string; name: string };\ntype Props = { contacts: Contact[]; listRef: React.RefObject<FlatList<Contact> | null> };\n\nfunction ContactList({ contacts, listRef }: Props) {\n  return (\n    <FlatList\n      ref={listRef}\n      data={contacts}\n      keyExtractor={(c) => c.id}\n      ItemSeparatorComponent={Separator}\n      getItemLayout={(_, index) => ({ length: ROW_HEIGHT, offset: ROW_HEIGHT * index, index })}\n      renderItem={({ item }) => <ContactRow contact={item} />}\n    />\n  );\n}",
+    "answerLine": 15,
+    "causeOptions": [
+      {
+        "text": {
+          "vi": "`offset` bỏ qua separator, nên mỗi index sau lại lệch thêm 1 point",
+          "en": "`offset` leaves out the separators, so each index drifts 1 more point"
+        }
+      },
+      {
+        "text": {
+          "vi": "Thiếu `onScrollToIndexFailed`, nên `scrollToIndex` chỉ cuộn tới vị trí ước lượng",
+          "en": "Without `onScrollToIndexFailed`, `scrollToIndex` only scrolls to an estimate"
+        },
+        "misconception": {
+          "id": "lists-scrolltoindex-failed-guess",
+          "text": {
+            "vi": "Nghĩ rằng onScrollToIndexFailed điều khiển độ chính xác. Callback này chỉ chạy khi không có getItemLayout và row đích chưa được đo; ở đây FlatList tin hoàn toàn vào getItemLayout.",
+            "en": "Believing onScrollToIndexFailed controls accuracy. It only runs when there is no getItemLayout and the target has not been measured; here FlatList trusts getItemLayout completely."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "FlatList chỉ dùng `getItemLayout` lúc render đầu, sau đó tự đo lại row",
+          "en": "FlatList uses `getItemLayout` only on first render and then remeasures rows"
+        },
+        "misconception": {
+          "id": "lists-getitemlayout-initial-only",
+          "text": {
+            "vi": "Nghĩ rằng getItemLayout chỉ dùng lúc đầu. Khi có nó, FlatList dùng nó cho mọi phép tính vị trí, nên con số sai sẽ sai suốt vòng đời của list.",
+            "en": "Believing getItemLayout is used only at first. When it is present, FlatList uses it for every position calculation, so a wrong number stays wrong for the life of the list."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`keyExtractor` phải trả về index thì `scrollToIndex` mới tìm được row",
+          "en": "`keyExtractor` must return the index for `scrollToIndex` to find the row"
+        },
+        "misconception": {
+          "id": "lists-scrolltoindex-needs-index-key",
+          "text": {
+            "vi": "Nghĩ rằng scrollToIndex tìm row theo key. Nó tính vị trí từ index qua getItemLayout hoặc số đo đã có; key không liên quan.",
+            "en": "Believing scrollToIndex finds rows by key. It computes the position from the index through getItemLayout or existing measurements; keys play no part."
+          }
+        }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "Giữa hai row có một separator cao 1 point, nên row thứ `index` thật ra bắt đầu ở `(ROW_HEIGHT + SEPARATOR_HEIGHT) * index`. `getItemLayout` báo `ROW_HEIGHT * index`, nên sai số tăng 1 point sau mỗi row: gần đầu thì không thấy, tới index 300 thì lệch 300 point. FlatList tin con số này cho cả windowing, nên khi cuộn nhanh cũng có thể thấy vùng trắng. Hãy cộng kích thước separator vào `offset`.",
+      "en": "There is a 1-point separator between rows, so row `index` really starts at `(ROW_HEIGHT + SEPARATOR_HEIGHT) * index`. `getItemLayout` reports `ROW_HEIGHT * index`, so the error grows by 1 point per row: invisible near the top, 300 points off at index 300. FlatList trusts these numbers for windowing too, so fast scrolling can also show blanks. Add the separator size to `offset`."
+    }
+  },
+  {
+    "id": "performance-lists-010",
+    "type": "open",
+    "topics": [
+      "performance/lists"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 270,
+    "lessons": [
+      "performance-lists-core"
+    ],
+    "prompt": {
+      "vi": "Team đề xuất thay mọi FlatList trong app bằng FlashList. Bạn quyết định thế nào, và khi chuyển thì bạn kiểm tra những gì?",
+      "en": "The team proposes replacing every FlatList in the app with FlashList. How do you decide, and what do you check when you migrate?"
+    },
+    "keyPoints": [
+      {
+        "vi": "Đo trước trên release build (perf monitor, Flashlight trên Android) để chứng minh list hiện tại thật sự là nút thắt",
+        "en": "Measure first on a release build (perf monitor, Flashlight on Android) to prove the current list really is the bottleneck"
+      },
+      {
+        "vi": "Hiểu khác biệt: FlatList mount và unmount row theo vùng render, FlashList tái sử dụng cell và chỉ đổi prop",
+        "en": "Know the difference: FlatList mounts and unmounts rows by window, FlashList recycles cells and only swaps props"
+      },
+      {
+        "vi": "Rà state cục bộ trong row: state đi theo cell được tái sử dụng, nên phải đưa lên cha theo id hoặc reset khi item đổi",
+        "en": "Audit local state in rows: it travels with recycled cells, so lift it to the parent by id or reset it when the item changes"
+      },
+      {
+        "vi": "Không đặt `key` theo item bên trong row, vì nó buộc remount và mất lợi ích của recycling",
+        "en": "Avoid item-based `key` props inside rows, because they force remounts and cancel out recycling"
+      },
+      {
+        "vi": "Với list có nhiều loại row, khai báo `getItemType` để cell chỉ được tái sử dụng giữa các row cùng loại",
+        "en": "For lists with several row kinds, declare `getItemType` so cells are only recycled between rows of the same kind"
+      },
+      {
+        "vi": "Ghi rõ phiên bản: FlashList v2 cần New Architecture và không còn yêu cầu `estimatedItemSize`, còn v1 thì cần",
+        "en": "Be explicit about versions: FlashList v2 needs the New Architecture and no longer asks for `estimatedItemSize`, while v1 does"
+      }
+    ],
+    "modelAnswer": {
+      "vi": "Mình không thay đồng loạt. Trước tiên mình đo trên release build, dùng perf monitor và Flashlight trên một máy Android tầm trung, để xem list nào thật sự giật. Nhiều list ngắn thì FlatList là đủ. Ở list dài, FlashList có lợi vì nó tái sử dụng cell thay vì mount và unmount row. Nhưng chính điều đó đổi cách row hoạt động: state cục bộ, như cờ mở rộng hay text đang gõ, đi theo cell sang item khác. Vì vậy mình rà từng row, đưa state lên cha theo id hoặc reset khi item đổi, bỏ các `key` theo item bên trong row, và thêm `getItemType` nếu list có nhiều loại row. Mình cũng ghi rõ phiên bản: v2 cần New Architecture và bỏ `estimatedItemSize`. Cuối cùng mình đo lại để so sánh.",
+      "en": "I would not swap them all at once. First I measure on a release build, with the perf monitor and Flashlight on a mid-range Android device, to see which lists actually stutter. Many short lists are fine with FlatList. On long lists FlashList helps because it recycles cells instead of mounting and unmounting rows. But that changes how rows behave: local state, like an expanded flag or typed text, travels with the cell to another item. So I audit each row, lift state to the parent by id or reset it when the item changes, remove item-based `key` props inside rows, and add `getItemType` when the list mixes row kinds. I also pin the version: v2 needs the New Architecture and drops `estimatedItemSize`. Then I measure again to compare."
+    },
+    "followUps": [
+      {
+        "vi": "Làm sao bạn reset state của một row trong FlashList khi item của nó đổi mà không buộc remount?",
+        "en": "How would you reset a FlashList row's state when its item changes without forcing a remount?"
+      }
+    ]
+  },
+  {
+    "id": "performance-lists-011",
+    "type": "open",
+    "topics": [
+      "performance/lists"
+    ],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 300,
+    "lessons": [
+      "performance-lists-core"
+    ],
+    "prompt": {
+      "vi": "Một feed vô hạn dùng `onEndReached` để tải trang tiếp. Sau khi release, người dùng báo thấy bài viết bị lặp, và log server cho thấy cùng một trang bị gọi hai hoặc ba lần, nhất là trên tablet. Bạn điều tra và sửa thế nào?",
+      "en": "An infinite feed uses `onEndReached` to load the next page. After release, users report duplicated posts, and server logs show the same page requested two or three times, especially on tablets. How do you investigate and fix it?"
+    },
+    "keyPoints": [
+      {
+        "vi": "`onEndReached` có thể chạy nhiều lần: khi mount nếu trang đầu ngắn hơn ngưỡng, sau mỗi lần nội dung đổi độ dài, và trong lúc cuộn đà",
+        "en": "`onEndReached` can fire several times: on mount if the first page is shorter than the threshold, after each content length change, and during momentum scrolling"
+      },
+      {
+        "vi": "Màn hình lớn như tablet làm trang đầu dễ ngắn hơn ngưỡng, nên lỗi lộ ra ở đó trước",
+        "en": "Large screens like tablets make the first page more likely to fall short of the threshold, so the bug shows there first"
+      },
+      {
+        "vi": "Chặn trong handler bằng cờ đang tải trong `useRef` cộng với `hasMore`, vì state `isLoading` chưa kịp cập nhật giữa hai lời gọi liền nhau",
+        "en": "Guard the handler with an in-flight flag in a `useRef` plus `hasMore`, because an `isLoading` state has not updated yet between two back-to-back calls"
+      },
+      {
+        "vi": "Dùng cursor thay cho số trang và gộp kết quả theo id, để một lời gọi trùng không thể thêm bản ghi trùng",
+        "en": "Use a cursor instead of a page number and merge results by id, so a duplicate call cannot add duplicate records"
+      },
+      {
+        "vi": "Key ổn định theo id để React không trộn row khi dữ liệu trùng lọt vào, và cảnh báo trùng key giúp phát hiện sớm",
+        "en": "Use stable id keys so React does not mix rows if duplicates slip in, and duplicate-key warnings help catch it early"
+      },
+      {
+        "vi": "Tái hiện bằng trang đầu ngắn trên simulator tablet, rồi thêm test cho handler phân trang",
+        "en": "Reproduce with a short first page on a tablet simulator, then add a test for the pagination handler"
+      }
+    ],
+    "modelAnswer": {
+      "vi": "Mình bắt đầu từ log: cùng một trang bị gọi nhiều lần nghĩa là `onEndReached` chạy nhiều lần trước khi trang trước về. Điều này đúng với thiết kế của FlatList: nó có thể gọi ngay lúc mount nếu trang đầu ngắn hơn ngưỡng, và gọi lại khi nội dung đổi độ dài. Tablet có màn hình cao nên trang đầu dễ không lấp đủ, vì vậy lỗi lộ ra ở đó. Một state `isLoading` không đủ, vì hai lời gọi liền nhau vẫn đọc giá trị cũ. Mình chặn bằng cờ trong `useRef` cộng với `hasMore`, chuyển sang cursor, và gộp kết quả theo id để lời gọi trùng không thể tạo bản ghi trùng. Cuối cùng mình tái hiện trên simulator tablet và thêm test cho handler.",
+      "en": "I start from the logs: the same page requested several times means `onEndReached` fired again before the previous page came back. That is how FlatList works: it can fire on mount if the first page is shorter than the threshold, and again when the content length changes. Tablets have tall screens, so the first page often does not fill them, which is why the bug shows there. An `isLoading` state is not enough, because two back-to-back calls still read the old value. I guard with a flag in a `useRef` plus `hasMore`, switch to a cursor, and merge results by id so a duplicate call cannot create duplicate records. Then I reproduce on a tablet simulator and add a test for the handler."
+    },
+    "followUps": [
+      {
+        "vi": "Nếu người dùng kéo để làm mới trong lúc một trang đang tải thì bạn xử lý thế nào?",
+        "en": "How do you handle a pull-to-refresh that starts while a page is still loading?"
+      },
+      {
+        "vi": "Với chat dùng `inverted`, đầu nào của danh sách sẽ gọi `onEndReached`?",
+        "en": "In a chat list using `inverted`, which end of the list triggers `onEndReached`?"
+      }
+    ]
+  },
+  {
+    "id": "performance-lists-012",
+    "type": "open",
+    "topics": [
+      "performance/lists"
+    ],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 330,
+    "lessons": [
+      "performance-lists-core"
+    ],
+    "prompt": {
+      "vi": "Một feed ảnh làm app bị hệ điều hành kill vì hết bộ nhớ trên các máy Android cấu hình thấp sau vài phút cuộn. Trên iPhone thì ổn. Bạn điều tra và sửa thế nào?",
+      "en": "An image feed gets the app killed for running out of memory on low-end Android phones after a few minutes of scrolling. iPhones are fine. How do you investigate and fix it?"
+    },
+    "keyPoints": [
+      {
+        "vi": "Đo trên release build bằng Android Studio Memory Profiler để xem bộ nhớ native (bitmap) hay JS heap đang tăng",
+        "en": "Measure on a release build with the Android Studio Memory Profiler to see whether native memory (bitmaps) or the JS heap is growing"
+      },
+      {
+        "vi": "Kiểm tra kích thước ảnh: ảnh gốc vài nghìn pixel hiển thị trong thumbnail nhỏ vẫn được decode ở kích thước đầy đủ",
+        "en": "Check image sizes: a photo thousands of pixels wide shown as a small thumbnail is still decoded at full size"
+      },
+      {
+        "vi": "Yêu cầu ảnh đã resize từ CDN theo kích thước hiển thị và mật độ điểm ảnh, và dùng thư viện ảnh có cache bộ nhớ và cache đĩa",
+        "en": "Request images resized by the CDN for the display size and pixel density, and use an image library with memory and disk caching"
+      },
+      {
+        "vi": "Giảm số row được giữ mount bằng `windowSize` nhỏ hơn, chấp nhận nhiều vùng trắng hơn khi cuộn nhanh",
+        "en": "Reduce how many rows stay mounted with a smaller `windowSize`, accepting more blanks on fast scrolls"
+      },
+      {
+        "vi": "Xác nhận row ra khỏi vùng render thật sự được giải phóng: không có listener, timer hay cache theo row còn giữ tham chiếu",
+        "en": "Confirm rows that leave the window are really released: no listeners, timers or per-row caches still holding references"
+      },
+      {
+        "vi": "Coi `removeClippedSubviews` là một thử nghiệm có đo đạc, vì tài liệu cảnh báo nó có thể làm mất nội dung",
+        "en": "Treat `removeClippedSubviews` as a measured experiment, because the docs warn it can cause missing content"
+      }
+    ],
+    "modelAnswer": {
+      "vi": "Mình đo trước trên release build bằng Memory Profiler của Android Studio. Nếu bộ nhớ native tăng theo từng màn cuộn thì thủ phạm thường là bitmap: ảnh gốc 4000 pixel hiển thị trong ô 100 point vẫn được decode đầy đủ, và máy yếu có rất ít RAM cho mỗi app. Cách sửa chính là xin ảnh đã resize từ CDN theo kích thước hiển thị và mật độ điểm ảnh, cộng với một thư viện ảnh có cache bộ nhớ và cache đĩa. Sau đó mình giảm `windowSize` để ít row được giữ mount hơn, và kiểm tra row bị unmount không còn listener hay timer giữ tham chiếu. `removeClippedSubviews` mình chỉ bật khi đo thấy có lợi và đã test kỹ, vì nó có thể làm mất nội dung.",
+      "en": "I measure first on a release build with the Android Studio Memory Profiler. If native memory grows with every screen of scrolling, the culprit is usually bitmaps: a 4000-pixel photo shown in a 100-point cell is still decoded in full, and low-end phones give each app very little RAM. The main fix is to request images the CDN has resized for the display size and pixel density, plus an image library with memory and disk caching. Then I lower `windowSize` so fewer rows stay mounted, and check that unmounted rows leave no listeners or timers holding references. I enable `removeClippedSubviews` only if measurements show a gain and it passes careful testing, because it can cause missing content."
+    },
+    "followUps": [
+      {
+        "vi": "Vì sao cùng feed đó lại ổn trên iPhone?",
+        "en": "Why might the same feed be fine on iPhones?"
+      }
+    ]
+  }
+]

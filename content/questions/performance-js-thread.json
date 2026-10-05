@@ -1,0 +1,816 @@
+[
+  {
+    "id": "performance-js-thread-001",
+    "type": "mcq",
+    "topics": [
+      "performance/js-thread"
+    ],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": [
+      "performance-js-thread-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "App chạy trên một máy có màn hình 120 Hz. Handler `onScroll` được gọi mỗi frame và tốn khoảng 12 ms JS cho mỗi lần gọi. Bạn nên dự đoán điều gì?",
+      "en": "Your app runs on a phone with a 120 Hz screen. The `onScroll` handler fires every frame and costs about 12 ms of JS each time. What should you expect?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Không sao, vì 12 ms vẫn nằm trong ngân sách 16 ms của một frame",
+          "en": "No problem, since 12 ms fits inside the 16 ms frame budget"
+        },
+        "misconception": {
+          "id": "jsthread-16ms-everywhere",
+          "text": {
+            "vi": "Nghĩ rằng ngân sách luôn là 16 ms. 16,6 ms chỉ đúng ở 60 Hz; ở 120 Hz mỗi frame chỉ có khoảng 8,3 ms, nên cùng một lượng việc sẽ trễ frame trên màn hình nhanh hơn.",
+            "en": "Believing the budget is always 16 ms. 16.6 ms only holds at 60 Hz; at 120 Hz each frame has about 8.3 ms, so the same work misses frames on a faster screen."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "JS thread trễ frame, vì ở 120 Hz mỗi frame chỉ có khoảng 8,3 ms",
+          "en": "The JS thread misses frames, because at 120 Hz a frame has only about 8.3 ms"
+        }
+      },
+      {
+        "text": {
+          "vi": "Hermes tự chia handler dài ra nhiều frame, nên không frame nào bị trễ",
+          "en": "Hermes splits long handlers across frames, so no frame is missed"
+        },
+        "misconception": {
+          "id": "jsthread-engine-preempts",
+          "text": {
+            "vi": "Nghĩ rằng engine JS tự cắt nhỏ việc dài. JS chạy tới khi xong: một handler đã bắt đầu thì không việc nào khác trên JS thread được chạy cho tới khi nó return.",
+            "en": "Believing the JS engine slices long work for you. JS runs to completion: once a handler starts, nothing else on the JS thread runs until it returns."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Chỉ có UI FPS giảm, vì handler `onScroll` chạy trên main thread",
+          "en": "Only the UI FPS drops, because `onScroll` handlers run on the main thread"
+        },
+        "misconception": {
+          "id": "jsthread-onscroll-on-ui",
+          "text": {
+            "vi": "Nghĩ rằng handler onScroll chạy trên main thread. Scroll view native chạy trên main thread, nhưng callback onScroll viết bằng JS chạy trên JS thread, nên việc nặng trong đó làm JS FPS giảm.",
+            "en": "Believing onScroll handlers run on the main thread. The native scroll view runs on the main thread, but a JS onScroll callback runs on the JS thread, so heavy work there drops the JS FPS."
+          }
+        }
+      }
+    ],
+    "answer": [
+      1
+    ],
+    "explanation": {
+      "vi": "Ngân sách mỗi frame là 1000 ms chia cho tần số quét: khoảng 16,6 ms ở 60 Hz và khoảng 8,3 ms ở 120 Hz. Handler 12 ms gọi mỗi frame sẽ làm JS thread tụt lại: event dồn lại, việc render do JS điều khiển trễ, và JS FPS trong Perf Monitor giảm. Việc cuộn native vẫn mượt vì nó chạy trên main thread. Bẫy chính là coi 16 ms là con số cố định; trên máy 90 hay 120 Hz, ngân sách nhỏ hơn và JS cũng phải chia thời gian đó với việc khác như render và xử lý event.",
+      "en": "The frame budget is 1000 ms divided by the refresh rate: about 16.6 ms at 60 Hz and about 8.3 ms at 120 Hz. A 12 ms handler on every frame makes the JS thread fall behind: events queue up, JS-driven rendering lags, and the JS FPS in Perf Monitor drops. Native scrolling stays smooth because it runs on the main thread. The main trap is treating 16 ms as fixed; on 90 or 120 Hz devices the budget is smaller, and JS also has to share it with other work such as rendering and event handling."
+    }
+  },
+  {
+    "id": "performance-js-thread-002",
+    "type": "mcq",
+    "topics": [
+      "performance/js-thread"
+    ],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": [
+      "performance-js-thread-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Một màn hình chạy `JSON.parse` mất 400 ms trên JS thread, trong khi một animation loading đã được start ngay trước đó. Animation nào vẫn chạy mượt trong lúc parse?",
+      "en": "A screen runs a 400 ms `JSON.parse` on the JS thread, while a loading animation was started just before it. Which animation keeps moving smoothly during the parse?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "`Animated.timing` trên `opacity` với `useNativeDriver: true`",
+          "en": "`Animated.timing` on `opacity` with `useNativeDriver: true`"
+        }
+      },
+      {
+        "text": {
+          "vi": "`Animated.timing` trên `width` với `useNativeDriver: false`",
+          "en": "`Animated.timing` on `width` with `useNativeDriver: false`"
+        },
+        "misconception": {
+          "id": "jsthread-animated-always-native",
+          "text": {
+            "vi": "Nghĩ rằng Animated luôn chạy ở phía native. Với useNativeDriver: false, JS tính giá trị của từng frame rồi gửi sang native, nên animation đứng lại khi JS thread bị chặn.",
+            "en": "Believing Animated always runs on the native side. With useNativeDriver: false, JS computes every frame and sends the value across, so the animation stops when the JS thread is blocked."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Một spinner đổi góc bằng `setState` trong `requestAnimationFrame`",
+          "en": "A spinner whose angle is set with `setState` in `requestAnimationFrame`"
+        },
+        "misconception": {
+          "id": "jsthread-raf-off-js",
+          "text": {
+            "vi": "Nghĩ rằng requestAnimationFrame chạy ngoài JS thread. Callback của nó là JS, chỉ được hẹn chạy trước frame kế tiếp; khi JS thread bị chặn, không callback nào chạy.",
+            "en": "Believing requestAnimationFrame runs outside the JS thread. Its callback is JS that is only scheduled before the next frame; while the JS thread is blocked, no callback runs."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`Animated.timing` trên `height` với `useNativeDriver: true`",
+          "en": "`Animated.timing` on `height` with `useNativeDriver: true`"
+        },
+        "misconception": {
+          "id": "jsthread-native-driver-layout",
+          "text": {
+            "vi": "Nghĩ rằng native driver của Animated animate được thuộc tính layout. Nó chỉ hỗ trợ các thuộc tính không phải layout như transform và opacity; yêu cầu nó animate height sẽ ném lỗi báo thuộc tính không được hỗ trợ.",
+            "en": "Believing Animated's native driver can animate layout props. It only supports non-layout props such as transform and opacity; asking it to animate height throws an error saying the property is not supported."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0
+    ],
+    "explanation": {
+      "vi": "Với `useNativeDriver: true`, toàn bộ cấu hình animation được gửi sang native một lần khi start, rồi native tự cập nhật view mỗi frame trên UI thread. JS thread bận cũng không ảnh hưởng. Với `useNativeDriver: false` hay animation tự viết bằng `setState`, mỗi frame cần JS tính giá trị mới, nên chúng đứng hình suốt 400 ms. Native driver chỉ nhận thuộc tính không phải layout như `transform` và `opacity`; muốn animate layout trên UI thread thì dùng Reanimated.",
+      "en": "With `useNativeDriver: true`, the whole animation config is sent to native once at start, and native updates the view every frame on the UI thread. A busy JS thread does not affect it. With `useNativeDriver: false` or a hand-rolled `setState` animation, every frame needs JS to compute the next value, so they freeze for the full 400 ms. The native driver only accepts non-layout props such as `transform` and `opacity`; to animate layout on the UI thread, use Reanimated."
+    }
+  },
+  {
+    "id": "performance-js-thread-003",
+    "type": "mcq",
+    "topics": [
+      "performance/js-thread"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": [
+      "performance-js-thread-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "App chạy RN 0.78 (React 19, New Architecture). Ô lọc giữ `text` cho `TextInput` và `query` để lọc một danh sách 5.000 dòng. Mỗi phím gõ cập nhật cả hai, và chữ hiện lên chậm. Thay đổi nào giữ cho ô nhập phản hồi nhanh trong lúc danh sách cập nhật?",
+      "en": "The app is on RN 0.78 (React 19, New Architecture). A filter box keeps `text` for the `TextInput` and `query` for filtering a 5,000-row list. Each keystroke updates both, and characters appear late. Which change keeps the input responsive while the list updates?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Giữ `setText` là cập nhật khẩn cấp, và bọc `setQuery` trong `startTransition`",
+          "en": "Keep `setText` as an urgent update, and wrap `setQuery` in `startTransition`"
+        }
+      },
+      {
+        "text": {
+          "vi": "Bọc `setText` của `TextInput` trong `startTransition`, giữ nguyên `setQuery`",
+          "en": "Wrap the `TextInput`'s `setText` in `startTransition`, leaving `setQuery` as is"
+        },
+        "misconception": {
+          "id": "jsthread-transition-for-input",
+          "text": {
+            "vi": "Nghĩ rằng state của chính ô nhập nên nằm trong transition. Cập nhật trong transition là không khẩn cấp, có thể bị ngắt hoặc trì hoãn, nên ô nhập controlled đọc từ nó sẽ trễ so với lúc gõ. Hãy giữ ô nhập khẩn cấp và chỉ đưa cập nhật tốn kém vào transition.",
+            "en": "Believing the input's own state belongs in a transition. Transition updates are non-urgent and can be interrupted or delayed, so a controlled input fed by one lags behind typing. Keep the input urgent and move only the expensive update into the transition."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Bọc phép lọc trong `useMemo` với deps `[query]`, giữ nguyên hai lần set state",
+          "en": "Wrap the filtering in `useMemo` with `[query]` deps, keeping both state updates"
+        },
+        "misconception": {
+          "id": "jsthread-usememo-per-keystroke",
+          "text": {
+            "vi": "Nghĩ rằng useMemo xoá được chi phí ở đây. query đổi sau mỗi phím gõ, nên memo tính lại mỗi lần; useMemo chỉ bỏ qua được việc khi input giữ nguyên.",
+            "en": "Believing useMemo removes the cost here. query changes on every keystroke, so the memo recomputes every time; useMemo only skips work when its inputs stay the same."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Bọc component danh sách trong `React.memo`, giữ nguyên hai lần set state",
+          "en": "Wrap the list component in `React.memo`, keeping both state updates"
+        },
+        "misconception": {
+          "id": "jsthread-memo-changing-props",
+          "text": {
+            "vi": "Nghĩ rằng React.memo giúp được khi props thật sự đổi. Danh sách đã lọc là mảng mới sau mỗi phím gõ, nên memo vẫn cho render lại; memo chỉ bỏ qua render khi props giữ nguyên.",
+            "en": "Believing React.memo helps when the props really change. The filtered list is a new array after every keystroke, so memo still re-renders; memo only skips renders when props stay the same."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0
+    ],
+    "explanation": {
+      "vi": "`startTransition` đánh dấu một cập nhật là không khẩn cấp. React render cập nhật đó theo từng phần, nhường JS thread giữa các phần, và bỏ dở nó nếu có phím gõ mới, nên `setText` được commit trước. Mọi thứ vẫn chạy trên JS thread; transition không chuyển render sang thread khác, nó chỉ đổi thứ tự ưu tiên. Concurrent features như vậy chỉ có trên New Architecture, mặc định từ RN 0.76. `useDeferredValue(query)` là cách tương đương khi bạn không sở hữu chỗ set state. Bẫy chính là bọc nhầm state của ô nhập.",
+      "en": "`startTransition` marks an update as non-urgent. React renders it in slices, yielding the JS thread between them, and abandons it if a new keystroke arrives, so `setText` commits first. Everything still runs on the JS thread; a transition does not move rendering to another thread, it only changes priority. Concurrent features like this need the New Architecture, the default from RN 0.76. `useDeferredValue(query)` does the same job when you do not own the state update. The main trap is wrapping the input's own state."
+    }
+  },
+  {
+    "id": "performance-js-thread-004",
+    "type": "mcq",
+    "topics": [
+      "performance/js-thread"
+    ],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": [
+      "performance-js-thread-core"
+    ],
+    "multi": true,
+    "prompt": {
+      "vi": "Những việc nào giữ JS thread đủ lâu để làm rớt frame, khiến tap và animation do JS điều khiển bị trễ? (chọn tất cả đáp án đúng)",
+      "en": "Which of these hold the JS thread long enough to drop frames, so taps and JS-driven animations lag? (select all that apply)"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Gọi `JSON.parse` một lần trên chuỗi response 5 MB",
+          "en": "Calling `JSON.parse` once on a 5 MB response string"
+        }
+      },
+      {
+        "text": {
+          "vi": "Sort mảng 20.000 phần tử trong render ở mỗi phím gõ",
+          "en": "Sorting a 20,000-item array inside render on every keystroke"
+        }
+      },
+      {
+        "text": {
+          "vi": "Render 2.000 dòng một lúc bằng `ScrollView` và `.map`",
+          "en": "Rendering 2,000 rows at once with a `ScrollView` and `.map`"
+        }
+      },
+      {
+        "text": {
+          "vi": "`await fetch(url)` mất 3 giây vì mạng chậm",
+          "en": "An `await fetch(url)` that takes 3 seconds on a slow network"
+        },
+        "misconception": {
+          "id": "jsthread-await-blocks",
+          "text": {
+            "vi": "Nghĩ rằng chờ một request làm chặn JS thread. Trong lúc fetch chờ, việc mạng chạy ở native và JS thread rảnh để xử lý event và render khác; chỉ đoạn code sau await là phải chờ.",
+            "en": "Believing an awaited request blocks the JS thread. While fetch waits, the network work happens natively and the JS thread is free for other events and renders; only the code after the await waits."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Một `<Image>` đang tải và decode một ảnh remote lớn",
+          "en": "An `<Image>` downloading and decoding a large remote photo"
+        },
+        "misconception": {
+          "id": "jsthread-image-on-js",
+          "text": {
+            "vi": "Nghĩ rằng việc tải ảnh chạy trên JS thread. Tải và decode ảnh do code native làm; JS chỉ truyền source. Ảnh lớn tốn bộ nhớ và thời gian ở phía native, không tốn thời gian JS.",
+            "en": "Believing image loading runs on the JS thread. Downloading and decoding are done by native code; JS only passes the source. Large images cost memory and native time, not JS time."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0,
+      1,
+      2
+    ],
+    "explanation": {
+      "vi": "JS là single-threaded và chạy tới khi xong, nên mọi việc đồng bộ dài đều chiếm trọn thread: `JSON.parse` một chuỗi lớn là một lời gọi không chia nhỏ được, sort trong render lặp lại mỗi phím gõ, và render 2.000 dòng cùng lúc bắt React tạo và reconcile mọi element trước khi commit. Trong lúc đó tap, event và animation do JS điều khiển phải chờ. Ngược lại, `await` chỉ đăng ký phần tiếp theo; việc chờ mạng hay tải ảnh diễn ra ở native, nên JS thread vẫn rảnh.",
+      "en": "JS is single-threaded and runs to completion, so any long synchronous work takes the whole thread: `JSON.parse` on a big string is one call you cannot split, sorting in render repeats on every keystroke, and rendering 2,000 rows at once makes React create and reconcile every element before it commits. Meanwhile taps, events and JS-driven animations wait. By contrast, `await` only registers the continuation; waiting on the network or loading an image happens natively, so the JS thread stays free."
+    }
+  },
+  {
+    "id": "performance-js-thread-005",
+    "type": "mcq",
+    "topics": [
+      "performance/js-thread"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": [
+      "performance-js-thread-core"
+    ],
+    "multi": true,
+    "prompt": {
+      "vi": "Những cách ghép kỹ thuật với loại sự kiện nào là hợp lý? (chọn tất cả đáp án đúng)",
+      "en": "Which pairings of a technique with an event are sound? (select all that apply)"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Debounce request tìm kiếm tới khi người dùng ngừng gõ 300 ms",
+          "en": "Debounce the search request until typing pauses for 300 ms"
+        }
+      },
+      {
+        "text": {
+          "vi": "Throttle việc ghi analytics vị trí cuộn, 200 ms một lần",
+          "en": "Throttle a scroll-position analytics check to once per 200 ms"
+        }
+      },
+      {
+        "text": {
+          "vi": "Tăng `scrollEventThrottle` khi không cần vị trí cuộn chính xác",
+          "en": "Raise `scrollEventThrottle` when a precise position is not needed"
+        }
+      },
+      {
+        "text": {
+          "vi": "Debounce handler `onScroll` đang dời một header theo ngón tay",
+          "en": "Debounce the `onScroll` handler that moves a header with the finger"
+        },
+        "misconception": {
+          "id": "jsthread-debounce-continuous",
+          "text": {
+            "vi": "Nghĩ rằng debounce hợp với phản hồi liên tục. Debounce chỉ chạy sau khi event dừng, nên header đứng yên suốt lúc cuộn rồi nhảy ở cuối. Hiệu ứng liên tục nên chạy trên UI thread (native driver hoặc worklet).",
+            "en": "Believing debounce suits continuous feedback. Debounce runs only after events stop, so the header freezes during the scroll and jumps at the end. Continuous visuals belong on the UI thread (native driver or worklets)."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Throttle ô tìm kiếm, để request chờ tới khi người dùng gõ xong",
+          "en": "Throttle the search box, so the request waits until the user stops typing"
+        },
+        "misconception": {
+          "id": "jsthread-throttle-waits",
+          "text": {
+            "vi": "Nhầm throttle với debounce. Throttle chạy tối đa một lần mỗi khoảng thời gian trong lúc event dồn tới, thường bắt đầu ngay từ event đầu; nó không chờ chuỗi event kết thúc. Chờ người dùng ngừng là việc của debounce.",
+            "en": "Confusing throttle with debounce. Throttle runs at most once per interval during a burst of events, usually starting with the first one; it does not wait for the burst to end. Waiting for a pause is what debounce does."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0,
+      1,
+      2
+    ],
+    "explanation": {
+      "vi": "Debounce gom một chuỗi event thành một lần chạy sau khi chuỗi dừng, hợp với ô tìm kiếm. Throttle giới hạn tần suất trong lúc chuỗi còn tiếp diễn, hợp với việc cần chạy đều trong lúc cuộn nhưng không cần mỗi frame. `scrollEventThrottle` là khoảng thời gian tối thiểu (ms) giữa hai event scroll gửi tới JS; giá trị 16 cho gần mỗi frame một event, giá trị cao hơn giảm tải cho JS khi bạn không cần độ chính xác. Thứ phải bám theo ngón tay thì đừng đặt trên JS: dùng `Animated.event` với native driver hoặc Reanimated.",
+      "en": "Debounce collapses a burst of events into one run after the burst stops, which suits a search box. Throttle caps the rate while the burst continues, which suits work that should run steadily during a scroll but not every frame. `scrollEventThrottle` is the minimum interval (ms) between scroll events sent to JS; 16 gives about one event per frame, and a higher value lightens the load on JS when you do not need precision. Anything that must track the finger should not live on JS at all: use `Animated.event` with the native driver, or Reanimated."
+    }
+  },
+  {
+    "id": "performance-js-thread-006",
+    "type": "spot-bug",
+    "topics": [
+      "performance/js-thread"
+    ],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 120,
+    "lessons": [
+      "performance-js-thread-core"
+    ],
+    "prompt": {
+      "vi": "Header của feed cần trượt đi theo lúc cuộn. Nó mượt cho tới khi feed bắt đầu xử lý dữ liệu mới trong JS; lúc đó header giật và trễ so với ngón tay, dù danh sách vẫn cuộn mượt. Dòng nào gây lỗi, và vì sao?",
+      "en": "The feed header should slide away as you scroll. It is smooth until the feed starts processing new data in JS; then the header stutters and lags behind the finger, while the list itself still scrolls smoothly. Which line causes it, and why?"
+    },
+    "code": "import { useRef } from 'react';\nimport { Animated, ListRenderItem } from 'react-native';\n\ntype Props = { data: string[]; renderItem: ListRenderItem<string> };\n\nexport function Feed({ data, renderItem }: Props) {\n  const scrollY = useRef(new Animated.Value(0)).current;\n  const shift = scrollY.interpolate({ inputRange: [0, 120], outputRange: [0, -120], extrapolate: 'clamp' });\n  const onScroll = Animated.event(\n    [{ nativeEvent: { contentOffset: { y: scrollY } } }],\n    { useNativeDriver: false },\n  );\n\n  return (\n    <>\n      <Animated.FlatList data={data} renderItem={renderItem} onScroll={onScroll} scrollEventThrottle={16} />\n      <Animated.View style={{ height: 120, transform: [{ translateY: shift }] }} />\n    </>\n  );\n}",
+    "answerLine": 11,
+    "causeOptions": [
+      {
+        "text": {
+          "vi": "Mỗi frame cuộn phải đi qua JS; với `true`, offset điều khiển transform ngay trên UI thread",
+          "en": "Every scroll frame goes through JS; with `true` the offset drives the transform on the UI thread"
+        }
+      },
+      {
+        "text": {
+          "vi": "`scrollEventThrottle={16}` gửi quá nhiều event sang JS; tăng lên 100 sẽ hết giật",
+          "en": "`scrollEventThrottle={16}` floods JS with events; raising it to 100 removes the stutter"
+        },
+        "misconception": {
+          "id": "jsthread-fewer-events-fix-lag",
+          "text": {
+            "vi": "Nghĩ rằng bớt event scroll sẽ sửa được header bị trễ. Ít event hơn chỉ làm header do JS điều khiển giật hơn. Cách sửa là không để từng frame đi qua JS nữa, bằng useNativeDriver: true.",
+            "en": "Believing fewer scroll events fix a lagging header. Fewer events only make a JS-driven header choppier. The fix is to stop routing every frame through JS, with useNativeDriver: true."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`translateY` không đi theo event cuộn được; nên animate `top` thay vì transform",
+          "en": "`translateY` cannot follow scroll events; animate `top` instead of the transform"
+        },
+        "misconception": {
+          "id": "jsthread-top-over-transform",
+          "text": {
+            "vi": "Nghĩ rằng thuộc tính layout là lựa chọn an toàn hơn. top là thuộc tính layout mà native driver không animate được, và đổi nó tốn một lần tính layout; transform mới là thuộc tính di chuyển được trên UI thread.",
+            "en": "Believing a layout prop is the safer choice. top is a layout prop the native driver cannot animate, and changing it costs a layout pass; transform is the prop that can move on the UI thread."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`Animated.FlatList` không nhận `Animated.event`; nên dùng `FlatList` thường và `setState` trong `onScroll`",
+          "en": "`Animated.FlatList` does not accept `Animated.event`; use a plain `FlatList` with `setState` in `onScroll`"
+        },
+        "misconception": {
+          "id": "jsthread-setstate-follow-scroll",
+          "text": {
+            "vi": "Nghĩ rằng setState trong onScroll là cách chắc chắn để bám theo cuộn. Cách đó render lại qua JS ở mỗi event, chậm nhất trong các lựa chọn; Animated.FlatList nhận Animated.event, kể cả khi dùng native driver.",
+            "en": "Believing setState in onScroll is the reliable way to follow the scroll. It re-renders through JS on every event, the slowest option; Animated.FlatList accepts Animated.event, including with the native driver."
+          }
+        }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "Với `useNativeDriver: false` ở dòng 11, mỗi event cuộn được gửi sang JS, JS cập nhật `scrollY`, tính `interpolate` rồi gửi giá trị mới về native. Khi JS bận, chuỗi này trễ, nên header tụt lại dù danh sách cuộn native vẫn mượt. Đổi thành `useNativeDriver: true` thì offset được nối thẳng vào `translateY` trên UI thread và JS không còn nằm trên đường đi. Cách này dùng được vì header chỉ animate `transform`, thuộc tính mà native driver hỗ trợ.",
+      "en": "With `useNativeDriver: false` on line 11, every scroll event is sent to JS, JS updates `scrollY`, runs the `interpolate` and sends the new value back to native. When JS is busy that round trip lags, so the header falls behind while the native list keeps scrolling smoothly. Switching to `useNativeDriver: true` wires the offset straight into `translateY` on the UI thread, and JS is no longer on the path. It works because the header only animates `transform`, which the native driver supports."
+    }
+  },
+  {
+    "id": "performance-js-thread-007",
+    "type": "spot-bug",
+    "topics": [
+      "performance/js-thread"
+    ],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 105,
+    "lessons": [
+      "performance-js-thread-core"
+    ],
+    "prompt": {
+      "vi": "Ô tìm kiếm phải gửi một request sau khi người dùng ngừng gõ 300 ms. Log server cho thấy mỗi phím gõ vẫn sinh một request, chỉ trễ 300 ms. Dòng nào gây lỗi, và vì sao?",
+      "en": "The search box should send one request after the user stops typing for 300 ms. Server logs show one request per keystroke, just 300 ms late. Which line causes it, and why?"
+    },
+    "code": "import { useState } from 'react';\nimport { TextInput } from 'react-native';\nimport debounce from 'lodash.debounce';\nimport { searchProducts } from '../api';\n\ntype Props = { onResults: (ids: string[]) => void };\n\nexport function SearchBox({ onResults }: Props) {\n  const [text, setText] = useState('');\n  const runSearch = debounce((q: string) => {\n    searchProducts(q).then(onResults);\n  }, 300);\n\n  const onChangeText = (value: string) => {\n    setText(value);\n    runSearch(value);\n  };\n\n  return <TextInput value={text} onChangeText={onChangeText} />;\n}",
+    "answerLine": 10,
+    "causeOptions": [
+      {
+        "text": {
+          "vi": "Mỗi lần render tạo một hàm debounce mới, nên timer cũ không bao giờ bị huỷ",
+          "en": "Each render creates a new debounced function, so earlier timers are never cancelled"
+        }
+      },
+      {
+        "text": {
+          "vi": "300 ms ngắn hơn khoảng cách giữa hai phím gõ, nên debounce không gom được",
+          "en": "300 ms is shorter than the gap between keystrokes, so debounce cannot group them"
+        },
+        "misconception": {
+          "id": "jsthread-longer-wait-fixes",
+          "text": {
+            "vi": "Nghĩ rằng chờ lâu hơn sẽ sửa được. Hàm debounce là hàm mới sau mỗi lần render, nên chờ bao lâu cũng không gom được; cách sửa là tạo nó một lần và giữ qua các lần render.",
+            "en": "Believing a longer wait fixes it. The debounced function is new after every render, so no wait would group the calls; the fix is to create it once and keep it across renders."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`debounce` của lodash mặc định chạy ở cạnh đầu (leading), ngay phím gõ đầu tiên",
+          "en": "Lodash's `debounce` runs on the leading edge by default, on the first keystroke"
+        },
+        "misconception": {
+          "id": "jsthread-debounce-leading-default",
+          "text": {
+            "vi": "Nghĩ rằng debounce mặc định chạy ở cạnh đầu. Debounce của lodash mặc định chỉ chạy ở cạnh cuối, nên một instance duy nhất chạy một lần sau khoảng nghỉ.",
+            "en": "Believing debounce runs on the leading edge by default. Lodash's debounce defaults to the trailing edge only, so a single instance runs once after the pause."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`debounce` không trì hoãn được hàm có khởi chạy một promise bên trong",
+          "en": "`debounce` cannot delay a function that starts a promise inside it"
+        },
+        "misconception": {
+          "id": "jsthread-debounce-async",
+          "text": {
+            "vi": "Nghĩ rằng debounce không xử lý được việc bất đồng bộ. Debounce chỉ trì hoãn lời gọi; bên trong hàm làm gì, kể cả khởi chạy promise, không ảnh hưởng.",
+            "en": "Believing debounce cannot handle async work. Debounce only delays the call; what the function does inside, starting a promise included, makes no difference."
+          }
+        }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "Dòng 10 tạo hàm debounce mới mỗi lần `SearchBox` render. Mỗi phím gõ gọi `setText`, gây render, nên lời gọi tiếp theo đi vào một instance khác với timer riêng, còn timer cũ không bao giờ bị huỷ. Kết quả là mỗi phím gõ vẫn có một request, chỉ trễ 300 ms. Hãy tạo hàm một lần bằng `useMemo` hoặc `useRef`, đọc `onResults` mới nhất qua ref, và gọi `.cancel()` khi unmount. Debounce chỉ giảm số request; bạn vẫn cần bỏ response cũ về muộn.",
+      "en": "Line 10 creates a new debounced function every time `SearchBox` renders. Each keystroke calls `setText`, which renders, so the next call lands in a different instance with its own timer, and the old timer is never cancelled. The result is still one request per keystroke, just 300 ms late. Create the function once with `useMemo` or `useRef`, read the latest `onResults` through a ref, and call `.cancel()` on unmount. Debounce only reduces requests; you still need to ignore stale responses that arrive late."
+    }
+  },
+  {
+    "id": "performance-js-thread-008",
+    "type": "spot-bug",
+    "topics": [
+      "performance/js-thread"
+    ],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 135,
+    "lessons": [
+      "performance-js-thread-core"
+    ],
+    "prompt": {
+      "vi": "Màn hình import xử lý 30.000 dòng và `onProgress` cập nhật một thanh tiến trình. Thanh đứng ở 0 và tap không có tác dụng gì cho tới khi import xong, rồi nhảy thẳng lên 100%. Code đã cố chia việc thành từng chunk. Dòng nào gây lỗi, và vì sao?",
+      "en": "An import screen processes 30,000 rows, and `onProgress` updates a progress bar. The bar stays at 0 and taps do nothing until the import ends, then it jumps straight to 100%. The code already tries to split the work into chunks. Which line causes it, and why?"
+    },
+    "code": "type Row = { id: string; raw: string };\ntype Parsed = { id: string; total: number };\ndeclare function computeTotal(raw: string): number;\n\nexport async function importRows(\n  rows: Row[],\n  onProgress: (done: number) => void,\n): Promise<Parsed[]> {\n  const out: Parsed[] = [];\n  for (let i = 0; i < rows.length; i += 200) {\n    for (const row of rows.slice(i, i + 200)) {\n      out.push({ id: row.id, total: computeTotal(row.raw) });\n    }\n    onProgress(out.length);\n    await Promise.resolve();\n  }\n  return out;\n}",
+    "answerLine": 15,
+    "causeOptions": [
+      {
+        "text": {
+          "vi": "Promise đã resolve chỉ xếp một microtask, chạy trước mọi tap hay frame",
+          "en": "A resolved promise only queues a microtask, which runs before any tap or frame"
+        }
+      },
+      {
+        "text": {
+          "vi": "200 dòng mỗi chunk là quá nhiều; chunk nhỏ hơn thì thanh tiến trình sẽ chạy",
+          "en": "200 rows per chunk is too many; smaller chunks would let the progress bar move"
+        },
+        "misconception": {
+          "id": "jsthread-smaller-chunks",
+          "text": {
+            "vi": "Nghĩ rằng kích thước chunk là vấn đề. Nếu không thật sự nhường cho event loop (một macrotask như setTimeout), chunk nhỏ tới đâu cũng chạy liền nhau và không có frame nào được vẽ ở giữa.",
+            "en": "Believing chunk size is the problem. Without a real yield to the event loop (a macrotask such as setTimeout), even tiny chunks run back to back with no frame drawn in between."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`computeTotal` phải là hàm `async` thì mỗi dòng mới nhường thread",
+          "en": "`computeTotal` must be `async` so that each row yields the thread"
+        },
+        "misconception": {
+          "id": "jsthread-async-yields",
+          "text": {
+            "vi": "Nghĩ rằng hàm async tự nhường thread. Hàm async chạy đồng bộ tới await đầu tiên, và await một giá trị đã xong chỉ xếp một microtask, nên không việc nào khác trên JS thread được chạy.",
+            "en": "Believing an async function yields by itself. An async function runs synchronously until its first await, and awaiting a settled value only queues a microtask, so nothing else on the JS thread gets a turn."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Hàm `async` chạy ngoài JS thread, nên cập nhật từ `onProgress` bị bỏ qua",
+          "en": "An `async` function runs off the JS thread, so updates from `onProgress` are dropped"
+        },
+        "misconception": {
+          "id": "jsthread-async-off-thread",
+          "text": {
+            "vi": "Nghĩ rằng code async chạy trên thread khác. Hàm async chạy trên JS thread như mọi code khác; await chỉ chia việc thành các phần chạy sau trên cùng thread đó.",
+            "en": "Believing async code runs on another thread. Async functions run on the JS thread like all other code; await only splits the work into later parts on that same thread."
+          }
+        }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "Dòng 15 trông như nhường thread nhưng không phải. Promise đã resolve nên phần sau `await` được xếp vào hàng microtask, và hàng này luôn được chạy hết trước khi event loop chuyển sang task kế tiếp. Tap, timer và lần cập nhật frame để hiện tiến trình mới đều phải chờ cả vòng lặp xong. Hãy nhường bằng một macrotask, ví dụ `await new Promise<void>((resolve) => setTimeout(resolve, 0))` sau mỗi chunk, và tốt hơn là chia chunk theo ngân sách thời gian (vài ms) thay vì số dòng cố định. Việc thật sự nặng thì nên chuyển ra khỏi JS thread.",
+      "en": "Line 15 looks like a yield but is not one. The promise is already resolved, so the code after `await` goes onto the microtask queue, and that queue is always drained before the event loop moves to the next task. Taps, timers and the frame update that would show new progress all wait until the whole loop is done. Yield with a macrotask instead, for example `await new Promise<void>((resolve) => setTimeout(resolve, 0))` after each chunk, and preferably size chunks by a time budget (a few ms) rather than a fixed row count. Truly heavy work belongs off the JS thread."
+    }
+  },
+  {
+    "id": "performance-js-thread-009",
+    "type": "open",
+    "topics": [
+      "performance/js-thread"
+    ],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 330,
+    "lessons": [
+      "performance-js-thread-core"
+    ],
+    "prompt": {
+      "vi": "Trên máy Android cấu hình thấp, gõ vào ô soạn tin của màn hình chat bị trễ: chữ hiện lên chậm khi đang mở một cuộc trò chuyện dài. Kể lại cách bạn tìm ra nguyên nhân và sửa nó.",
+      "en": "On low-end Android phones, typing in the chat composer lags: characters appear late when a long conversation is open. Walk me through how you found the cause and fixed it."
+    },
+    "keyPoints": [
+      {
+        "vi": "Tái hiện trên release build và máy yếu thật, dùng Perf Monitor để xem JS FPS hay UI FPS giảm khi gõ",
+        "en": "Reproduce on a release build on a real low-end device, and use Perf Monitor to see whether JS or UI FPS drops while typing"
+      },
+      {
+        "vi": "Profile một lượt gõ bằng React DevTools Profiler và Hermes sampling profiler để thấy việc gì chạy sau mỗi phím gõ",
+        "en": "Profile a typing session with the React DevTools Profiler and the Hermes sampling profiler to see what runs per keystroke"
+      },
+      {
+        "vi": "Giữ state văn bản trong chính component soạn tin, để một phím gõ không render lại danh sách tin nhắn hay cả màn hình",
+        "en": "Keep the text state inside the composer, so a keystroke does not re-render the message list or the whole screen"
+      },
+      {
+        "vi": "Debounce các side effect của việc gõ: typing indicator, lưu nháp xuống storage, tìm mention",
+        "en": "Debounce the side effects of typing: typing indicators, saving drafts to storage, mention search"
+      },
+      {
+        "vi": "Với cập nhật dẫn xuất tốn kém phải đi theo văn bản, đánh dấu không khẩn cấp bằng `startTransition` hoặc `useDeferredValue` (cần New Architecture)",
+        "en": "Mark expensive derived updates that follow the text as non-urgent with `startTransition` or `useDeferredValue` (New Architecture required)"
+      },
+      {
+        "vi": "Xác nhận bằng cùng phép đo, trên cùng máy, trước và sau khi sửa",
+        "en": "Confirm with the same measurement on the same device, before and after the fix"
+      }
+    ],
+    "modelAnswer": {
+      "vi": "Mình tái hiện trên release build và một máy Android yếu, vì dev build chậm hơn nhiều và làm sai lệch con số. Perf Monitor cho thấy UI FPS ổn còn JS FPS rơi mạnh mỗi lần gõ, nên vấn đề nằm ở JS. React DevTools Profiler chỉ ra rằng state văn bản nằm ở cấp màn hình, nên mỗi phím gõ render lại cả danh sách tin nhắn dài; Hermes profiler còn cho thấy mỗi phím gõ ghi nháp xuống storage và gửi một event typing. Mình chuyển state văn bản vào component soạn tin, memo danh sách để nó không render lại theo ô nhập, và debounce việc lưu nháp và typing indicator. Phần preview link phụ thuộc văn bản thì mình để nó đọc giá trị qua `useDeferredValue`. Sau đó đo lại trên cùng máy: JS FPS giữ ổn định khi gõ nhanh.",
+      "en": "I reproduced it on a release build on a low-end Android phone, because dev builds are much slower and distort the numbers. Perf Monitor showed UI FPS fine and JS FPS collapsing on each keystroke, so the problem was in JS. The React DevTools Profiler showed the text state lived at screen level, so every keystroke re-rendered the long message list; the Hermes profiler also showed each keystroke saving a draft to storage and sending a typing event. I moved the text state into the composer, memoized the list so it no longer re-rendered with the input, and debounced the draft save and the typing indicator. The link preview that depends on the text reads it through `useDeferredValue`. Then I measured again on the same device: JS FPS held steady while typing fast."
+    },
+    "followUps": [
+      {
+        "vi": "Vì sao một `TextInput` controlled có thể bị nhảy chữ hoặc mất ký tự khi JS thread đang bận?",
+        "en": "Why can a controlled `TextInput` jump or lose characters while the JS thread is busy?"
+      },
+      {
+        "vi": "Bạn sẽ thiết lập kiểm tra nào để regression này không quay lại?",
+        "en": "What check would you set up so this regression does not come back?"
+      }
+    ]
+  },
+  {
+    "id": "performance-js-thread-010",
+    "type": "open",
+    "topics": [
+      "performance/js-thread"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 300,
+    "lessons": [
+      "performance-js-thread-core"
+    ],
+    "prompt": {
+      "vi": "Product muốn có thao tác vuốt để lưu trữ trên các dòng của hộp thư: dòng đi theo ngón tay, rồi bật về hoặc bay ra khỏi màn hình. Nó phải mượt cả khi một tiến trình sync đang làm JS thread bận. Bạn xây nó thế nào, và phần nào chạy trên thread nào?",
+      "en": "Product wants swipe-to-archive on inbox rows: the row follows the finger, then snaps back or flies off screen. It must stay smooth even while a sync keeps the JS thread busy. How do you build it, and what runs on which thread?"
+    },
+    "keyPoints": [
+      {
+        "vi": "Nhận diện cử chỉ ở native bằng react-native-gesture-handler (`Gesture.Pan()` với `GestureDetector`) thay vì `PanResponder` chạy trên JS thread",
+        "en": "Recognise the gesture natively with react-native-gesture-handler (`Gesture.Pan()` with `GestureDetector`) instead of `PanResponder` on the JS thread"
+      },
+      {
+        "vi": "Giữ offset trong một shared value của Reanimated và cập nhật nó trong callback của cử chỉ, chạy như worklet trên UI thread",
+        "en": "Hold the offset in a Reanimated shared value and update it in gesture callbacks that run as worklets on the UI thread"
+      },
+      {
+        "vi": "Dời dòng bằng `useAnimatedStyle` với `transform`, và bật về hay bay ra bằng `withSpring`/`withTiming`, đều trên UI thread",
+        "en": "Move the row with `useAnimatedStyle` on `transform`, and snap back or fly out with `withSpring`/`withTiming`, all on the UI thread"
+      },
+      {
+        "vi": "Chỉ quay về JS một lần ở cuối để dispatch việc lưu trữ, bằng `runOnJS` (hoặc `scheduleOnRN` của `react-native-worklets` ở Reanimated 4)",
+        "en": "Cross back to JS only once at the end to dispatch the archive, with `runOnJS` (or `scheduleOnRN` from `react-native-worklets` in Reanimated 4)"
+      },
+      {
+        "vi": "Giữ worklet nhỏ và tránh capture object JS lớn, vì giá trị được capture sẽ bị copy sang runtime của UI",
+        "en": "Keep worklets small and avoid capturing large JS objects, since captured values are copied into the UI runtime"
+      },
+      {
+        "vi": "Kiểm chứng bằng cách cố ý chặn JS thread (một vòng lặp bận) trên máy yếu và xác nhận cử chỉ vẫn mượt",
+        "en": "Prove it by deliberately blocking the JS thread (a busy loop) on a low-end device and checking the gesture stays smooth"
+      }
+    ],
+    "modelAnswer": {
+      "vi": "Mình tách cử chỉ và animation ra khỏi JS hoàn toàn. Cử chỉ do react-native-gesture-handler nhận diện ở native với `Gesture.Pan()`, nên không phụ thuộc JS như `PanResponder`. Offset nằm trong một shared value của Reanimated, cập nhật trong `onUpdate`, vốn là worklet chạy trên UI thread. Style của dòng dùng `useAnimatedStyle` với `translateX`, và lúc thả tay thì `onEnd` quyết định bật về bằng `withSpring` hay bay ra bằng `withTiming`. Chỉ khi animation bay ra xong, mình mới gọi về JS bằng `runOnJS` để dispatch archive; ở Reanimated 4 thì dùng `scheduleOnRN`. Mình giữ worklet nhỏ, không capture object lớn. Để chứng minh, mình chạy một vòng lặp bận trên JS trong lúc vuốt trên máy yếu, và dòng vẫn bám theo tay.",
+      "en": "I keep the gesture and the animation off JS entirely. react-native-gesture-handler recognises the gesture natively with `Gesture.Pan()`, so unlike `PanResponder` it does not depend on JS. The offset lives in a Reanimated shared value, updated in `onUpdate`, which is a worklet on the UI thread. The row's style uses `useAnimatedStyle` with `translateX`, and on release `onEnd` decides between snapping back with `withSpring` and flying out with `withTiming`. Only after the fly-out finishes do I call back into JS with `runOnJS` to dispatch the archive; in Reanimated 4 that is `scheduleOnRN`. I keep worklets small and avoid capturing large objects. To prove it, I run a busy loop on JS while swiping on a low-end device, and the row still tracks the finger."
+    },
+    "followUps": [
+      {
+        "vi": "Animate `height` để thu gọn dòng sau khi lưu trữ khác gì animate `transform`, xét về chi phí?",
+        "en": "How does animating `height` to collapse the row after archiving differ in cost from animating `transform`?"
+      }
+    ]
+  },
+  {
+    "id": "performance-js-thread-011",
+    "type": "open",
+    "topics": [
+      "performance/js-thread"
+    ],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 330,
+    "lessons": [
+      "performance-js-thread-core"
+    ],
+    "prompt": {
+      "vi": "Lúc mở app, một tiến trình sync tải về 6 MB JSON, parse rồi normalise vào store. Trên máy Android tầm trung, app đơ 1–2 giây và tap bị bỏ qua. Kể lại các phương án bạn cân nhắc và bạn đã chọn gì.",
+      "en": "On app open, a sync downloads 6 MB of JSON, parses it and normalises it into the store. On mid-range Android phones the app freezes for 1–2 seconds and taps are ignored. Walk me through the options you weighed and what you chose."
+    },
+    "keyPoints": [
+      {
+        "vi": "Đo trên release build bằng Hermes sampling profiler để tách chi phí giữa `JSON.parse`, normalise, và các lần render sau đó",
+        "en": "Measure on a release build with the Hermes sampling profiler to split the cost between `JSON.parse`, normalising and the renders that follow"
+      },
+      {
+        "vi": "Giảm việc từ gốc: phân trang, delta sync theo cursor, hoặc chỉ trả về các field màn hình cần",
+        "en": "Cut the work at the source: pagination, delta sync from a cursor, or only the fields the screen needs"
+      },
+      {
+        "vi": "`JSON.parse` là một lời gọi đồng bộ không chia được; phần normalise thì chia chunk theo ngân sách thời gian và nhường bằng `setTimeout`",
+        "en": "`JSON.parse` is one synchronous call you cannot split; slice the normalising into time-budgeted chunks that yield with `setTimeout`"
+      },
+      {
+        "vi": "Chuyển phần nặng ra khỏi JS thread: native module hoặc thư viện JSI parse và ghi thẳng vào database như SQLite",
+        "en": "Move the heavy part off the JS thread: a native module or JSI library that parses and writes straight into a database such as SQLite"
+      },
+      {
+        "vi": "Chạy sync sau khi màn hình đầu đã tương tác được, và tránh một lần cập nhật store khổng lồ làm mọi thứ render lại",
+        "en": "Run the sync after the first screen is interactive, and avoid one huge store update that re-renders everything"
+      },
+      {
+        "vi": "Xác nhận bằng cùng profile trên cùng loại máy sau khi sửa",
+        "en": "Confirm with the same profile on the same class of device after the fix"
+      }
+    ],
+    "modelAnswer": {
+      "vi": "Việc đầu tiên là profile trên release build bằng Hermes sampling profiler. Khoảng một nửa thời gian là `JSON.parse`, phần còn lại là normalise và một lần cập nhật store khiến cả cây render lại. `JSON.parse` không chia nhỏ được, nên phương án tốt nhất là gửi ít dữ liệu hơn: mình làm với backend để có delta sync theo cursor, payload thường ngày còn vài chục KB. Cho lần sync đầy đủ, mình chia normalise thành các chunk vài ms, nhường bằng `setTimeout`, và chạy sau khi màn hình đầu đã tương tác được. Mình cũng cân nhắc một thư viện JSI ghi thẳng vào SQLite để JS không phải giữ cả payload; nó đáng làm nếu dữ liệu tiếp tục lớn lên. Cuối cùng mình đo lại trên cùng máy: không còn khoảng đơ nào dài hơn vài frame.",
+      "en": "First I profiled a release build with the Hermes sampling profiler. About half the time was `JSON.parse`, the rest was normalising plus one store update that re-rendered the whole tree. You cannot split `JSON.parse`, so the best option was to send less data: I worked with the backend on a delta sync from a cursor, which brought a typical payload down to tens of KB. For a full sync, I sliced the normalising into chunks of a few ms that yield with `setTimeout`, and ran it after the first screen was interactive. I also weighed a JSI library that writes straight into SQLite so JS never holds the whole payload; it is worth it if the data keeps growing. Then I measured again on the same device: no freeze longer than a few frames."
+    },
+    "followUps": [
+      {
+        "vi": "Vì sao chuyển `JSON.parse` sang một thread khác rồi trả object về JS không hẳn là miễn phí?",
+        "en": "Why is moving `JSON.parse` to another thread and handing the object back to JS not entirely free?"
+      },
+      {
+        "vi": "Bạn chọn ngân sách thời gian cho mỗi chunk thế nào trên máy 60 Hz và 120 Hz?",
+        "en": "How would you choose the time budget per chunk on 60 Hz and 120 Hz devices?"
+      }
+    ]
+  },
+  {
+    "id": "performance-js-thread-012",
+    "type": "mcq",
+    "topics": [
+      "performance/js-thread"
+    ],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": [
+      "performance-js-thread-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Một lưới ảnh bị giật khi cuộn. Perf Monitor cho thấy JS ổn định gần 60 FPS, còn UI giảm xuống khoảng 25 FPS. Bạn nên tìm nguyên nhân ở đâu trước?",
+      "en": "A photo grid stutters while scrolling. Perf Monitor shows JS steady near 60 FPS while UI drops to about 25 FPS. Where should you look first?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Main thread: decode ảnh quá lớn, quá nhiều view, shadow tốn kém",
+          "en": "Main-thread work: decoding oversized images, too many views, or costly shadows"
+        }
+      },
+      {
+        "text": {
+          "vi": "Các component React trong mỗi ô render lại quá nhiều lần",
+          "en": "The React components in each cell re-render too often"
+        },
+        "misconception": {
+          "id": "jsthread-ui-drop-means-rerender",
+          "text": {
+            "vi": "Nghĩ rằng UI FPS giảm là do re-render. Re-render tốn thời gian JS và hiện ở bộ đếm JS; bộ đếm UI thấp trong khi JS ổn chỉ ra việc native trên main thread.",
+            "en": "Believing a UI FPS drop points to re-renders. Re-renders cost JS time and show in the JS counter; a low UI counter with a healthy JS one points to native work on the main thread."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Đây chỉ là hiện tượng của dev build, release sẽ tự hết",
+          "en": "This is only a dev build artefact, and release will be fine"
+        },
+        "misconception": {
+          "id": "jsthread-ui-drop-dev-only",
+          "text": {
+            "vi": "Nghĩ rằng UI FPS giảm chỉ là chuyện của dev build. Dev mode chủ yếu làm JS chậm; việc native nặng trên main thread thường vẫn còn ở release, nên hãy kiểm tra lại ở release thay vì bỏ qua.",
+            "en": "Believing the UI drop is a dev-only artefact. Dev mode mainly slows JS; heavy native work on the main thread usually remains in release, so confirm it there rather than dismissing it."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "JS thread là nút thắt, vì UI phải chờ JS gửi dữ liệu mỗi frame",
+          "en": "The JS thread is the bottleneck, because UI waits for JS data every frame"
+        },
+        "misconception": {
+          "id": "jsthread-ui-waits-for-js",
+          "text": {
+            "vi": "Nghĩ rằng UI thread chờ JS ở mỗi frame. Main thread tự vẽ và tự cuộn; bộ đếm UI thấp trong khi JS gần 60 nghĩa là chính main thread đang quá tải.",
+            "en": "Believing the UI thread waits on JS every frame. The main thread draws and scrolls on its own; a low UI counter while JS is near 60 means the main thread itself is overloaded."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0
+    ],
+    "explanation": {
+      "vi": "Perf Monitor có hai bộ đếm: UI là main thread, nơi native vẽ view và xử lý cuộn, còn JS là thread chạy React và handler. JS ổn trong khi UI giảm nghĩa là chính main thread không kịp vẽ. Với lưới ảnh, nghi phạm thường là ảnh gốc lớn hơn nhiều so với ô hiển thị, quá nhiều view lồng nhau, hoặc shadow và bo góc tốn kém. Hãy resize ảnh ở server hoặc dùng thư viện ảnh có cache và downsample, giảm số view, rồi xác nhận trên release build bằng công cụ native như Android Studio profiler hay Instruments.",
+      "en": "Perf Monitor has two counters: UI is the main thread, where native draws views and handles scrolling, and JS is the thread that runs React and your handlers. Healthy JS with a falling UI means the main thread itself cannot draw in time. In a photo grid the usual suspects are source images far larger than the cell, too many nested views, or costly shadows and rounded corners. Resize images on the server or use an image library that caches and downsamples, cut the view count, then confirm on a release build with native tools such as the Android Studio profiler or Instruments."
+    }
+  }
+]

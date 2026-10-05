@@ -1,0 +1,828 @@
+[
+  {
+    "id": "architecture-new-arch-001",
+    "type": "mcq",
+    "topics": [
+      "architecture/new-arch"
+    ],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": [
+      "architecture-new-arch-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Ở kiến trúc cũ, một lời gọi từ JS tới native module đi sang phía native bằng cách nào?",
+      "en": "In the old architecture, how did a JS call to a native module reach the native side?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Qua lời gọi hàm C++ trực tiếp, trả kết quả về JS ngay lập tức",
+          "en": "Through a direct C++ function call that returns its result to JS at once"
+        },
+        "misconception": {
+          "id": "arch-bridge-was-sync",
+          "text": {
+            "vi": "Nhầm bridge với JSI. Bridge cũ chỉ gửi message bất đồng bộ; gọi hàm C++ trực tiếp và nhận kết quả ngay là thứ JSI mang lại.",
+            "en": "Confusing the bridge with JSI. The old bridge only sent asynchronous messages; calling C++ directly and getting the result back at once is what JSI added."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Thành message JSON, xếp hàng và gửi theo lô qua bridge, bất đồng bộ",
+          "en": "As a JSON message, queued and sent across the bridge in batches, asynchronously"
+        }
+      },
+      {
+        "text": {
+          "vi": "Qua một request HTTP tới server nhỏ chạy ngay bên trong app",
+          "en": "Through an HTTP request to a small server running inside the app"
+        },
+        "misconception": {
+          "id": "arch-bridge-is-network",
+          "text": {
+            "vi": "Nhầm bridge với công cụ dev. Metro và remote debugger cũ nói chuyện qua mạng, nhưng trong app release, bridge là một hàng đợi message nằm trong cùng process.",
+            "en": "Confusing the bridge with dev tooling. Metro and the old remote debugger talk over the network, but in a release app the bridge is an in-process message queue."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Qua vùng nhớ chung mà cả hai thread cùng đọc, không cần copy dữ liệu",
+          "en": "Through shared memory that both threads read, with no copying of data"
+        },
+        "misconception": {
+          "id": "arch-bridge-shared-memory",
+          "text": {
+            "vi": "Nghĩ rằng bridge chia sẻ bộ nhớ giữa JS và native. Mỗi lời gọi bị serialise thành JSON rồi parse lại ở phía bên kia; chi phí copy đó là một lý do kiến trúc mới ra đời.",
+            "en": "Believing the bridge shared memory between JS and native. Every call was serialised to JSON and parsed again on the other side; that copying cost is one reason the new architecture exists."
+          }
+        }
+      }
+    ],
+    "answer": [
+      1
+    ],
+    "explanation": {
+      "vi": "Ở kiến trúc cũ, JS và native không gọi trực tiếp được nhau. Mỗi lời gọi được serialise thành JSON, đưa vào hàng đợi của bridge và gửi theo lô; phía native parse lại rồi chạy method, kết quả quay về theo cùng đường đó. Vì vậy mọi lời gọi đều bất đồng bộ, dữ liệu lớn tốn chi phí serialise, và nhiều lời gọi dồn dập có thể làm nghẽn hàng đợi. Bẫy chính là gán cho bridge khả năng gọi đồng bộ của JSI: đó chính là thứ kiến trúc cũ không có.",
+      "en": "In the old architecture JS and native could not call each other directly. Each call was serialised to JSON, put on the bridge queue and sent in batches; the native side parsed it, ran the method, and the result came back the same way. So every call was asynchronous, large payloads paid a serialisation cost, and bursts of calls could clog the queue. The main trap is crediting the bridge with JSI's synchronous calls: that is exactly what the old architecture lacked."
+    }
+  },
+  {
+    "id": "architecture-new-arch-002",
+    "type": "mcq",
+    "topics": [
+      "architecture/new-arch"
+    ],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": [
+      "architecture-new-arch-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "JSI trong kiến trúc mới là gì?",
+      "en": "What is JSI in the New Architecture?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Một tính năng của Hermes, chỉ dùng được khi engine là Hermes",
+          "en": "A Hermes feature that only works when Hermes is the engine"
+        },
+        "misconception": {
+          "id": "arch-jsi-hermes-only",
+          "text": {
+            "vi": "Nghĩ rằng JSI gắn với Hermes. JSI là interface C++ không phụ thuộc engine; Hermes và JavaScriptCore đều có bản cài đặt, nên kiến trúc mới chạy được với cả hai.",
+            "en": "Believing JSI is tied to Hermes. JSI is an engine-agnostic C++ interface; Hermes and JavaScriptCore both implement it, so the New Architecture runs on either."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Một định dạng nhị phân nhanh hơn, thay JSON trên cùng bridge đó",
+          "en": "A faster binary format that replaces JSON on that same bridge"
+        },
+        "misconception": {
+          "id": "arch-jsi-binary-bridge",
+          "text": {
+            "vi": "Nghĩ rằng JSI chỉ là bridge với định dạng tốt hơn. JSI bỏ hẳn bước gửi message: JS giữ tham chiếu tới object C++ và gọi method của nó trực tiếp.",
+            "en": "Believing JSI is the bridge with a better format. JSI removes message passing altogether: JS holds references to C++ objects and calls their methods directly."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Một API C++ cho JS giữ tham chiếu tới object C++ và gọi thẳng method của nó",
+          "en": "A C++ API that lets JS hold C++ objects and call their methods directly"
+        }
+      },
+      {
+        "text": {
+          "vi": "Một công cụ sinh code, biến spec TypeScript thành interface native",
+          "en": "A code generator that turns TypeScript specs into native interfaces"
+        },
+        "misconception": {
+          "id": "arch-jsi-is-codegen",
+          "text": {
+            "vi": "Nhầm JSI với Codegen. Codegen chạy lúc build để sinh interface có kiểu từ spec; JSI là lớp runtime mà code sinh ra dùng để nối JS với C++.",
+            "en": "Confusing JSI with Codegen. Codegen runs at build time to generate typed interfaces from specs; JSI is the runtime layer that the generated code uses to connect JS and C++."
+          }
+        }
+      }
+    ],
+    "answer": [
+      2
+    ],
+    "explanation": {
+      "vi": "JSI (JavaScript Interface) là một API C++ nhẹ nằm giữa JS engine và code native. Qua nó, native có thể đưa vào JS các host object và host function; JS giữ tham chiếu tới chúng và gọi trực tiếp, không serialise message, và có thể gọi đồng bộ khi cần. TurboModules và Fabric đều xây trên JSI. JSI không phụ thuộc engine: Hermes là mặc định, nhưng JavaScriptCore cũng cài đặt JSI. Đừng nhầm nó với Codegen, công cụ sinh code lúc build.",
+      "en": "JSI (JavaScript Interface) is a lightweight C++ API between the JS engine and native code. Through it, native code can expose host objects and host functions to JS; JS holds references to them and calls them directly, with no message serialisation, and synchronously when needed. TurboModules and Fabric are both built on JSI. JSI is engine-agnostic: Hermes is the default, but JavaScriptCore implements JSI too. Do not confuse it with Codegen, the build-time code generator."
+    }
+  },
+  {
+    "id": "architecture-new-arch-003",
+    "type": "mcq",
+    "topics": [
+      "architecture/new-arch"
+    ],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": [
+      "architecture-new-arch-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Ở kiến trúc mới, instance native của một TurboModule được tạo khi nào?",
+      "en": "In the New Architecture, when is the native instance of a TurboModule created?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Lúc app khởi động, trước khi bundle JS chạy, như mọi module cũ",
+          "en": "At app launch, before the JS bundle runs, like every legacy module"
+        },
+        "misconception": {
+          "id": "arch-turbo-eager-init",
+          "text": {
+            "vi": "Nghĩ rằng TurboModule vẫn được tạo hết lúc khởi động. Chính việc tạo lazy, chỉ khi cần, là một lợi ích lớn của TurboModules đối với thời gian khởi động.",
+            "en": "Believing TurboModules are still all created at startup. Creating them lazily, only when needed, is one of the main startup benefits of TurboModules."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Lần đầu JS yêu cầu nó qua `TurboModuleRegistry`",
+          "en": "The first time JS asks for it through `TurboModuleRegistry`"
+        }
+      },
+      {
+        "text": {
+          "vi": "Mỗi lần JS gọi một method của nó, rồi giải phóng ngay sau đó",
+          "en": "Each time JS calls one of its methods, then released right after"
+        },
+        "misconception": {
+          "id": "arch-turbo-reinit-per-call",
+          "text": {
+            "vi": "Nghĩ rằng \"lazy\" nghĩa là TurboModule bị tạo lại ở mỗi lời gọi. Module chỉ được tạo ở lần đầu JS yêu cầu, rồi được giữ lại cho các lời gọi sau.",
+            "en": "Believing \"lazy\" means a TurboModule is recreated on every call. The module is created the first time JS asks for it and then reused for later calls."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Lúc `pod install` hoặc Gradle chạy Codegen cho spec của nó",
+          "en": "When `pod install` or Gradle runs Codegen for its spec"
+        },
+        "misconception": {
+          "id": "arch-codegen-creates-instance",
+          "text": {
+            "vi": "Nhầm bước build với runtime. Codegen chỉ sinh code interface lúc build; instance của module chỉ tồn tại khi app đang chạy và JS yêu cầu nó.",
+            "en": "Confusing build time with runtime. Codegen only generates interface code during the build; a module instance only exists while the app runs and JS asks for it."
+          }
+        }
+      }
+    ],
+    "answer": [
+      1
+    ],
+    "explanation": {
+      "vi": "TurboModule được tạo lazy: lần đầu JS gọi `TurboModuleRegistry.get` hoặc `getEnforcing` với tên module, native mới khởi tạo nó, rồi giữ lại cho các lần sau. Ở kiến trúc cũ, các module đăng ký qua package thường được khởi tạo sẵn khi bridge khởi động, nên app có nhiều module tốn thời gian khởi động cho cả những module chưa dùng tới. Bẫy là hiểu \"lazy\" thành \"tạo lại mỗi lần gọi\": module chỉ được tạo một lần.",
+      "en": "TurboModules are created lazily: native code instantiates a module the first time JS calls `TurboModuleRegistry.get` or `getEnforcing` with its name, then keeps it for later calls. In the old architecture, modules registered through packages were usually set up when the bridge started, so an app with many modules paid startup time even for modules it never used. The trap is reading \"lazy\" as \"recreated on each call\": the module is created once."
+    }
+  },
+  {
+    "id": "architecture-new-arch-004",
+    "type": "mcq",
+    "topics": [
+      "architecture/new-arch"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 75,
+    "lessons": [
+      "architecture-new-arch-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Trong Fabric, một update đi qua ba pha render, commit và mount. Phần việc nào luôn phải chạy trên main (UI) thread?",
+      "en": "In Fabric, an update goes through render, commit and mount phases. Which work must always run on the main (UI) thread?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Chạy các component của bạn để tạo cây React element tiếp theo",
+          "en": "Running your components to produce the next React element tree"
+        },
+        "misconception": {
+          "id": "arch-fabric-render-on-main",
+          "text": {
+            "vi": "Nghĩ rằng pha render cần main thread. React chạy component trên JS thread; Fabric chỉ đưa toàn bộ pipeline lên UI thread trong trường hợp đặc biệt như một event ưu tiên cao cần xử lý đồng bộ.",
+            "en": "Believing the render phase needs the main thread. React runs components on the JS thread; Fabric only moves the whole pipeline to the UI thread in special cases such as a high-priority event handled synchronously."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Tính layout bằng Yoga cho shadow tree mới",
+          "en": "Calculating layout with Yoga for the new shadow tree"
+        },
+        "misconception": {
+          "id": "arch-fabric-layout-on-main",
+          "text": {
+            "vi": "Nghĩ rằng layout phải tính trên main thread. Trong Fabric, Yoga chạy trong C++ ở pha commit, thường trên JS thread, và không đụng tới view của nền tảng.",
+            "en": "Believing layout must be calculated on the main thread. In Fabric, Yoga runs in C++ during the commit phase, usually on the JS thread, and never touches platform views."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Áp các thay đổi đã tính lên host view trên màn hình",
+          "en": "Applying the computed changes to the host views on screen"
+        }
+      },
+      {
+        "text": {
+          "vi": "Clone những shadow node bị thay đổi trong lần update",
+          "en": "Cloning the shadow nodes that changed in the update"
+        },
+        "misconception": {
+          "id": "arch-fabric-clone-on-main",
+          "text": {
+            "vi": "Nghĩ rằng shadow tree sống trên main thread. Shadow tree của Fabric là cấu trúc C++ bất biến; clone node chỉ là cấp phát C++, chạy được trên bất kỳ thread nào.",
+            "en": "Believing the shadow tree lives on the main thread. Fabric's shadow tree is an immutable C++ structure; cloning nodes is plain C++ allocation and can run on any thread."
+          }
+        }
+      }
+    ],
+    "answer": [
+      2
+    ],
+    "explanation": {
+      "vi": "Ở pha render, React chạy component và Fabric tạo hoặc clone shadow node C++ tương ứng. Ở pha commit, Yoga tính layout và cây mới được đưa lên làm cây kế tiếp. Hai pha này thường chạy trên JS thread vì shadow tree là C++ bất biến, an toàn khi dùng từ nhiều thread. Pha mount so cây cũ với cây mới rồi áp các mutation lên `UIView` hay `android.view.View`, và việc áp này phải ở UI thread vì UIKit và Android View chỉ cho dùng từ main thread. Với event ưu tiên cao, Fabric có thể chạy cả ba pha đồng bộ trên UI thread, nhưng chỉ mount là bắt buộc.",
+      "en": "In the render phase React runs your components and Fabric creates or clones the matching C++ shadow nodes. In the commit phase Yoga calculates layout and the new tree is promoted as the next tree. Both usually run on the JS thread, because the shadow tree is immutable C++ that is safe to use from several threads. The mount phase diffs the old and new trees and applies the mutations to `UIView` or `android.view.View`, and applying them must happen on the UI thread, since UIKit and Android views are main-thread only. For a high-priority event Fabric can run all three phases synchronously on the UI thread, but only mount is required to be there."
+    }
+  },
+  {
+    "id": "architecture-new-arch-005",
+    "type": "mcq",
+    "topics": [
+      "architecture/new-arch"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": [
+      "architecture-new-arch-core"
+    ],
+    "multi": true,
+    "prompt": {
+      "vi": "Những tính năng React nào chỉ chạy đầy đủ trong React Native khi bật New Architecture? (chọn tất cả đáp án đúng)",
+      "en": "Which React features only work fully in React Native when the New Architecture is on? (select all that apply)"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "`startTransition`, để input khẩn cấp ngắt được một lần render chậm",
+          "en": "`startTransition`, where urgent input can interrupt a slow render"
+        }
+      },
+      {
+        "text": {
+          "vi": "Automatic batching cho các update state trong promise và timer",
+          "en": "Automatic batching of state updates made inside promises and timers"
+        }
+      },
+      {
+        "text": {
+          "vi": "Chạy JavaScript trên engine Hermes",
+          "en": "Running JavaScript on the Hermes engine"
+        },
+        "misconception": {
+          "id": "arch-hermes-needs-new-arch",
+          "text": {
+            "vi": "Nhầm JS engine với kiến trúc. Hermes đã là engine mặc định từ trước khi kiến trúc mới được bật mặc định, và chạy được với cả bridge cũ.",
+            "en": "Confusing the JS engine with the architecture. Hermes was the default engine before the New Architecture became the default, and it runs with the old bridge too."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Các hook như `useState`, `useEffect` và `useReducer`",
+          "en": "Hooks such as `useState`, `useEffect` and `useReducer`"
+        },
+        "misconception": {
+          "id": "arch-hooks-need-new-arch",
+          "text": {
+            "vi": "Nghĩ rằng hook cần Fabric. Hook là tính năng của React, có từ React 16.8 và chạy với renderer cũ; thứ cần Fabric là các tính năng concurrent của React 18.",
+            "en": "Believing hooks need Fabric. Hooks are a React feature from React 16.8 and work with the old renderer; what needs Fabric is React 18's concurrent features."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Fast Refresh giữ lại state của component sau khi bạn lưu file",
+          "en": "Fast Refresh keeping component state after you save a file"
+        },
+        "misconception": {
+          "id": "arch-fast-refresh-needs-new-arch",
+          "text": {
+            "vi": "Nghĩ rằng Fast Refresh là tính năng của kiến trúc mới. Fast Refresh là công cụ dev của Metro và React, đã chạy ổn định trên kiến trúc cũ từ RN 0.61.",
+            "en": "Believing Fast Refresh is a New Architecture feature. Fast Refresh is a Metro and React dev tool that has worked on the old architecture since RN 0.61."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0,
+      1
+    ],
+    "explanation": {
+      "vi": "Renderer cũ của RN chỉ chạy React ở chế độ legacy root, nên dù dùng React 18 bạn vẫn có hành vi kiểu React 17. Fabric hỗ trợ concurrent root, nhờ đó transition ngắt được một lần render chậm khi có input khẩn cấp, và automatic batching gom cả update trong promise, timer hay native event vào một lần render. Đó là lý do nhiều tính năng React 18 trở lên chỉ có tác dụng khi bật New Architecture (mặc định từ RN 0.76). Hermes, hook và Fast Refresh đều đã chạy được trên kiến trúc cũ.",
+      "en": "RN's old renderer only runs React as a legacy root, so even with React 18 you get React 17 behaviour. Fabric supports the concurrent root, so a transition can be interrupted by urgent input, and automatic batching groups updates from promises, timers and native events into one render. That is why many React 18+ features only take effect with the New Architecture on (the default from RN 0.76). Hermes, hooks and Fast Refresh all worked on the old architecture."
+    }
+  },
+  {
+    "id": "architecture-new-arch-006",
+    "type": "mcq",
+    "topics": [
+      "architecture/new-arch"
+    ],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": [
+      "architecture-new-arch-core"
+    ],
+    "multi": true,
+    "prompt": {
+      "vi": "App của bạn ở RN 0.77 với cấu hình mặc định. Những nhận định nào về Bridgeless mode là đúng? (chọn tất cả đáp án đúng)",
+      "en": "Your app is on RN 0.77 with default settings. Which statements about Bridgeless mode are true? (select all that apply)"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Nó được bật mặc định cùng với New Architecture",
+          "en": "It is on by default together with the New Architecture"
+        }
+      },
+      {
+        "text": {
+          "vi": "Code native lấy thẳng object bridge (`RCTBridge`, `ReactInstanceManager`) có thể vỡ",
+          "en": "Native code that grabs the bridge object (`RCTBridge`, `ReactInstanceManager`) can break"
+        }
+      },
+      {
+        "text": {
+          "vi": "Mọi lời gọi native đều thành đồng bộ, vì không còn hàng đợi để gom lô",
+          "en": "Every native call becomes synchronous, as there is no queue left to batch it"
+        },
+        "misconception": {
+          "id": "arch-bridgeless-all-sync",
+          "text": {
+            "vi": "Nghĩ rằng bỏ bridge thì mọi lời gọi thành đồng bộ. Method native mặc định vẫn bất đồng bộ và trả Promise; gọi đồng bộ chỉ xảy ra với method được khai báo đồng bộ trong spec.",
+            "en": "Believing that removing the bridge makes every call synchronous. Native methods are still asynchronous by default and return a Promise; only methods declared synchronous in the spec block."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "JavaScript chuyển sang chạy trên main thread, vì không còn thread của bridge",
+          "en": "JavaScript now runs on the main thread, as there is no bridge thread left"
+        },
+        "misconception": {
+          "id": "arch-bridgeless-js-on-main",
+          "text": {
+            "vi": "Nghĩ rằng Bridgeless gộp JS vào main thread. JS vẫn chạy trên JS thread riêng; Bridgeless chỉ bỏ object bridge và hàng đợi message, không đổi mô hình thread.",
+            "en": "Believing Bridgeless merges JS into the main thread. JS still runs on its own JS thread; Bridgeless removes the bridge object and its message queue, not the threading model."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Thư viện chưa có spec TurboModule hay Fabric sẽ ngừng chạy, vì chúng dựa vào bridge",
+          "en": "Libraries with no TurboModule or Fabric spec stop working, since they relied on the bridge"
+        },
+        "misconception": {
+          "id": "legacy-lib-always-crashes",
+          "text": {
+            "vi": "Nghĩ rằng mọi thư viện kiến trúc cũ đều vỡ trên New Architecture. Lớp interop chạy được nhiều thư viện cũ; chỉ một phần gặp lỗi, và phải kiểm thử mới biết.",
+            "en": "Believing every legacy library breaks on the New Architecture. The interop layer runs many legacy libraries; only some fail, and testing is the only way to know."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0,
+      1
+    ],
+    "explanation": {
+      "vi": "Từ RN 0.76, bật New Architecture mặc định cũng là chạy Bridgeless mode: không còn object bridge, và runtime được quản lý bởi host mới (trên Android là `ReactHost` thay cho `ReactInstanceManager`). Lớp interop vẫn cho nhiều module và view cũ chạy tiếp, nhưng code native tự lấy bridge để gửi event, tra module hay gọi API nội bộ là nhóm hay vỡ nhất, nên hãy grep và kiểm thử chúng trước. Bridgeless không làm mọi lời gọi thành đồng bộ, và cũng không đổi mô hình thread.",
+      "en": "From RN 0.76, turning on the New Architecture also means Bridgeless mode by default: there is no bridge object, and the runtime is owned by a new host (on Android, `ReactHost` instead of `ReactInstanceManager`). The interop layer still runs many legacy modules and views, but native code that grabs the bridge itself to send events, look up modules or call internal APIs is the group most likely to break, so grep for it and test it first. Bridgeless does not make calls synchronous, and it does not change the threading model."
+    }
+  },
+  {
+    "id": "architecture-new-arch-007",
+    "type": "spot-bug",
+    "topics": [
+      "architecture/new-arch"
+    ],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 120,
+    "lessons": [
+      "architecture-new-arch-core"
+    ],
+    "prompt": {
+      "vi": "App ở RN 0.79. Một thư viện chart crash trên New Architecture, nên bạn ra hotfix tắt tạm kiến trúc mới trên Android bằng cách thêm hai dòng đầu vào `android/gradle.properties`. Bản release mới vẫn crash với cùng stack có frame Fabric. Dòng nào gây ra lỗi, và vì sao?",
+      "en": "Your app is on RN 0.79. A chart library crashes on the New Architecture, so you ship a hotfix that turns it off on Android by adding the first two lines to `android/gradle.properties`. The new release still crashes with the same stack, full of Fabric frames. Which line causes it, and why?"
+    },
+    "code": "# Temporary: legacy arch until the chart library ships a fix (APP-412)\nnewArchEnabled=false\n\norg.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=512m\nandroid.useAndroidX=true\n\n# Use this property to specify which architecture you want to build.\nreactNativeArchitectures=armeabi-v7a,arm64-v8a,x86,x86_64\n\n# Use this property to enable support to the new architecture.\n# This will allow you to use TurboModules and the Fabric render in\n# your application.\nnewArchEnabled=true\n\n# Use this property to enable or disable the Hermes JS engine.\nhermesEnabled=true",
+    "answerLine": 13,
+    "causeOptions": [
+      {
+        "text": {
+          "vi": "`newArchEnabled=true` của template nằm phía dưới ghi đè dòng 2, vì với một key trùng thì giá trị cuối thắng",
+          "en": "The template's `newArchEnabled=true` further down overrides line 2, since the last value of a duplicate key wins"
+        }
+      },
+      {
+        "text": {
+          "vi": "`hermesEnabled=true` ép bật New Architecture, nên phải tắt cả Hermes mới về được kiến trúc cũ",
+          "en": "`hermesEnabled=true` forces the New Architecture on, so Hermes must go too to get the old one back"
+        },
+        "misconception": {
+          "id": "arch-hermes-forces-new-arch",
+          "text": {
+            "vi": "Nhầm JS engine với kiến trúc. Hermes chạy được với cả kiến trúc cũ lẫn mới; `hermesEnabled` không ảnh hưởng tới `newArchEnabled`.",
+            "en": "Confusing the JS engine with the architecture. Hermes runs on both the old and the new architecture; `hermesEnabled` has no effect on `newArchEnabled`."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`reactNativeArchitectures` có `x86` và `x86_64`, nên các ABI đó vẫn build với kiến trúc mới",
+          "en": "`reactNativeArchitectures` lists `x86` and `x86_64`, so those ABIs still build with the new one"
+        },
+        "misconception": {
+          "id": "arch-abi-is-architecture",
+          "text": {
+            "vi": "Nhầm ABI của CPU với kiến trúc của RN. `reactNativeArchitectures` chỉ chọn ABI để build code native (arm64-v8a, x86_64…); nó không liên quan gì tới New Architecture.",
+            "en": "Confusing CPU ABIs with RN's architecture. `reactNativeArchitectures` only picks which ABIs native code is built for (arm64-v8a, x86_64…); it has nothing to do with the New Architecture."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Từ RN 0.76 cờ opt-out bị bỏ qua, nên dòng 2 không còn tác dụng ở bất kỳ đâu",
+          "en": "From RN 0.76 the opt-out flag is ignored, so line 2 has no effect anywhere"
+        },
+        "misconception": {
+          "id": "arch-optout-gone-in-076",
+          "text": {
+            "vi": "Nghĩ rằng RN 0.76 đã bỏ hẳn kiến trúc cũ. Từ 0.76 tới 0.81 bạn vẫn tắt tạm được bằng `newArchEnabled=false` và `RCT_NEW_ARCH_ENABLED=0`; theo release notes của 0.82, từ bản đó kiến trúc cũ mới không bật lại được nữa.",
+            "en": "Believing RN 0.76 removed the old architecture outright. From 0.76 to 0.81 you can still opt out with `newArchEnabled=false` and `RCT_NEW_ARCH_ENABLED=0`; per the 0.82 release notes, only from that version can the legacy architecture no longer be turned back on."
+          }
+        }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "Gradle đọc `gradle.properties` như một file Java properties: khi một key xuất hiện hai lần, giá trị đọc sau cùng thắng. Dòng 13 của template đặt lại `newArchEnabled=true`, nên dòng 2 vô tác dụng và build vẫn dùng Fabric. Hãy sửa ngay dòng của template thay vì thêm dòng mới, và nhớ rằng `-PnewArchEnabled` trên CI hay `~/.gradle/gradle.properties` cũng có thể ghi đè giá trị trong project. iOS cần tắt riêng bằng `RCT_NEW_ARCH_ENABLED=0` khi `pod install`. Lối lùi này chỉ có từ 0.76 tới 0.81, nên coi nó là tạm thời.",
+      "en": "Gradle reads `gradle.properties` as a Java properties file: when a key appears twice, the value read last wins. Line 13 from the template sets `newArchEnabled=true` again, so line 2 has no effect and the build still uses Fabric. Edit the template line itself instead of adding a new one, and remember that `-PnewArchEnabled` in CI or `~/.gradle/gradle.properties` can also override the project value. iOS needs its own opt-out, `RCT_NEW_ARCH_ENABLED=0` when running `pod install`. This escape hatch only exists from 0.76 to 0.81, so treat it as temporary."
+    }
+  },
+  {
+    "id": "architecture-new-arch-008",
+    "type": "spot-bug",
+    "topics": [
+      "architecture/new-arch"
+    ],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 120,
+    "lessons": [
+      "architecture-new-arch-core"
+    ],
+    "prompt": {
+      "vi": "Sau khi chuyển module cache sang TurboModule, một bạn đổi method đọc cache thành đồng bộ vì \"JSI nhanh hơn\". `getAllSync()` đọc file cache trên đĩa và trả về toàn bộ dưới dạng chuỗi JSON. Hook dưới đây được gắn vào `onScroll` của feed, và từ đó feed giật rõ trên máy Android tầm trung. Dòng nào gây ra lỗi, và vì sao?",
+      "en": "After moving the cache module to a TurboModule, a teammate made the cache read synchronous because \"JSI is faster\". `getAllSync()` reads the cache file from disk and returns all of it as a JSON string. The hook below is wired to the feed's `onScroll`, and since then the feed stutters badly on mid-range Android phones. Which line causes it, and why?"
+    },
+    "code": "import { useCallback } from 'react';\nimport NativeFeedCache from './specs/NativeFeedCache';\n\ntype CachedPost = { id: string; seen: boolean };\n\nexport function useMarkSeenOnScroll(visibleIds: Set<string>): () => void {\n  return useCallback(() => {\n    const cached: CachedPost[] = JSON.parse(NativeFeedCache.getAllSync());\n    const unseen = cached.filter((p) => visibleIds.has(p.id) && !p.seen);\n    if (unseen.length > 0) {\n      NativeFeedCache.markSeen(unseen.map((p) => p.id));\n    }\n  }, [visibleIds]);\n}",
+    "answerLine": 8,
+    "causeOptions": [
+      {
+        "text": {
+          "vi": "Lời gọi đồng bộ giữ JS thread suốt lúc native đọc cả file cache, và nó chạy ở mỗi event scroll",
+          "en": "The sync call holds the JS thread while native reads the whole cache file, on every scroll event"
+        }
+      },
+      {
+        "text": {
+          "vi": "Method đồng bộ chạy trên main thread, nên UI thread đứng và cuộn native bị dừng",
+          "en": "The sync method runs on the main thread, so the UI thread stalls and native scrolling stops"
+        },
+        "misconception": {
+          "id": "sync-method-runs-on-main",
+          "text": {
+            "vi": "Nghĩ rằng method native đồng bộ chạy trên main thread. Nó chạy trên JS thread và chặn JS, mà JS thread cũng không phải main thread.",
+            "en": "Believing synchronous native methods run on the main thread. They run on the JS thread and block it, and that is still not the main thread."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Ở Bridgeless mode method đồng bộ trả về Promise, nên `JSON.parse` nhận object và ném lỗi",
+          "en": "In Bridgeless mode a sync method returns a Promise, so `JSON.parse` gets an object and throws"
+        },
+        "misconception": {
+          "id": "arch-sync-returns-promise",
+          "text": {
+            "vi": "Nghĩ rằng method đồng bộ vẫn trả Promise. Method khai báo kiểu trả về không phải Promise trong spec sẽ trả giá trị ngay qua JSI; chính vì vậy nó chặn JS thread.",
+            "en": "Believing a sync method still returns a Promise. A method whose spec return type is not a Promise returns its value directly through JSI; that is exactly why it blocks the JS thread."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "TurboModule được tạo lazy, nên mỗi lần gọi lại khởi tạo module và mở lại file",
+          "en": "TurboModules load lazily, so each call recreates the module and reopens the file"
+        },
+        "misconception": {
+          "id": "arch-turbo-reinit-per-call",
+          "text": {
+            "vi": "Nghĩ rằng \"lazy\" nghĩa là TurboModule bị tạo lại ở mỗi lời gọi. Module chỉ được tạo ở lần đầu JS yêu cầu, rồi được giữ lại cho các lời gọi sau.",
+            "en": "Believing \"lazy\" means a TurboModule is recreated on every call. The module is created the first time JS asks for it and then reused for later calls."
+          }
+        }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "JSI cho phép gọi đồng bộ, nhưng lời gọi đồng bộ chạy trên JS thread và giữ nó cho tới khi native trả kết quả. Ở đây mỗi event scroll (nhiều lần mỗi giây) đều đọc đĩa, copy cả cache thành chuỗi rồi `JSON.parse`, nên JS thread không kịp xử lý touch, animation do JS điều khiển hay render. Hãy trả lại method bất đồng bộ, đọc cache một lần và giữ trong bộ nhớ, hoặc lọc ngay ở phía native, và chỉ chạy logic khi danh sách item hiển thị thay đổi (`onViewableItemsChanged`). Method đồng bộ chỉ hợp với giá trị nhỏ, đọc từ bộ nhớ, trả về gần như tức thì.",
+      "en": "JSI allows synchronous calls, but a sync call runs on the JS thread and holds it until native returns. Here every scroll event, many times a second, reads the disk, copies the whole cache into a string and runs `JSON.parse`, so the JS thread falls behind on touches, JS-driven animations and renders. Make the method async again, read the cache once and keep it in memory, or filter on the native side, and only run the logic when the visible items change (`onViewableItemsChanged`). Sync methods suit small values read from memory that return almost instantly."
+    }
+  },
+  {
+    "id": "architecture-new-arch-009",
+    "type": "spot-bug",
+    "topics": [
+      "architecture/new-arch"
+    ],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 120,
+    "lessons": [
+      "architecture-new-arch-core"
+    ],
+    "prompt": {
+      "vi": "App ở RN 0.77 với New Architecture. Tooltip dưới đây đo chiều cao của chính nó để đặt mình phía trên điểm neo. Khi mở, nó hiện đè lên điểm neo trong một frame rồi mới nhảy lên đúng chỗ. Dòng nào gây ra lỗi, và vì sao?",
+      "en": "Your app is on RN 0.77 with the New Architecture. The tooltip below measures its own height to sit above its anchor. When it opens, it shows over the anchor for one frame and then jumps into place. Which line causes it, and why?"
+    },
+    "code": "import { useEffect, useRef, useState } from 'react';\nimport { Text, View } from 'react-native';\n\ntype Props = { label: string; anchorY: number };\n\nexport function Tooltip({ label, anchorY }: Props) {\n  const ref = useRef<View>(null);\n  const [top, setTop] = useState<number>(anchorY);\n\n  useEffect(() => {\n    ref.current?.measureInWindow((_x, _y, _width, height) => {\n      setTop(anchorY - height - 8);\n    });\n  }, [anchorY, label]);\n  return (\n    <View ref={ref} style={{ position: 'absolute', top }}>\n      <Text>{label}</Text>\n    </View>\n  );\n}",
+    "answerLine": 10,
+    "causeOptions": [
+      {
+        "text": {
+          "vi": "`useEffect` có thể chạy sau khi frame đã vẽ, nên frame đầu hiện tooltip lúc chưa đo",
+          "en": "`useEffect` can run after the frame is painted, so the first frame shows the unmeasured tooltip"
+        }
+      },
+      {
+        "text": {
+          "vi": "Trong Fabric `measureInWindow` luôn bất đồng bộ, nên không hook nào tránh được frame sai đầu tiên",
+          "en": "In Fabric `measureInWindow` is always async, so no hook can avoid a first frame in the wrong place"
+        },
+        "misconception": {
+          "id": "arch-fabric-measure-async",
+          "text": {
+            "vi": "Mang hành vi kiến trúc cũ sang Fabric. Ở bridge cũ, đo layout phải đi vòng qua native nên luôn trễ; Fabric tính layout đồng bộ trong C++, nên đo trong `useLayoutEffect` có kết quả trước khi frame được vẽ.",
+            "en": "Carrying old-architecture behaviour over to Fabric. With the old bridge, measuring had to round-trip through native, so it was always late; Fabric computes layout synchronously in C++, so measuring in `useLayoutEffect` gets a result before the frame is painted."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Vị trí nên được tính ngay lúc render, vì Fabric biết kích thước view trước khi commit",
+          "en": "The position should be computed during render, since Fabric knows view sizes before it commits"
+        },
+        "misconception": {
+          "id": "arch-layout-known-in-render",
+          "text": {
+            "vi": "Nghĩ rằng layout có sẵn lúc render. Yoga chỉ tính layout ở pha commit, sau render, nên kích thước đo được chỉ có trong layout effect hoặc `onLayout`.",
+            "en": "Believing layout is available during render. Yoga only calculates layout in the commit phase, after render, so measured sizes are only available in a layout effect or `onLayout`."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Gọi `setTop` trong callback đo làm effect chạy lại và đo mãi không dừng",
+          "en": "Calling `setTop` in the measure callback re-runs the effect, so it measures in a loop"
+        },
+        "misconception": {
+          "id": "arch-setstate-measure-loop",
+          "text": {
+            "vi": "Nghĩ rằng mọi lần set state trong effect đều tạo vòng lặp. Effect chỉ chạy lại khi dependency đổi; `top` không nằm trong `[anchorY, label]`, nên nó chỉ đo lại khi điểm neo hoặc nội dung đổi.",
+            "en": "Believing any state update in an effect creates a loop. The effect only re-runs when a dependency changes; `top` is not in `[anchorY, label]`, so it only measures again when the anchor or text changes."
+          }
+        }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "`useEffect` là passive effect: React có thể chạy nó sau khi frame đầu đã lên màn hình, nên người dùng thấy tooltip ở vị trí `anchorY` trước khi nó được đo. Đổi dòng 10 thành `useLayoutEffect`. Trên New Architecture, layout effect chạy sau commit nhưng trước khi frame được vẽ, `measureInWindow` trả kết quả đồng bộ, và update `setTop` được áp trong cùng lượt đó, nên không còn nhấp nháy. Ở kiến trúc cũ, phép đo đi qua bridge bất đồng bộ nên cách này vẫn nhấp nháy; đây là một lợi ích cụ thể của Fabric.",
+      "en": "`useEffect` is a passive effect: React may run it after the first frame is on screen, so the user sees the tooltip at `anchorY` before it is measured. Change line 10 to `useLayoutEffect`. On the New Architecture, a layout effect runs after commit but before the frame is painted, `measureInWindow` returns synchronously, and the `setTop` update is applied in the same pass, so the flicker is gone. On the old architecture the measurement went through the asynchronous bridge, so it still flickered; this is a concrete benefit of Fabric."
+    }
+  },
+  {
+    "id": "architecture-new-arch-010",
+    "type": "open",
+    "topics": [
+      "architecture/new-arch"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 300,
+    "lessons": [
+      "architecture-new-arch-core"
+    ],
+    "prompt": {
+      "vi": "Người phỏng vấn hỏi: \"Giữa bridge cũ và New Architecture thực sự đã thay đổi những gì, và một team làm sản phẩm được lợi gì từ đó?\"",
+      "en": "The interviewer asks: \"What actually changed between the old bridge and the New Architecture, and what does a product team get out of it?\""
+    },
+    "keyPoints": [
+      {
+        "vi": "Bridge cũ: mọi lời gọi bất đồng bộ, gom lô, serialise JSON; tốn chi phí với dữ liệu lớn và không có lời gọi đồng bộ",
+        "en": "The old bridge: every call asynchronous, batched and JSON-serialised; costly for large payloads, with no synchronous calls"
+      },
+      {
+        "vi": "JSI: API C++ cho JS giữ host object và gọi trực tiếp, gọi đồng bộ được khi cần, không phụ thuộc engine (Hermes, JSC)",
+        "en": "JSI: a C++ API where JS holds host objects and calls them directly, synchronously when needed, independent of the engine (Hermes, JSC)"
+      },
+      {
+        "vi": "TurboModules: tạo lazy khi JS cần, có kiểu nhờ spec và Codegen",
+        "en": "TurboModules: created lazily when JS needs them, typed through specs and Codegen"
+      },
+      {
+        "vi": "Fabric: shadow tree C++ bất biến dùng chung hai nền tảng, ba pha render/commit/mount, đo layout đồng bộ",
+        "en": "Fabric: an immutable C++ shadow tree shared by both platforms, render/commit/mount phases, synchronous layout reads"
+      },
+      {
+        "vi": "Tính năng concurrent của React 18 (transition, automatic batching) cần Fabric",
+        "en": "React 18 concurrent features (transitions, automatic batching) need Fabric"
+      },
+      {
+        "vi": "Bridgeless bật mặc định từ RN 0.76; lớp interop giữ nhiều thư viện cũ chạy được nhưng không phải tất cả",
+        "en": "Bridgeless is the default from RN 0.76; the interop layer keeps many legacy libraries running, but not all of them"
+      }
+    ],
+    "modelAnswer": {
+      "vi": "Ở kiến trúc cũ, JS và native chỉ nói chuyện qua bridge: mỗi lời gọi thành message JSON, gửi theo lô và bất đồng bộ. Dữ liệu lớn tốn chi phí serialise, không có cách đọc gì đồng bộ, và mọi module được khởi tạo sớm. Kiến trúc mới thay bridge bằng JSI, một API C++ cho JS giữ tham chiếu tới object native và gọi thẳng, kể cả đồng bộ, với Hermes hay JSC đều được. Trên đó có TurboModules, tạo lazy và có kiểu nhờ Codegen, và Fabric, renderer C++ với shadow tree bất biến, đo layout đồng bộ và hỗ trợ concurrent React. Với team sản phẩm, lợi ích là khởi động nhanh hơn khi có nhiều module, `useLayoutEffect` hết nhấp nháy, transition và automatic batching chạy đúng, và lỗi kiểu dữ liệu giữa JS và native bị bắt lúc build. Cái giá là phải kiểm tra thư viện: interop chạy được nhiều thứ, nhưng không phải tất cả.",
+      "en": "In the old architecture JS and native only talked through the bridge: each call became a JSON message, sent in batches and asynchronously. Big payloads paid for serialisation, nothing could be read synchronously, and every module was set up early. The New Architecture replaces the bridge with JSI, a C++ API that lets JS hold references to native objects and call them directly, synchronously if needed, on Hermes or JSC. On top of it sit TurboModules, lazy and typed through Codegen, and Fabric, a C++ renderer with an immutable shadow tree, synchronous layout reads and support for concurrent React. For a product team that means faster startup with many modules, no more `useLayoutEffect` flicker, working transitions and automatic batching, and type mismatches between JS and native caught at build time. The cost is auditing libraries: interop runs a lot, but not everything."
+    },
+    "followUps": [
+      {
+        "vi": "Nếu JSI cho gọi đồng bộ, vì sao phần lớn method native vẫn nên bất đồng bộ?",
+        "en": "If JSI allows synchronous calls, why should most native methods stay asynchronous?"
+      },
+      {
+        "vi": "JSI có gắn với Hermes không? Đổi engine thì ảnh hưởng gì tới TurboModules?",
+        "en": "Is JSI tied to Hermes? What happens to TurboModules if you change the engine?"
+      }
+    ]
+  },
+  {
+    "id": "architecture-new-arch-011",
+    "type": "open",
+    "topics": [
+      "architecture/new-arch"
+    ],
+    "kind": "advanced",
+    "difficulty": 3,
+    "estSeconds": 300,
+    "lessons": [
+      "architecture-new-arch-core"
+    ],
+    "prompt": {
+      "vi": "Sau khi lên New Architecture, một bạn trong team đề xuất đổi mọi method native sang đồng bộ, vì \"JSI cho gọi đồng bộ, đỡ phải `await`\". Bạn phản hồi thế nào, và bạn chọn giữa method đồng bộ và bất đồng bộ dựa trên gì?",
+      "en": "After moving to the New Architecture, a teammate proposes making every native method synchronous, since \"JSI allows sync calls, so we can drop the `await`s\". How do you respond, and how do you choose between sync and async methods?"
+    },
+    "keyPoints": [
+      {
+        "vi": "Lời gọi đồng bộ chạy trên JS thread và chặn nó suốt thời gian native làm việc; touch, animation do JS điều khiển và render đều phải chờ",
+        "en": "A sync call runs on the JS thread and blocks it for as long as native works; touches, JS-driven animations and renders all wait"
+      },
+      {
+        "vi": "Đồng bộ chỉ hợp với việc nhỏ, đọc từ bộ nhớ, gần như tức thì, hoặc giá trị cần ngay lúc render; I/O, mạng và tính toán nặng phải bất đồng bộ",
+        "en": "Sync suits small, in-memory, near-instant work, or a value needed during render; I/O, network and heavy compute must be async"
+      },
+      {
+        "vi": "Method đồng bộ cần main thread (UIKit, Android View) phải chờ main thread, làm JS bị giữ lại và có nguy cơ deadlock nếu main thread cũng đang chờ JS",
+        "en": "A sync method that needs the main thread (UIKit, Android views) has to wait for it, stalling JS and risking a deadlock if the main thread is waiting on JS"
+      },
+      {
+        "vi": "Bất đồng bộ vẫn là mặc định: đưa việc nặng sang background thread, trả Promise, dùng event cho dữ liệu dạng stream",
+        "en": "Async stays the default: move heavy work to a background thread, return a Promise, use events for streaming data"
+      },
+      {
+        "vi": "Đo trước khi quyết: profile JS thread (Hermes sampling profiler, Perfetto hoặc systrace) trên máy yếu và đặt ngân sách thời gian cho mỗi lời gọi",
+        "en": "Measure before deciding: profile the JS thread (Hermes sampling profiler, Perfetto or systrace) on low-end devices and set a time budget per call"
+      },
+      {
+        "vi": "Lợi ích lớn của JSI là bỏ serialise và gọi trực tiếp, không phải biến mọi thứ thành đồng bộ",
+        "en": "JSI's real gain is removing serialisation and calling directly, not making everything synchronous"
+      }
+    ],
+    "modelAnswer": {
+      "vi": "Mình sẽ không đồng ý đổi hàng loạt. Lời gọi đồng bộ chạy trên JS thread và giữ nó cho tới khi native trả về, nên một lần đọc đĩa 30 ms là 30 ms JS không xử lý được touch hay render. Nếu method đó còn cần main thread, JS phải chờ main thread, và nếu main thread đang chờ JS thì có thể deadlock. Mình giữ bất đồng bộ làm mặc định: việc nặng chạy trên background thread và trả Promise, dữ liệu liên tục thì dùng event. Mình chỉ dùng đồng bộ cho giá trị nhỏ đã có sẵn trong bộ nhớ, như config đã cache hay một flag cần ngay lúc render, và mỗi method như vậy phải đo được trên máy yếu, nằm trong ngân sách vài phần nghìn giây. JSI giúp vì bỏ serialise, chứ không phải vì mọi thứ nên đồng bộ.",
+      "en": "I would push back on a blanket change. A sync call runs on the JS thread and holds it until native returns, so a 30 ms disk read is 30 ms where JS cannot handle touches or render. If the method also needs the main thread, JS waits for it, and if the main thread is waiting on JS you can deadlock. I keep async as the default: heavy work runs on a background thread and returns a Promise, and continuous data goes through events. I only use sync for small values already in memory, such as cached config or a flag needed during render, and each one has to be measured on a low-end device and stay within a budget of a millisecond or so. JSI helps because it removes serialisation, not because everything should be synchronous."
+    },
+    "followUps": [
+      {
+        "vi": "Một giá trị JS cần ngay lúc khởi động nằm trong file trên đĩa. Bạn cung cấp nó thế nào mà không chặn JS thread?",
+        "en": "JS needs a value at startup that lives in a file on disk. How do you provide it without blocking the JS thread?"
+      }
+    ]
+  },
+  {
+    "id": "architecture-new-arch-012",
+    "type": "open",
+    "topics": [
+      "architecture/new-arch"
+    ],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 330,
+    "lessons": [
+      "architecture-new-arch-core"
+    ],
+    "prompt": {
+      "vi": "Sau khi bật New Architecture, một map view của bên thứ ba vẫn hiện ra, nhưng marker lệch chỗ sau khi xoay màn hình và một method gọi từ ref không còn tác dụng. Thư viện chưa được migrate. Kể lại cách bạn tìm ra nguyên nhân và quyết định ship cái gì.",
+      "en": "After turning on the New Architecture, a third-party map view still renders, but markers end up in the wrong place after rotation and one method called through its ref no longer does anything. The library has not been migrated. Walk me through how you found the cause and decided what to ship."
+    },
+    "keyPoints": [
+      {
+        "vi": "Xác nhận đây là lỗi do kiến trúc: dựng cùng commit với New Architecture tắt (trên version còn cho phép) và so sánh, trên release build",
+        "en": "Confirm it is an architecture issue: build the same commit with the New Architecture off (on versions that allow it) and compare, in release builds"
+      },
+      {
+        "vi": "Xác định view đang chạy qua lớp interop: thư viện không có `codegenConfig` hay component Fabric, và React Native Directory chưa đánh dấu hỗ trợ",
+        "en": "Establish that the view runs through the interop layer: the library has no `codegenConfig` or Fabric component, and React Native Directory does not list support"
+      },
+      {
+        "vi": "Biết giới hạn của interop: code dựa vào bridge, API nội bộ của `UIManager` hay timing layout cũ có thể chạy sai dù view vẫn hiện",
+        "en": "Know the interop limits: code that relies on the bridge, `UIManager` internals or old layout timing can misbehave even though the view renders"
+      },
+      {
+        "vi": "Thu hẹp bằng một repro tối giản trong app mới cùng version RN, đọc log native và xem method trên ref được gửi xuống native như thế nào",
+        "en": "Narrow it down with a minimal repro in a fresh app on the same RN version, read native logs and trace how the ref method reaches native"
+      },
+      {
+        "vi": "Chọn hướng xử lý: nâng lên bản có hỗ trợ, thay thư viện, hoặc patch rồi gửi fix upstream; opt-out chỉ là lối lùi tạm thời vì các bản sau bỏ nó",
+        "en": "Pick a fix: upgrade to a version with support, replace the library, or patch it and send the fix upstream; opting out is only a temporary escape, since later versions remove it"
+      },
+      {
+        "vi": "Ship qua staged rollout, thêm test cho màn hình đó và theo dõi crash cùng phản hồi theo version",
+        "en": "Ship through a staged rollout, add a test for that screen and watch crashes and feedback by version"
+      }
+    ],
+    "modelAnswer": {
+      "vi": "Việc đầu tiên mình làm là xác nhận lỗi đến từ kiến trúc: build cùng commit với New Architecture tắt, vì app còn ở bản cho phép, và hai lỗi biến mất. Sau đó mình kiểm tra thư viện: không có `codegenConfig`, không có component Fabric, React Native Directory chưa đánh dấu hỗ trợ, nghĩa là view đang chạy qua lớp interop. Mình dựng repro tối giản trong một app mới cùng version RN, đọc log native và thấy method trên ref đi qua một đường cũ dựa vào bridge, còn phần marker tự tính vị trí theo timing layout của renderer cũ. Có một bản beta của thư viện đã hỗ trợ Fabric, nên mình thử nó, đưa vào sau staged rollout và theo dõi crash theo version. Nếu không có bản đó, mình sẽ patch, gửi fix upstream, và chỉ giữ opt-out như lối lùi tạm thời có hạn.",
+      "en": "First I confirmed the bug came from the architecture: I built the same commit with the New Architecture off, since our version still allowed it, and both problems went away. Then I checked the library: no `codegenConfig`, no Fabric component, no support listed on React Native Directory, so the view was running through the interop layer. I built a minimal repro in a fresh app on the same RN version, read the native logs, and found the ref method went through an old path that relied on the bridge, while the markers computed their positions from the old renderer's layout timing. A beta of the library already supported Fabric, so I tested it, shipped it through a staged rollout and watched crashes by version. Without that, I would have patched it, sent the fix upstream, and kept the opt-out only as a short-lived escape hatch."
+    },
+    "followUps": [
+      {
+        "vi": "Nếu thư viện đã bị bỏ hoang và không có lựa chọn thay thế tốt, bạn làm gì?",
+        "en": "What do you do if the library is abandoned and there is no good replacement?"
+      },
+      {
+        "vi": "Làm sao phát hiện sớm những thư viện kiểu này trước khi bật New Architecture cho người dùng?",
+        "en": "How do you catch libraries like this before you turn the New Architecture on for users?"
+      }
+    ]
+  }
+]

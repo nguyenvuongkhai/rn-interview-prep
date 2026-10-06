@@ -1,0 +1,837 @@
+[
+  {
+    "id": "ai-prompting-001",
+    "type": "mcq",
+    "topics": [
+      "ai/prompting"
+    ],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": [
+      "ai-prompting-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Prompt đầu tiên của bạn là \"App crash trên Android, sửa giúp tôi\". Câu trả lời rất chung chung. Thay đổi nào giúp nhiều nhất?",
+      "en": "Your first prompt was \"The app crashes on Android, fix it.\" The answer was generic. Which change helps the most?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Thêm phiên bản RN, nguyên văn lỗi kèm stack, và file mà stack trỏ tới",
+          "en": "Add the RN version, the exact error with its stack, and the file the stack points to"
+        }
+      },
+      {
+        "text": {
+          "vi": "Mở đầu bằng \"Bạn là chuyên gia React Native senior\" và giữ nguyên phần còn lại",
+          "en": "Start with \"You are a senior React Native expert\" and keep the rest as it is"
+        },
+        "misconception": {
+          "id": "aiprm-role-line-enough",
+          "text": {
+            "vi": "Nghĩ rằng gán vai trò là đủ. Một câu vai trò không cho assistant biết lỗi là gì hay xảy ra ở đâu; thiếu dữ kiện thì nó vẫn chỉ đoán được câu trả lời chung chung.",
+            "en": "Believing a role line is enough. A role does not tell the assistant what the error is or where it happens; without the facts it can still only guess a generic answer."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Thêm câu \"hãy suy nghĩ từng bước và thật cẩn thận\" vào cuối prompt",
+          "en": "Add \"think step by step and be very careful\" to the end of the prompt"
+        },
+        "misconception": {
+          "id": "aiprm-magic-phrase",
+          "text": {
+            "vi": "Tin vào câu thần chú. Những câu như \"suy nghĩ cẩn thận\" không thay được dữ kiện còn thiếu; assistant không thể suy ra phiên bản hay nội dung lỗi mà bạn chưa đưa.",
+            "en": "Believing in magic phrases. Lines like \"think carefully\" do not replace missing facts; the assistant cannot work out a version or an error message you never gave it."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Đính kèm toàn bộ repo để assistant tự tìm ra chỗ crash",
+          "en": "Attach the whole repository so the assistant can find the crash itself"
+        },
+        "misconception": {
+          "id": "aiprm-more-context-better",
+          "text": {
+            "vi": "Nghĩ rằng càng đưa nhiều càng tốt. Cả repo hay cả `node_modules` làm loãng phần quan trọng và có thể vượt giới hạn context; assistant cần đúng các file, lỗi và phiên bản liên quan, do bạn chọn.",
+            "en": "Believing more context is always better. A whole repo or `node_modules` buries what matters and can overflow the context window; the assistant needs the relevant files, error and versions, chosen by you."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0
+    ],
+    "explanation": {
+      "vi": "Câu trả lời chung chung là dấu hiệu prompt thiếu dữ kiện. Phiên bản RN cho assistant biết API và hành vi nào áp dụng; nguyên văn lỗi và stack cho biết chỗ hỏng; file mà stack trỏ tới cho nó code thật để đọc. Câu vai trò hay câu \"suy nghĩ cẩn thận\" không thêm dữ kiện nào. Đưa cả repo là bẫy ngược lại: phần quan trọng bị chìm, và chọn file liên quan vốn là việc của bạn.",
+      "en": "A generic answer is a sign the prompt lacks facts. The RN version tells the assistant which APIs and behaviour apply; the exact error and stack show where it breaks; the file the stack points to gives it real code to read. A role line or \"think carefully\" adds no facts. Attaching the whole repo is the opposite trap: what matters gets buried, and picking the relevant files is your job."
+    }
+  },
+  {
+    "id": "ai-prompting-002",
+    "type": "mcq",
+    "topics": [
+      "ai/prompting"
+    ],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": [
+      "ai-prompting-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Bạn nhờ assistant sửa một bug trong hook `useCart`. Dòng nào trong prompt cho nó một tiêu chí \"xong\" dùng được?",
+      "en": "You ask the assistant to fix a bug in the `useCart` hook. Which line in the prompt gives it a usable definition of done?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Xong khi test của `useCart` pass, có test mới cho `qty` bằng 0, export không đổi",
+          "en": "Done when `useCart` tests pass, a new test covers `qty` 0, exports unchanged"
+        }
+      },
+      {
+        "text": {
+          "vi": "Làm cho code sạch, sẵn sàng cho production và theo đúng best practice của team",
+          "en": "Make the code clean, production-ready and in line with team best practices"
+        },
+        "misconception": {
+          "id": "aiprm-vague-quality-words",
+          "text": {
+            "vi": "Nghĩ rằng từ chỉ chất lượng là tiêu chí. \"Sạch\" hay \"best practice\" không kiểm tra được, nên assistant tự hiểu theo ý nó, thường bằng cách sửa thêm những chỗ bạn không nhờ.",
+            "en": "Believing quality words are criteria. \"Clean\" or \"best practice\" cannot be checked, so the assistant reads them its own way, often by changing things you did not ask for."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Tuyệt đối không được gây ra bug hay regression nào ở bất cứ đâu",
+          "en": "Do not introduce any bug or regression anywhere in the app or its tests"
+        },
+        "misconception": {
+          "id": "aiprm-forbid-mistakes",
+          "text": {
+            "vi": "Nghĩ rằng cấm lỗi thì sẽ không có lỗi. Câu này không cho assistant cách nào để biết đã đạt hay chưa; chỉ test và tiêu chí cụ thể mới chứng minh được điều đó, và người chạy chúng là bạn.",
+            "en": "Believing that forbidding bugs prevents them. The line gives the assistant no way to tell whether it succeeded; only tests and concrete criteria show that, and you are the one who runs them."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Xong khi code compile được và không còn lỗi TypeScript nào",
+          "en": "Done when the project compiles and TypeScript reports no errors at all"
+        },
+        "misconception": {
+          "id": "aiprm-compiles-means-done",
+          "text": {
+            "vi": "Nghĩ rằng compile được là xong. Code compile sạch vẫn có thể sai hành vi; tiêu chí xong phải gồm hành vi mong muốn, kiểm tra được bằng test.",
+            "en": "Believing that compiling means done. Code that compiles cleanly can still behave wrongly; a definition of done must include the expected behaviour, checked by tests."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0
+    ],
+    "explanation": {
+      "vi": "Tiêu chí \"xong\" tốt là thứ bạn kiểm tra được: test nào phải pass, ca nào phải có test mới, và ràng buộc nào phải giữ (ở đây là API public). Assistant dùng nó để biết khi nào dừng, còn bạn dùng nó để chấm kết quả. \"Sạch\" và \"best practice\" không đo được, câu cấm lỗi không cho cách kiểm tra, và compile được chỉ nói rằng kiểu khớp, không nói hành vi đúng.",
+      "en": "A good definition of done is something you can check: which tests must pass, which case needs a new test, and which constraint must hold (here, the public API). The assistant uses it to know when to stop, and you use it to judge the result. \"Clean\" and \"best practice\" cannot be measured, forbidding bugs gives no way to check, and compiling only proves the types line up, not that the behaviour is right."
+    }
+  },
+  {
+    "id": "ai-prompting-003",
+    "type": "mcq",
+    "topics": [
+      "ai/prompting"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 75,
+    "lessons": [
+      "ai-prompting-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Bản sửa của assistant cho bug phân trang pass 9 trên 10 test. Test còn lại fail: khi cuộn nhanh, trang cuối bị fetch hai lần. Prompt tiếp theo của bạn là gì?",
+      "en": "The assistant's fix for a pagination bug passes 9 of 10 tests. The last one fails: when the user scrolls fast, the last page is fetched twice. What is your next prompt?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Dán test fail và output, rồi hỏi vì sao vẫn còn lần fetch thứ hai",
+          "en": "Paste the failing test and its output, and ask why a second fetch still happens"
+        }
+      },
+      {
+        "text": {
+          "vi": "\"Vẫn sai, thử lại đi\", để assistant tự xem lại bản sửa của nó",
+          "en": "\"Still wrong, try again\", so the assistant reviews its own fix"
+        },
+        "misconception": {
+          "id": "aiprm-retry-without-detail",
+          "text": {
+            "vi": "Nghĩ rằng chỉ cần bảo thử lại. Không có lỗi cụ thể, assistant không biết sai ở đâu và thường đổi một chỗ ngẫu nhiên; đưa test fail và output giúp nó nhắm đúng chỗ.",
+            "en": "Believing \"try again\" is enough. Without the specific failure the assistant does not know what is wrong and often changes something at random; the failing test and its output let it aim at the right place."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Mở phiên mới và gửi lại nguyên văn prompt ban đầu",
+          "en": "Open a fresh session and send the original prompt again, word for word"
+        },
+        "misconception": {
+          "id": "aiprm-blind-restart",
+          "text": {
+            "vi": "Nghĩ rằng làm lại từ đầu sẽ ra kết quả tốt hơn. Cùng prompt thì thiếu cùng thông tin, và bạn bỏ mất dữ kiện quý nhất vừa có: ca cụ thể làm bản sửa fail.",
+            "en": "Believing a restart gives a better result. The same prompt lacks the same information, and you throw away the most valuable fact you just learned: the exact case that breaks the fix."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Nhờ nó viết lại cả màn danh sách để bug không thể xảy ra",
+          "en": "Ask it to rewrite the whole list screen so the bug cannot happen"
+        },
+        "misconception": {
+          "id": "aiprm-rewrite-to-fix",
+          "text": {
+            "vi": "Nghĩ rằng viết lại toàn bộ sẽ xoá được bug. Viết lại tạo ra một diff lớn không review nổi và thêm lỗi mới, trong khi bug ở đây chỉ nằm ở một điều kiện chặn fetch.",
+            "en": "Believing a full rewrite removes the bug. A rewrite produces a diff too big to review and new bugs, while the bug here sits in one guard that should block the fetch."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Nhờ nó đánh dấu test đó là skip, vì 9 trên 10 test đã pass",
+          "en": "Ask it to mark that test as skipped, since 9 of 10 already pass"
+        },
+        "misconception": {
+          "id": "aiprm-skip-failing-test",
+          "text": {
+            "vi": "Nghĩ rằng test fail là test xấu. Test này mô tả đúng bug người dùng gặp; skip nó là giấu bug đi, không phải sửa.",
+            "en": "Believing the failing test is the problem. This test describes the exact bug users hit; skipping it hides the bug instead of fixing it."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0
+    ],
+    "explanation": {
+      "vi": "Lặp lại với lỗi cụ thể là cách nhanh nhất để đi tới bản sửa đúng: test fail và output cho assistant biết chính xác ca nào còn hỏng, và câu hỏi \"vì sao\" buộc nó tìm nguyên nhân (thường là cờ `isLoading` chưa chặn lần gọi thứ hai) trước khi sửa tiếp. Bảo \"thử lại\" hay mở phiên mới đều bỏ mất dữ kiện đó. Viết lại cả màn hay skip test là đổi bug lấy rủi ro lớn hơn.",
+      "en": "Iterating with the specific failure is the fastest way to a correct fix: the failing test and its output tell the assistant exactly which case still breaks, and asking \"why\" makes it find the cause (often an `isLoading` flag that does not yet block the second call) before changing more code. \"Try again\" and a fresh session both throw that fact away. Rewriting the screen or skipping the test trades the bug for a bigger risk."
+    }
+  },
+  {
+    "id": "ai-prompting-004",
+    "type": "mcq",
+    "topics": [
+      "ai/prompting"
+    ],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": [
+      "ai-prompting-core"
+    ],
+    "multi": true,
+    "prompt": {
+      "vi": "Sau khi nâng `react-native-reanimated`, release build crash ngay khi mở. Bạn sắp nhờ assistant debug. Những gì nên đưa vào prompt? (Chọn tất cả đáp án đúng)",
+      "en": "After upgrading `react-native-reanimated`, the release build crashes on launch. You are about to ask an assistant to help debug it. What belongs in the prompt? (Select all that apply)"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Phiên bản RN và Reanimated trước và sau khi nâng",
+          "en": "The RN and Reanimated versions before and after the upgrade"
+        }
+      },
+      {
+        "text": {
+          "vi": "Nguyên văn lỗi và stack đã symbolicate từ release build",
+          "en": "The exact error and the symbolicated stack from the release build"
+        }
+      },
+      {
+        "text": {
+          "vi": "Nội dung `babel.config.js` của project",
+          "en": "The contents of the project's `babel.config.js`"
+        }
+      },
+      {
+        "text": {
+          "vi": "File `.env` với key thật, để nó thấy đủ cấu hình",
+          "en": "The `.env` file with real keys, so it sees the full config"
+        },
+        "misconception": {
+          "id": "aiprm-paste-secrets",
+          "text": {
+            "vi": "Nghĩ rằng secret là ngữ cảnh cần thiết. Key thật không giúp debug crash lúc khởi động, và dán chúng vào prompt là đưa secret ra ngoài; nếu cần thì thay bằng giá trị giả cùng định dạng.",
+            "en": "Believing secrets are needed context. Real keys do not help debug a launch crash, and pasting them into a prompt sends secrets outside; if the shape matters, use fake values in the same format."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Cả thư mục `node_modules`, để không thiếu gì",
+          "en": "The whole `node_modules` folder, so nothing is missing"
+        },
+        "misconception": {
+          "id": "aiprm-more-context-better",
+          "text": {
+            "vi": "Nghĩ rằng càng đưa nhiều càng tốt. Cả repo hay cả `node_modules` làm loãng phần quan trọng và có thể vượt giới hạn context; assistant cần đúng các file, lỗi và phiên bản liên quan, do bạn chọn.",
+            "en": "Believing more context is always better. A whole repo or `node_modules` buries what matters and can overflow the context window; the assistant needs the relevant files, error and versions, chosen by you."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0,
+      1,
+      2
+    ],
+    "explanation": {
+      "vi": "Crash sau khi nâng thư viện thường đến từ phiên bản không tương thích hoặc bước cài đặt bị thiếu. Cặp phiên bản trước và sau cho assistant biết bạn đang ở đâu so với changelog. Stack đã symbolicate từ release build là bằng chứng thật; stack chưa symbolicate chỉ là offset. Reanimated cần Babel plugin của nó, nên `babel.config.js` là file cấu hình đáng xem đầu tiên. Key trong `.env` không liên quan và không được rời máy bạn; `node_modules` chỉ làm loãng ngữ cảnh.",
+      "en": "A crash after a library upgrade usually comes from incompatible versions or a missed setup step. The before and after versions tell the assistant where you stand against the changelog. A symbolicated release stack is the real evidence; an unsymbolicated one is just offsets. Reanimated needs its Babel plugin, so `babel.config.js` is the first config file worth showing. The keys in `.env` are irrelevant and must not leave your machine; `node_modules` only dilutes the context."
+    }
+  },
+  {
+    "id": "ai-prompting-005",
+    "type": "mcq",
+    "topics": [
+      "ai/prompting"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": [
+      "ai-prompting-core"
+    ],
+    "multi": true,
+    "prompt": {
+      "vi": "Bạn cần chuyển 30 màn hình từ một wrapper `fetch` tự viết sang TanStack Query, có AI assistant hỗ trợ. Cách làm nào cho kết quả đúng và review được? (Chọn tất cả đáp án đúng)",
+      "en": "You need to move 30 screens from a home-grown `fetch` wrapper to TanStack Query, with help from an AI assistant. Which approaches give a correct, reviewable result? (Select all that apply)"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Nhờ nó lập kế hoạch theo bước trước, review kế hoạch, rồi làm từng bước",
+          "en": "Ask for a step-by-step plan first, review it, then work through it step by step"
+        }
+      },
+      {
+        "text": {
+          "vi": "Chuyển một màn, review kỹ, rồi dùng nó làm mẫu cho các màn còn lại",
+          "en": "Migrate one screen, review it, then use it as the example for the rest"
+        }
+      },
+      {
+        "text": {
+          "vi": "Mỗi bước kết thúc khi test pass và diff đủ nhỏ để review",
+          "en": "End each step with the tests passing and a diff small enough to review"
+        }
+      },
+      {
+        "text": {
+          "vi": "Gửi một prompt chuyển cả 30 màn rồi review diff cuối cùng",
+          "en": "Send one prompt to migrate all 30 screens, then review the final diff"
+        },
+        "misconception": {
+          "id": "aiprm-one-shot-big-task",
+          "text": {
+            "vi": "Nghĩ rằng giao cả việc lớn một lần là nhanh nhất. Diff hàng nghìn dòng không ai review kỹ được, và một hiểu sai ở màn đầu bị nhân lên 30 lần; chia bước giúp bắt lỗi khi nó còn rẻ.",
+            "en": "Believing one big prompt is fastest. Nobody reviews a diff of thousands of lines properly, and one misunderstanding on the first screen is copied 30 times; small steps catch mistakes while they are cheap."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Cho nó dọn luôn những đoạn code nó thấy lộn xộn trên đường đi",
+          "en": "Let it tidy up any code it finds messy along the way"
+        },
+        "misconception": {
+          "id": "aiprm-scope-creep",
+          "text": {
+            "vi": "Nghĩ rằng sửa thêm là có lợi. Thay đổi ngoài phạm vi trộn lẫn vào diff migration, làm khó review và khó tìm nguyên nhân khi có regression; dọn dẹp nên là một thay đổi riêng.",
+            "en": "Believing extra changes are free. Out-of-scope edits get mixed into the migration diff, which makes review harder and regressions harder to trace; cleanup belongs in a separate change."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0,
+      1,
+      2
+    ],
+    "explanation": {
+      "vi": "Việc lớn cần chia nhỏ để bạn kiểm soát được. Kế hoạch theo bước cho bạn sửa hướng đi trước khi có code. Màn đầu tiên được review kỹ trở thành ví dụ về đúng phong cách và cách xử lý lỗi bạn muốn, nên 29 màn sau nhất quán hơn. Mỗi bước kết thúc ở trạng thái xanh với diff nhỏ thì regression lộ ra ngay ở bước gây ra nó. Một prompt khổng lồ và việc dọn dẹp ngoài phạm vi đều làm diff phình to và khó kiểm chứng.",
+      "en": "Big work has to be split so you stay in control. A step-by-step plan lets you correct the direction before any code exists. A closely reviewed first screen becomes the example of the style and error handling you want, so the other 29 come out consistent. Ending each step green with a small diff makes a regression show up in the step that caused it. One giant prompt and out-of-scope cleanup both inflate the diff and make it hard to verify."
+    }
+  },
+  {
+    "id": "ai-prompting-006",
+    "type": "spot-bug",
+    "topics": [
+      "ai/prompting"
+    ],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 105,
+    "lessons": [
+      "ai-prompting-core",
+      "ai-prompting-lab"
+    ],
+    "prompt": {
+      "vi": "App của bạn chạy RN 0.77. Bạn gửi prompt dưới đây, và assistant trả về bản sửa dùng `useEffectEvent`. Bản sửa không chạy được trong app. Dòng nào trong prompt gây ra kết quả này, và vì sao?",
+      "en": "Your app runs RN 0.77. You send the prompt below, and the assistant returns a fix built on `useEffectEvent`. The fix does not work in your app. Which line of the prompt caused this, and why?"
+    },
+    "code": "I have a stale value bug in a chat screen.\nStack: React Native with TypeScript, latest versions of everything.\nFile: src/screens/ChatScreen.tsx (pasted below).\nThe effect subscribes to socket.on('message') once, with [] deps.\nInside the handler, currentRoomId is always the first room's id.\nExpected: only messages for the room the user is in now are shown.\nConstraints: no new dependencies, keep the useChat API unchanged.\nDone when: switching rooms shows only that room's messages,\nand a new test in ChatScreen.test.tsx covers a room switch.\nExplain the cause before you show the fix.",
+    "answerLine": 2,
+    "causeOptions": [
+      {
+        "text": {
+          "vi": "Dòng 2 ghi \"latest\" thay vì phiên bản thật, nên assistant nhắm tới React 19.2 mà RN 0.77 chưa có",
+          "en": "Line 2 says \"latest\" instead of the real versions, so it targets React 19.2, which RN 0.77 lacks"
+        }
+      },
+      {
+        "text": {
+          "vi": "Dòng 7 cấm thêm dependency, nên assistant buộc phải dùng một API chưa phát hành của React",
+          "en": "Line 7 forbids new dependencies, which forced the assistant onto an unreleased React API"
+        },
+        "misconception": {
+          "id": "aiprm-constraint-forces-hack",
+          "text": {
+            "vi": "Đổ lỗi cho ràng buộc. `useEffectEvent` là API thật của React từ 19.2, không cần dependency mới; assistant chọn nó vì tưởng project dùng bản mới nhất, chứ không phải vì bị ràng buộc ép.",
+            "en": "Blaming the constraint. `useEffectEvent` is a real React API from 19.2 and needs no new dependency; the assistant picked it because it assumed the newest versions, not because a constraint forced it."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Dòng 3 dán cả file vào prompt làm assistant rối; nên mô tả code bằng lời thì hơn",
+          "en": "Line 3 pastes the whole file, which confuses the assistant; describing the code in words is better"
+        },
+        "misconception": {
+          "id": "aiprm-paste-file-confuses",
+          "text": {
+            "vi": "Nghĩ rằng code thật làm assistant rối. File liên quan là ngữ cảnh có giá trị nhất, vì mô tả bằng lời thường bỏ sót đúng chi tiết gây bug; thứ nên tránh là dán những file không liên quan.",
+            "en": "Believing real code confuses the assistant. The relevant file is the most valuable context, since a description in words tends to miss the very detail that causes the bug; what to avoid is pasting unrelated files."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Dòng 10 bắt giải thích trước, làm assistant lan man thay vì tập trung vào code",
+          "en": "Line 10 demands an explanation first, so the assistant drifts away from the code"
+        },
+        "misconception": {
+          "id": "aiprm-explain-wastes",
+          "text": {
+            "vi": "Nghĩ rằng yêu cầu giải thích làm kết quả tệ đi. Lời giải thích cho bạn thấy assistant hiểu nguyên nhân thế nào, nên bạn bắt được suy luận sai trước khi đọc code; nó không làm assistant đổi hướng hay phình diff.",
+            "en": "Believing a request for an explanation makes the result worse. The explanation shows how the assistant understood the cause, so you catch wrong reasoning before reading code; it does not steer the fix or bloat the diff."
+          }
+        }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "RN 0.77 đi kèm React 18.3, còn `useEffectEvent` chỉ có từ React 19.2. Dòng 2 nói \"phiên bản mới nhất\", nên assistant chọn đúng API hiện đại nhất cho bug stale closure, và bản sửa hỏng ngay trong app của bạn. Hãy ghi phiên bản thật: \"RN 0.77, React 18.3, TypeScript 5.x\". Khi đó assistant sẽ dùng cách hợp với React 18, ví dụ giữ `currentRoomId` trong một ref được cập nhật mỗi lần render. Các dòng còn lại là ngữ cảnh tốt: file thật, hành vi mong muốn, ràng buộc, tiêu chí xong và yêu cầu giải thích.",
+      "en": "RN 0.77 ships React 18.3, and `useEffectEvent` only exists from React 19.2. Line 2 says \"latest versions\", so the assistant picked the most modern API for a stale closure bug, and the fix breaks in your app. Give the real versions: \"RN 0.77, React 18.3, TypeScript 5.x\". The assistant will then use a React 18 approach, such as keeping `currentRoomId` in a ref updated on every render. The other lines are good context: the real file, the expected behaviour, constraints, a definition of done and a request for an explanation."
+    }
+  },
+  {
+    "id": "ai-prompting-007",
+    "type": "spot-bug",
+    "topics": [
+      "ai/prompting"
+    ],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 105,
+    "lessons": [
+      "ai-prompting-core",
+      "ai-prompting-lab"
+    ],
+    "prompt": {
+      "vi": "Với prompt dưới đây, assistant trả về một diff 900 dòng trên 14 file. Review mất cả ngày, và bug bấm hai lần vẫn còn ở một ca. Dòng nào gây ra kết quả này, và vì sao?",
+      "en": "For the prompt below, the assistant returned a 900-line diff across 14 files. Review took a whole day, and the double-tap bug still happens in one case. Which line caused this, and why?"
+    },
+    "code": "Bug: tapping \"Add\" twice quickly adds the item to the cart twice.\nRN 0.79, React 19, Redux Toolkit 2. File: src/features/cart/CartButton.tsx.\nonPress dispatches addItem and then awaits api.addToCart(productId).\nExpected: one tap or several fast taps add the item exactly once.\nConstraints: no new dependencies, keep the props of CartButton.\nWhile you are at it, rewrite the whole cart feature in a cleaner style.\nDone when: a test that fires two fast presses sees one request,\nand the existing cart tests still pass.\nShow the diff and explain each change.",
+    "answerLine": 6,
+    "causeOptions": [
+      {
+        "text": {
+          "vi": "Dòng 6 mở rộng việc ra cả tính năng giỏ hàng, nên bản sửa chìm trong một diff không review nổi",
+          "en": "Line 6 widens the task to the whole cart feature, so the fix is buried in an unreviewable diff"
+        }
+      },
+      {
+        "text": {
+          "vi": "Dòng 2 liệt kê phiên bản làm assistant bị giới hạn ở API cũ và phải viết vòng",
+          "en": "Line 2 lists versions, which limits the assistant to old APIs and makes it work around them"
+        },
+        "misconception": {
+          "id": "aiprm-versions-limit",
+          "text": {
+            "vi": "Nghĩ rằng ghi phiên bản là tự trói tay. Phiên bản giúp assistant chỉ dùng API có thật trong project của bạn; nó không làm diff lớn hơn.",
+            "en": "Believing versions tie the assistant's hands. They make it use only APIs that exist in your project; they do not make the diff bigger."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Dòng 7 đòi một test không thể có, vì hai lần bấm nhanh không mô phỏng được trong test",
+          "en": "Line 7 asks for an impossible test, since two fast presses cannot be simulated in a test"
+        },
+        "misconception": {
+          "id": "aiprm-taps-untestable",
+          "text": {
+            "vi": "Nghĩ rằng bấm nhanh không test được. Gọi `fireEvent.press` hai lần trước khi request được mock resolve là tái hiện đúng ca này, và đó chính là test chứng minh bản sửa.",
+            "en": "Believing fast taps cannot be tested. Calling `fireEvent.press` twice before the mocked request resolves reproduces exactly this case, and it is the test that proves the fix."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Dòng 9 đòi giải thích từng thay đổi, làm diff dài thêm và khó review",
+          "en": "Line 9 asks it to explain every change, which makes the diff longer and harder to review"
+        },
+        "misconception": {
+          "id": "aiprm-explain-wastes",
+          "text": {
+            "vi": "Nghĩ rằng yêu cầu giải thích làm kết quả tệ đi. Lời giải thích cho bạn thấy assistant hiểu nguyên nhân thế nào, nên bạn bắt được suy luận sai trước khi đọc code; nó không làm assistant đổi hướng hay phình diff.",
+            "en": "Believing a request for an explanation makes the result worse. The explanation shows how the assistant understood the cause, so you catch wrong reasoning before reading code; it does not steer the fix or bloat the diff."
+          }
+        }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "Bug chỉ cần một chặn nhỏ trong `CartButton`, ví dụ một ref đánh dấu request đang chạy hoặc disable nút cho tới khi request xong. Dòng 6 biến một bản sửa vài dòng thành việc viết lại cả tính năng: assistant đổi tên, tách file, đổi cấu trúc state, và bản sửa thật chìm giữa hàng trăm thay đổi khác. Diff lớn cũng là chỗ regression trốn, nên một ca vẫn còn hỏng. Nếu muốn dọn code, hãy làm sau, trong một thay đổi riêng có test bảo vệ.",
+      "en": "The bug needs one small guard in `CartButton`, such as a ref that marks a request in flight, or disabling the button until the request settles. Line 6 turns a few-line fix into a rewrite of the whole feature: the assistant renames, splits files, reshapes state, and the real fix is buried among hundreds of other changes. Big diffs are also where regressions hide, which is why one case still breaks. If you want cleanup, do it later as a separate change protected by tests."
+    }
+  },
+  {
+    "id": "ai-prompting-008",
+    "type": "spot-bug",
+    "topics": [
+      "ai/prompting"
+    ],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 135,
+    "lessons": [
+      "ai-prompting-core",
+      "ai-prompting-lab"
+    ],
+    "prompt": {
+      "vi": "Với prompt dưới đây, assistant tự tin sửa một warning, và build 413 vẫn crash y như cũ. Dòng nào trong prompt dẫn assistant đi sai hướng, và vì sao?",
+      "en": "For the prompt below, the assistant confidently fixed a warning, and build 413 crashes exactly as before. Which line of the prompt sent the assistant the wrong way, and why?"
+    },
+    "code": "Crash: the app closes as soon as the Orders screen opens.\nOnly in the Android release build (Hermes, R8 on); debug does not crash.\nRN 0.76.5, react-native-reanimated 3.16, crash reports in Sentry.\nIt started in build 412; build 411 was fine. The diff between them is attached.\nEvidence: the LogBox warning the debug build shows on that screen.\nExpected: the root cause, not a workaround.\nConstraints: do not turn off R8 or Hermes to hide it.\nDone when: you point at the line that throws and how to reproduce it.\nIf anything is missing, ask me before guessing.",
+    "answerLine": 5,
+    "causeOptions": [
+      {
+        "text": {
+          "vi": "Dòng 5 thay crash ở release bằng warning của debug, nên assistant xét sai bằng chứng",
+          "en": "Line 5 swaps the release crash for a debug warning, so the assistant analyses the wrong evidence"
+        }
+      },
+      {
+        "text": {
+          "vi": "Dòng 7 cấm tắt Hermes hay R8, trong khi tắt chúng chính là cách sửa",
+          "en": "Line 7 forbids turning off Hermes or R8, when turning them off is the actual fix"
+        },
+        "misconception": {
+          "id": "aiprm-disable-to-fix",
+          "text": {
+            "vi": "Nghĩ rằng tắt Hermes hay R8 là sửa lỗi. Làm vậy chỉ giấu triệu chứng và mất luôn lợi ích về hiệu năng và kích thước; nguyên nhân vẫn nằm trong code hoặc cấu hình giữ class, và cần được tìm ra.",
+            "en": "Believing that turning off Hermes or R8 is a fix. It only hides the symptom and loses the performance and size benefits; the cause still sits in the code or the keep rules, and it has to be found."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Dòng 9 bảo assistant hỏi lại, làm nó đứng lại hỏi thay vì đưa ra câu trả lời",
+          "en": "Line 9 tells it to ask first, which makes it stall with questions instead of answering"
+        },
+        "misconception": {
+          "id": "aiprm-questions-stall",
+          "text": {
+            "vi": "Nghĩ rằng cho phép hỏi lại làm assistant chậm. Câu hỏi về thông tin còn thiếu rẻ hơn nhiều so với một câu trả lời tự tin dựa trên đoán; ở đây assistant đã không hỏi, nên dòng này không phải nguyên nhân.",
+            "en": "Believing that allowing questions slows the assistant down. A question about missing information is far cheaper than a confident answer built on a guess; here it did not ask, so this line is not the cause."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Dòng 4 đính kèm diff giữa hai build làm loãng ngữ cảnh; chỉ nên đưa stack",
+          "en": "Line 4 attaches the diff between builds, which dilutes the context; only the stack should go in"
+        },
+        "misconception": {
+          "id": "aiprm-diff-is-noise",
+          "text": {
+            "vi": "Nghĩ rằng diff giữa bản tốt và bản hỏng là nhiễu. Khi biết chính xác build nào bắt đầu lỗi, diff đó thu hẹp phạm vi tìm kiếm mạnh nhất; nó nên đi cùng stack, không bị thay bằng stack.",
+            "en": "Believing the diff between a good and a bad build is noise. When you know exactly which build broke, that diff narrows the search more than anything else; it belongs next to the stack, not instead of it."
+          }
+        }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "Crash chỉ xảy ra ở release, còn debug build không crash, nên warning của debug gần như chắc chắn là chuyện khác. Dòng 5 đưa cho assistant bằng chứng sai, và nó làm đúng việc được giao: sửa warning đó. Bằng chứng đúng là stack của crash trong Sentry, đã symbolicate bằng source map của chính build 412 (hoặc của build Hermes cùng commit nếu map chưa được upload). Với R8, crash native cần thêm `mapping.txt`. Có stack thật cộng với diff giữa 411 và 412, assistant mới có thứ để lần ra dòng ném lỗi.",
+      "en": "The crash happens only in release and the debug build does not crash, so the debug warning is almost certainly something else. Line 5 hands the assistant the wrong evidence, and it does exactly what it was given: it fixes that warning. The right evidence is the crash stack in Sentry, symbolicated with build 412's own source map (or one from a Hermes release build of the same commit if the map was never uploaded). With R8, native frames also need `mapping.txt`. A real stack plus the diff between 411 and 412 gives the assistant something to trace to the throwing line."
+    }
+  },
+  {
+    "id": "ai-prompting-009",
+    "type": "open",
+    "topics": [
+      "ai/prompting"
+    ],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 330,
+    "lessons": [
+      "ai-prompting-core",
+      "ai-prompting-lab"
+    ],
+    "prompt": {
+      "vi": "Kể một lần bạn dùng AI assistant để debug một bug khó. Bạn đưa gì vào prompt, kiểm chứng câu trả lời thế nào, và kết quả ra sao?",
+      "en": "Tell me about a time you used an AI assistant to debug a hard bug. What did you put in the prompt, how did you check its answer, and how did it turn out?"
+    },
+    "keyPoints": [
+      {
+        "vi": "Mô tả bối cảnh cụ thể: triệu chứng, điều kiện tái hiện, phiên bản RN và thư viện liên quan",
+        "en": "Gives concrete context: the symptom, how to reproduce it, and the RN and library versions involved"
+      },
+      {
+        "vi": "Đưa bằng chứng thật vào prompt: nguyên văn lỗi, log có timestamp, các file liên quan",
+        "en": "Puts real evidence in the prompt: the exact error, timestamped logs, the relevant files"
+      },
+      {
+        "vi": "Nhờ assistant đưa ra các giả thuyết có thứ tự và cách xác nhận từng cái, trước khi viết code",
+        "en": "Asks for ranked hypotheses and a way to confirm each one before any code is written"
+      },
+      {
+        "vi": "Tự kiểm chứng giả thuyết bằng log, breakpoint hoặc tái hiện trên máy thật",
+        "en": "Confirms the hypothesis yourself with logs, breakpoints or a reproduction on a real device"
+      },
+      {
+        "vi": "Có test hoặc bước kiểm tra lặp lại được để chứng minh bản sửa và chặn regression",
+        "en": "Has a test or a repeatable check that proves the fix and guards against regression"
+      },
+      {
+        "vi": "Nói rõ phần nào assistant giúp được và phần nào bạn tự quyết",
+        "en": "Is clear about what the assistant contributed and what you decided yourself"
+      }
+    ],
+    "modelAnswer": {
+      "vi": "Có lần bấm push notification khi app đã bị kill thì mở sai màn, chỉ trên cold start. Mình viết prompt gồm phiên bản RN và React Navigation, linking config, đoạn xử lý notification, và log có timestamp cho thấy handler chạy trước khi navigation sẵn sàng. Mình không xin code ngay, mà nhờ nó liệt kê ba giả thuyết theo khả năng và cách xác nhận từng cái. Giả thuyết đầu là gọi `navigate` trước khi `NavigationContainer` gọi `onReady`. Mình thêm log trên máy thật, kill app, bấm notification, và log xác nhận đúng như vậy. Lúc đó mới nhờ nó viết bản sửa: giữ route đang chờ và điều hướng trong `onReady`. Mình đọc diff, thêm unit test cho phần hàng đợi và test tay cold start trên cả hai nền tảng. Ticket về lỗi này dừng hẳn sau bản release đó.",
+      "en": "Tapping a push notification while the app was killed opened the wrong screen, only on cold start. My prompt had the RN and React Navigation versions, the linking config, the notification handler and timestamped logs showing the handler ran before navigation was ready. I did not ask for code yet; I asked for three hypotheses ranked by likelihood and how to confirm each. The top one was calling `navigate` before `NavigationContainer` fired `onReady`. I added logs on a real device, killed the app, tapped a notification, and the logs confirmed it. Only then did I ask for a fix: hold the pending route and navigate in `onReady`. I read the diff, added a unit test for the queue and tested cold start by hand on both platforms. Tickets for that bug stopped after the release."
+    },
+    "followUps": [
+      {
+        "vi": "Nếu giả thuyết đầu tiên của assistant sai thì bạn làm gì tiếp?",
+        "en": "What would you have done if the assistant's first hypothesis had been wrong?"
+      },
+      {
+        "vi": "Có thông tin nào bạn cố ý không đưa vào prompt? Vì sao?",
+        "en": "Was there anything you deliberately left out of the prompt? Why?"
+      }
+    ]
+  },
+  {
+    "id": "ai-prompting-010",
+    "type": "open",
+    "topics": [
+      "ai/prompting"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 300,
+    "lessons": [
+      "ai-prompting-core"
+    ],
+    "prompt": {
+      "vi": "Kể một lần bạn nhờ AI assistant viết test hoặc code theo đúng phong cách của team. Bạn cho nó ví dụ gì, yêu cầu gì, và làm sao biết kết quả đáng tin?",
+      "en": "Tell me about a time you had an AI assistant write tests or code in your team's style. What example did you give it, what did you ask for, and how did you know the result could be trusted?"
+    },
+    "keyPoints": [
+      {
+        "vi": "Đưa một file mẫu có thật của team để chỉ phong cách mong muốn, thay vì mô tả bằng lời",
+        "en": "Gives a real file from the team as the style example instead of describing the style in words"
+      },
+      {
+        "vi": "Liệt kê các ca cần test hoặc nhờ assistant liệt kê trước để bạn duyệt",
+        "en": "Lists the cases to cover, or asks the assistant to list them first so you can approve them"
+      },
+      {
+        "vi": "Nêu ràng buộc: thư viện test đang dùng, không snapshot lớn, không test chi tiết cài đặt",
+        "en": "States constraints: the test libraries in use, no large snapshots, no testing implementation details"
+      },
+      {
+        "vi": "Yêu cầu giải thích mỗi test kiểm tra hành vi nào",
+        "en": "Asks for an explanation of which behaviour each test checks"
+      },
+      {
+        "vi": "Kiểm chứng test bằng cách cố ý làm hỏng code và xem test có fail không",
+        "en": "Verifies the tests by deliberately breaking the code and checking that they fail"
+      },
+      {
+        "vi": "Bỏ hoặc viết lại những test không có giá trị trước khi merge",
+        "en": "Removes or rewrites low-value tests before merging"
+      }
+    ],
+    "modelAnswer": {
+      "vi": "Mình cần test cho một hook checkout chưa có test nào. Mình dán một file test có sẵn mà team coi là chuẩn: React Native Testing Library, factory để tạo dữ liệu, query theo role, không snapshot. Prompt nói rõ phiên bản Jest và RNTL, file của hook, và yêu cầu nó liệt kê các ca sẽ test trước khi viết. Danh sách đầu thiếu ca token hết hạn giữa chừng, mình bổ sung rồi mới cho viết. Mình cũng nhờ nó ghi một dòng cho mỗi test về hành vi đang kiểm tra. Để biết test có giá trị, mình cố ý làm hỏng từng nhánh trong hook và chạy lại: hai test vẫn xanh, nghĩa là chúng không kiểm tra gì thật, nên mình viết lại. Kết quả là 11 test, theo đúng phong cách team, và sau đó đã bắt được một regression thật.",
+      "en": "I needed tests for a checkout hook that had none. I pasted an existing test file the team treats as the standard: React Native Testing Library, data factories, queries by role, no snapshots. The prompt gave the Jest and RNTL versions and the hook's file, and asked it to list the cases before writing anything. Its first list missed a token expiring mid-checkout, so I added that and then let it write. I also had it add one line per test saying what behaviour it checks. To know the tests had value, I broke each branch of the hook on purpose and reran them: two stayed green, meaning they checked nothing real, so I rewrote them. We ended with 11 tests in the team's style, and they later caught a real regression."
+    },
+    "followUps": [
+      {
+        "vi": "Vì sao một file mẫu hiệu quả hơn mô tả phong cách bằng lời?",
+        "en": "Why does an example file work better than describing the style in words?"
+      },
+      {
+        "vi": "Coverage 100% từ test do AI viết nói lên điều gì và không nói lên điều gì?",
+        "en": "What does 100% coverage from AI-written tests tell you, and what does it not?"
+      }
+    ]
+  },
+  {
+    "id": "ai-prompting-011",
+    "type": "open",
+    "topics": [
+      "ai/prompting"
+    ],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 330,
+    "lessons": [
+      "ai-prompting-core"
+    ],
+    "prompt": {
+      "vi": "Kể một lần bạn dùng AI assistant để review một pull request quan trọng. Bạn viết prompt thế nào, và bạn làm gì với các nhận xét của nó?",
+      "en": "Tell me about a time you used an AI assistant to review an important pull request. How did you write the prompt, and what did you do with its comments?"
+    },
+    "keyPoints": [
+      {
+        "vi": "Đưa diff kèm các file xung quanh mà diff phụ thuộc vào, không chỉ các dòng đã đổi",
+        "en": "Gives the diff plus the surrounding files it depends on, not just the changed lines"
+      },
+      {
+        "vi": "Nói rõ mục đích của thay đổi và các rủi ro cần soi (đồng thời, lỗi mạng, bảo mật)",
+        "en": "States the intent of the change and the risks to probe (concurrency, network failure, security)"
+      },
+      {
+        "vi": "Yêu cầu nhận xét theo mức nghiêm trọng, có dòng cụ thể và kịch bản gây lỗi, bỏ qua style",
+        "en": "Asks for findings ranked by severity, with line references and a failure scenario, skipping style nits"
+      },
+      {
+        "vi": "Kiểm chứng từng nhận xét với code thật; loại bỏ nhận xét sai",
+        "en": "Checks every finding against the real code and drops the false ones"
+      },
+      {
+        "vi": "Biến nhận xét đúng thành test tái hiện lỗi trước khi sửa",
+        "en": "Turns a valid finding into a test that reproduces the bug before fixing it"
+      },
+      {
+        "vi": "Không coi review của AI là thay thế cho review của người",
+        "en": "Does not treat the AI review as a replacement for human review"
+      }
+    ],
+    "modelAnswer": {
+      "vi": "Một PR đổi logic refresh token trong API client. Mình đưa diff, interceptor và module lưu token mà diff gọi tới, cùng phiên bản RN và axios. Prompt nói mục đích là refresh token trong suốt với người dùng, và nhờ nó soi kỹ ba rủi ro: nhiều request cùng lúc khi token hết hạn, refresh thất bại, và token bị log ra. Mình yêu cầu liệt kê vấn đề theo mức nghiêm trọng, mỗi cái có dòng cụ thể và kịch bản gây lỗi, không góp ý style. Nó đưa năm nhận xét. Mình kiểm từng cái: hai cái sai, như một chỗ \"thiếu `await`\" mà code đã có. Một cái đúng và nghiêm trọng: hai request 401 cùng lúc sẽ refresh hai lần và token đầu bị vô hiệu. Mình viết test bắn hai request song song để tái hiện, rồi sửa bằng cách dùng chung một promise refresh. Reviewer người vẫn duyệt PR như bình thường.",
+      "en": "A PR changed the token refresh logic in our API client. I gave the diff plus the interceptor and the token storage module it calls, and the RN and axios versions. The prompt said users should never notice a refresh, and asked it to probe three risks: concurrent requests when the token expires, a failed refresh, and tokens ending up in logs. I asked for issues ranked by severity, each with a line reference and a failure scenario, and no style comments. It gave five findings. I checked each: two were wrong, such as a \"missing `await`\" that was already there. One was real and serious: two concurrent 401s would refresh twice and invalidate the first token. I wrote a test firing two requests in parallel to reproduce it, then fixed it with a single shared refresh promise. A human reviewer still approved the PR as usual."
+    },
+    "followUps": [
+      {
+        "vi": "Bạn xử lý thế nào khi assistant khăng khăng một nhận xét mà bạn tin là sai?",
+        "en": "How do you handle the assistant insisting on a finding you believe is wrong?"
+      },
+      {
+        "vi": "Vì sao chỉ đưa diff thường cho review kém hơn?",
+        "en": "Why does giving only the diff usually produce a weaker review?"
+      }
+    ]
+  },
+  {
+    "id": "ai-prompting-012",
+    "type": "mcq",
+    "topics": [
+      "ai/prompting"
+    ],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": [
+      "ai-prompting-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Bạn cần thêm chế độ offline cho màn Orders, nhưng team chưa quyết cách xử lý khi cùng một đơn bị sửa trên hai máy. Prompt đầu tiên nên là gì?",
+      "en": "You need offline support for the Orders screen, but the team has not decided how to handle the same order being edited on two devices. What should the first prompt be?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Nêu điều đã rõ, nói phần xung đột chưa quyết, nhờ nó hỏi lại trước khi code",
+          "en": "State what is known, say conflicts are undecided, ask it to ask questions first"
+        }
+      },
+      {
+        "text": {
+          "vi": "Yêu cầu bản đầy đủ nhất, xử lý được mọi trường hợp có thể xảy ra",
+          "en": "Ask for the most complete version, one that handles every possible case"
+        },
+        "misconception": {
+          "id": "aiprm-cover-every-case",
+          "text": {
+            "vi": "Nghĩ rằng \"xử lý mọi trường hợp\" thay được quyết định. Assistant vẫn phải chọn một cách giải quyết xung đột, chỉ là chọn ngầm, và code thêm cho những ca không ai cần.",
+            "en": "Believing \"handle every case\" replaces a decision. The assistant still has to pick a conflict rule, only silently, and adds code for cases nobody needs."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Thêm câu \"không được tự giả định điều gì\" rồi yêu cầu viết code",
+          "en": "Add \"do not make any assumptions\" and then ask for the code"
+        },
+        "misconception": {
+          "id": "aiprm-no-assumptions-line",
+          "text": {
+            "vi": "Nghĩ rằng cấm giả định là đủ. Thiếu thông tin thì assistant vẫn phải lấp chỗ trống để viết được code; cách đúng là nói rõ chỗ nào chưa quyết và cho nó hỏi lại.",
+            "en": "Believing that forbidding assumptions works. With information missing, the assistant still has to fill the gap to produce code; the fix is to name what is undecided and let it ask."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Để nó tự chọn cách xử lý xung đột, sai thì sửa lúc review",
+          "en": "Let it pick a conflict rule and correct it during review if it is wrong"
+        },
+        "misconception": {
+          "id": "aiprm-decide-in-review",
+          "text": {
+            "vi": "Nghĩ rằng quyết định sản phẩm có thể để tới lúc review. Cách xử lý xung đột ảnh hưởng tới cấu trúc dữ liệu và luồng đồng bộ; phát hiện nó sai lúc review nghĩa là làm lại phần lớn công việc.",
+            "en": "Believing a product decision can wait until review. The conflict rule shapes the data model and the sync flow; finding out it is wrong in review means redoing most of the work."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0
+    ],
+    "explanation": {
+      "vi": "Khi chính bạn biết prompt còn thiếu thông tin, hãy nói ra điều đó. Nhờ assistant hỏi lại hoặc liệt kê các giả định trước khi viết code sẽ làm lộ ra những quyết định còn treo (ở đây là luật xử lý xung đột), để bạn đem về cho team quyết. Yêu cầu \"xử lý mọi ca\" hay \"không giả định\" vẫn khiến assistant âm thầm lấp chỗ trống, và một lựa chọn sai về xung đột lộ ra muộn thì rất tốn kém.",
+      "en": "When you know the prompt is missing information, say so. Asking the assistant to ask questions or list its assumptions before coding surfaces the open decisions (here, the conflict rule) so you can take them back to the team. \"Handle every case\" or \"make no assumptions\" still leaves the assistant filling the gap silently, and a wrong conflict rule found late is expensive."
+    }
+  }
+]

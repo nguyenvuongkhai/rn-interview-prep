@@ -1,0 +1,807 @@
+[
+  {
+    "id": "debug-native-001",
+    "type": "mcq",
+    "topics": [
+      "debug/native"
+    ],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": [
+      "debug-native-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Bạn đang debug app `com.shop.app` trên một máy Android cắm USB, và logcat trôi hàng nghìn dòng từ các app khác. Lệnh nào chỉ hiện log của process app bạn, gồm cả log native và stack trace khi crash?",
+      "en": "You are debugging `com.shop.app` on a USB-connected Android phone, and logcat scrolls thousands of lines from other apps. Which command shows only your app process's logs, including native logs and the crash stack trace?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "`adb logcat -v color ReactNativeJS:V *:S`",
+          "en": "`adb logcat -v color ReactNativeJS:V *:S`"
+        },
+        "misconception": {
+          "id": "dnat-js-tag-only",
+          "text": {
+            "vi": "Nghĩ rằng tag `ReactNativeJS` gồm mọi log của app. Tag này chỉ chứa `console.*` từ JS; `*:S` tắt mọi tag khác, nên bạn mất log native và stack trace của `AndroidRuntime` khi crash.",
+            "en": "Believing the `ReactNativeJS` tag holds all of the app's logs. It only carries JS `console.*` output; `*:S` silences every other tag, so you lose native logs and the `AndroidRuntime` stack trace on a crash."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`adb logcat --pid=$(adb shell pidof -s com.shop.app)`",
+          "en": "`adb logcat --pid=$(adb shell pidof -s com.shop.app)`"
+        }
+      },
+      {
+        "text": {
+          "vi": "`adb logcat -v threadtime | grep -i com.shop.app`",
+          "en": "`adb logcat -v threadtime | grep -i com.shop.app`"
+        },
+        "misconception": {
+          "id": "dnat-grep-package-name",
+          "text": {
+            "vi": "Nghĩ rằng mọi dòng log của app đều chứa tên package. Phần lớn dòng chỉ có PID, tag và message, nên grep theo tên package bỏ sót gần hết, kể cả các frame của stack trace; hãy lọc theo PID.",
+            "en": "Believing every log line from the app contains its package name. Most lines carry only the PID, tag and message, so grepping for the package misses almost all of them, stack frames included; filter by PID instead."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Đọc terminal đang chạy Metro",
+          "en": "Read the terminal that runs Metro"
+        },
+        "misconception": {
+          "id": "dnat-metro-shows-native",
+          "text": {
+            "vi": "Nghĩ rằng terminal của Metro hiện cả log native. Metro chỉ phục vụ bundle và in `console.log` của JS; log của Java/Kotlin hay Objective-C/Swift và crash native nằm trong logcat hoặc log của thiết bị iOS.",
+            "en": "Believing the Metro terminal shows native logs. Metro serves the bundle and prints JS `console.log` output; Java/Kotlin or Objective-C/Swift logs and native crashes live in logcat or the iOS device log."
+          }
+        }
+      }
+    ],
+    "answer": [
+      1
+    ],
+    "explanation": {
+      "vi": "`adb shell pidof -s` trả về PID của process app, và `--pid` giữ lại mọi dòng log của process đó, bất kể tag hay mức độ: `console.log` của JS (tag `ReactNativeJS`), log native và stack trace `FATAL EXCEPTION` của `AndroidRuntime`. Bẫy là PID đổi mỗi lần app khởi động lại, nên sau khi crash và mở lại, bạn phải chạy lại lệnh. Muốn xem crash của lần chạy trước, đọc buffer crash bằng `adb logcat -b crash`.",
+      "en": "`adb shell pidof -s` returns the app process's PID, and `--pid` keeps every log line from that process regardless of tag or priority: JS `console.log` (tag `ReactNativeJS`), native logs, and the `AndroidRuntime` `FATAL EXCEPTION` stack trace. The trap is that the PID changes every time the app restarts, so after a crash and relaunch you must run the command again. To see a crash from an earlier run, read the crash buffer with `adb logcat -b crash`."
+    }
+  },
+  {
+    "id": "debug-native-002",
+    "type": "mcq",
+    "topics": [
+      "debug/native"
+    ],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": [
+      "debug-native-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Một bản build trên iPhone của QA ghi log native bằng `os_log` trước khi lỗi xảy ra. App không được chạy từ Xcode. Bạn cắm iPhone vào Mac. Ở đâu bạn xem được log native đó trực tiếp?",
+      "en": "A build on QA's iPhone writes native logs with `os_log` before the bug happens. The app was not launched from Xcode. You plug the iPhone into your Mac. Where can you watch those native logs live?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Tab Console của React Native DevTools mở từ Metro",
+          "en": "The Console tab of React Native DevTools, opened from Metro"
+        },
+        "misconception": {
+          "id": "dnat-devtools-shows-native",
+          "text": {
+            "vi": "Nghĩ rằng React Native DevTools hiện log native. DevTools kết nối với JS runtime và chỉ thấy `console.*` của JS; log native của iOS đi vào hệ thống log của thiết bị.",
+            "en": "Believing React Native DevTools shows native logs. DevTools connects to the JS runtime and only sees JS `console.*` output; iOS native logs go to the device's system log."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`adb logcat` chạy trên Mac khi iPhone đang cắm vào",
+          "en": "`adb logcat` run on the Mac while the iPhone is plugged in"
+        },
+        "misconception": {
+          "id": "dnat-adb-reads-ios",
+          "text": {
+            "vi": "Nghĩ rằng adb dùng được với iPhone. adb là công cụ của Android; trên iOS bạn dùng Console.app, console của Xcode, hoặc crash log trong cửa sổ thiết bị của Xcode.",
+            "en": "Believing adb works with an iPhone. adb is an Android tool; on iOS you use Console.app, the Xcode console, or the crash logs in Xcode's devices window."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Console.app trên Mac, chọn iPhone đó ở thanh bên",
+          "en": "Console.app on the Mac, with that iPhone selected"
+        }
+      },
+      {
+        "text": {
+          "vi": "Terminal đang chạy Metro trên Mac",
+          "en": "The terminal running Metro on the Mac"
+        },
+        "misconception": {
+          "id": "dnat-metro-shows-native",
+          "text": {
+            "vi": "Nghĩ rằng terminal của Metro hiện cả log native. Metro chỉ phục vụ bundle và in `console.log` của JS; log của Java/Kotlin hay Objective-C/Swift và crash native nằm trong logcat hoặc log của thiết bị iOS.",
+            "en": "Believing the Metro terminal shows native logs. Metro serves the bundle and prints JS `console.log` output; Java/Kotlin or Objective-C/Swift logs and native crashes live in logcat or the iOS device log."
+          }
+        }
+      }
+    ],
+    "answer": [
+      2
+    ],
+    "explanation": {
+      "vi": "Log từ `os_log` hay `NSLog` đi vào hệ thống log hợp nhất của iOS. Console.app trên Mac đọc trực tiếp log đó từ thiết bị đang cắm: chọn thiết bị ở thanh bên, bắt đầu stream, rồi lọc theo process để bớt nhiễu. Nếu chạy app từ Xcode, console của Xcode cũng hiện các log này. Log chỉ được stream từ lúc bạn bắt đầu, nên hãy mở Console.app trước khi tái hiện lỗi. Với crash đã xảy ra, xem crash log của thiết bị trong cửa sổ thiết bị của Xcode.",
+      "en": "Logs from `os_log` or `NSLog` go to iOS's unified logging system. Console.app on the Mac reads that log live from a connected device: pick the device in the sidebar, start streaming, then filter by process to cut the noise. If you launch the app from Xcode, the Xcode console shows these logs too. Logs only stream from the moment you start, so open Console.app before you reproduce the bug. For a crash that already happened, read the device's crash logs in Xcode's devices window."
+    }
+  },
+  {
+    "id": "debug-native-003",
+    "type": "mcq",
+    "topics": [
+      "debug/native"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 75,
+    "lessons": [
+      "debug-native-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Tombstone của một crash native trên Android ghi `signal 6 (SIGABRT)` và có một dòng `Abort message:`. Điều đó cho bạn biết gì?",
+      "en": "An Android tombstone for a native crash says `signal 6 (SIGABRT)` and has an `Abort message:` line. What does that tell you?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Code đã truy cập một địa chỉ bộ nhớ không hợp lệ, ví dụ con trỏ null trong C++",
+          "en": "The code accessed an invalid memory address, such as a null pointer in C++"
+        },
+        "misconception": {
+          "id": "dnat-sigabrt-is-segfault",
+          "text": {
+            "vi": "Nhầm SIGABRT với SIGSEGV. Truy cập bộ nhớ không hợp lệ cho ra SIGSEGV (hoặc SIGBUS); SIGABRT là code tự gọi `abort()`, thường do assert fail hoặc exception C++ không được bắt.",
+            "en": "Confusing SIGABRT with SIGSEGV. An invalid memory access produces SIGSEGV (or SIGBUS); SIGABRT is code calling `abort()` itself, usually from a failed assertion or an uncaught C++ exception."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Code trong process tự dừng có chủ ý; hãy đọc abort message trước",
+          "en": "Code in the process aborted on purpose; read the abort message first"
+        }
+      },
+      {
+        "text": {
+          "vi": "Hệ điều hành đã kill app vì dùng quá nhiều bộ nhớ",
+          "en": "The system killed the app for using too much memory"
+        },
+        "misconception": {
+          "id": "dnat-sigabrt-is-oom",
+          "text": {
+            "vi": "Nghĩ rằng SIGABRT là bị kill vì bộ nhớ. Low memory killer của Android dùng SIGKILL và không để lại tombstone; SIGABRT đến từ chính code trong process.",
+            "en": "Believing SIGABRT means a memory kill. Android's low memory killer uses SIGKILL and leaves no tombstone; SIGABRT comes from code inside the process."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Đây là assert chỉ có trong debug build, nên bản release không thể gặp",
+          "en": "It is a debug-only assertion, so release builds cannot hit it"
+        },
+        "misconception": {
+          "id": "dnat-abort-debug-only",
+          "text": {
+            "vi": "Nghĩ rằng abort chỉ xảy ra ở debug. `abort()`, exception C++ không được bắt và nhiều kiểm tra của thư viện vẫn chạy trong release.",
+            "en": "Believing aborts only happen in debug. `abort()`, uncaught C++ exceptions and many library checks still run in release."
+          }
+        }
+      }
+    ],
+    "answer": [
+      1
+    ],
+    "explanation": {
+      "vi": "SIGABRT nghĩa là code trong process tự gọi `abort()`: một assert fail, một exception C++ không ai bắt, hoặc thư viện phát hiện trạng thái sai và dừng lại. Vì là chủ ý, nó thường để lại `Abort message:` nói rõ lý do, nên đọc dòng đó trước rồi mới tới backtrace. SIGSEGV thì khác: đó là truy cập bộ nhớ không hợp lệ, và địa chỉ lỗi (`fault addr`) gợi ý con trỏ null hay con trỏ treo. Trên iOS, các loại này hiện là `EXC_CRASH (SIGABRT)` và `EXC_BAD_ACCESS (SIGSEGV)`.",
+      "en": "SIGABRT means code inside the process called `abort()` itself: a failed assertion, an uncaught C++ exception, or a library that detected a bad state and stopped. Because it is deliberate, it usually leaves an `Abort message:` stating why, so read that line before the backtrace. SIGSEGV is different: an invalid memory access, where the `fault addr` hints at a null or dangling pointer. On iOS these show up as `EXC_CRASH (SIGABRT)` and `EXC_BAD_ACCESS (SIGSEGV)`."
+    }
+  },
+  {
+    "id": "debug-native-004",
+    "type": "mcq",
+    "topics": [
+      "debug/native"
+    ],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": [
+      "debug-native-core"
+    ],
+    "multi": true,
+    "prompt": {
+      "vi": "App debug chạy trên máy Android thật qua USB báo không kết nối được development server, trong khi Metro vẫn đang chạy trên máy bạn ở cổng 8081. Những nhận định nào đúng? (chọn tất cả đáp án đúng)",
+      "en": "A debug build on a physical Android phone over USB says it cannot connect to the development server, while Metro is running on your machine on port 8081. Which statements are correct? (select all that apply)"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "`adb reverse tcp:8081 tcp:8081` cho app tới Metro qua `localhost:8081`",
+          "en": "`adb reverse tcp:8081 tcp:8081` lets the app reach Metro through `localhost:8081`"
+        }
+      },
+      {
+        "text": {
+          "vi": "Khi cắm nhiều máy, chọn đúng máy bằng `adb -s <serial>`",
+          "en": "With several devices attached, target one with `adb -s <serial>`"
+        }
+      },
+      {
+        "text": {
+          "vi": "Rule reverse mất khi kết nối adb bị ngắt, nên phải chạy lại",
+          "en": "The reverse rule is lost when the adb connection drops, so run it again"
+        }
+      },
+      {
+        "text": {
+          "vi": "`adb forward tcp:8081 tcp:8081` làm đúng việc đó, vì cả hai chỉ nối cổng 8081",
+          "en": "`adb forward tcp:8081 tcp:8081` does the same job, since both just map port 8081"
+        },
+        "misconception": {
+          "id": "dnat-forward-equals-reverse",
+          "text": {
+            "vi": "Nhầm hướng của forward và reverse. `adb forward` đưa một cổng trên máy tính vào thiết bị; `adb reverse` đưa một cổng trên thiết bị ra máy tính, là hướng app cần để tới Metro.",
+            "en": "Mixing up forward and reverse. `adb forward` maps a port on your computer into the device; `adb reverse` maps a port on the device out to your computer, which is the direction the app needs to reach Metro."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Mỗi lần Metro khởi động lại thì phải `adb install -r` lại bản debug",
+          "en": "Every Metro restart requires reinstalling the debug build with `adb install -r`"
+        },
+        "misconception": {
+          "id": "dnat-reinstall-on-metro-restart",
+          "text": {
+            "vi": "Nghĩ rằng APK gắn với một phiên Metro. Bản debug chỉ tải bundle từ địa chỉ của Metro; Metro khởi động lại thì chỉ cần reload app.",
+            "en": "Believing the APK is tied to one Metro session. A debug build just loads the bundle from Metro's address; after a Metro restart you only reload the app."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0,
+      1,
+      2
+    ],
+    "explanation": {
+      "vi": "Máy thật hiểu `localhost` là chính nó, nên bản debug cần một đường tới Metro. `adb reverse tcp:8081 tcp:8081` mở cổng 8081 trên thiết bị và chuyển kết nối về cổng 8081 trên máy tính. Rule này sống theo kết nối adb: rút cáp hay `adb kill-server` là mất, và `adb reverse --list` cho biết rule nào đang có. Khi cắm nhiều máy, mọi lệnh adb cần `-s <serial>`. `adb forward` đi theo hướng ngược lại, dùng khi máy tính cần gọi vào một cổng trên thiết bị.",
+      "en": "A physical device treats `localhost` as itself, so a debug build needs a path to Metro. `adb reverse tcp:8081 tcp:8081` opens port 8081 on the device and routes it to port 8081 on your computer. The rule lives with the adb connection: unplugging or `adb kill-server` drops it, and `adb reverse --list` shows the active rules. With several devices attached, every adb command needs `-s <serial>`. `adb forward` goes the other way, for when your computer needs to call a port on the device."
+    }
+  },
+  {
+    "id": "debug-native-005",
+    "type": "mcq",
+    "topics": [
+      "debug/native"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": [
+      "debug-native-core"
+    ],
+    "multi": true,
+    "prompt": {
+      "vi": "Một native module trả dữ liệu sai, và bạn muốn dừng lại trong code Kotlin và Swift của nó khi app debug đang chạy. Những nhận định nào đúng? (chọn tất cả đáp án đúng)",
+      "en": "A native module returns wrong data, and you want to pause inside its Kotlin and Swift code while the debug app is running. Which statements are correct? (select all that apply)"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Mở `android/` trong Android Studio, đặt breakpoint rồi attach vào process app đang chạy",
+          "en": "Open `android/` in Android Studio, set a breakpoint and attach to the running app process"
+        }
+      },
+      {
+        "text": {
+          "vi": "Mở `.xcworkspace` bằng Xcode rồi attach vào process đang chạy theo tên hoặc PID",
+          "en": "Open the `.xcworkspace` in Xcode and attach to the running process by name or PID"
+        }
+      },
+      {
+        "text": {
+          "vi": "Debugger native và debugger JS chạy cùng lúc được, mỗi cái dừng ở breakpoint của mình",
+          "en": "The native and JS debuggers can run at the same time, each stopping at its own breakpoints"
+        }
+      },
+      {
+        "text": {
+          "vi": "Breakpoint native chỉ hoạt động trên release build, vì debug build chạy JS qua Metro",
+          "en": "Native breakpoints only work on release builds, because debug builds run JS through Metro"
+        },
+        "misconception": {
+          "id": "dnat-native-bp-release-only",
+          "text": {
+            "vi": "Hiểu ngược. Debug build mới cho attach debugger (trên Android release không `debuggable`, và code đã tối ưu khó bước qua); Metro chỉ ảnh hưởng tới JS, không ảnh hưởng code native.",
+            "en": "Getting it backwards. Debug builds are the ones you can attach to (on Android release is not `debuggable`, and optimised code is hard to step through); Metro only affects JS, not native code."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "React Native DevTools đặt được breakpoint trong file Kotlin và Swift khi source map đã tải",
+          "en": "React Native DevTools can set breakpoints in Kotlin and Swift files once source maps load"
+        },
+        "misconception": {
+          "id": "dnat-devtools-native-breakpoints",
+          "text": {
+            "vi": "Nghĩ rằng debugger JS bước được vào code native. React Native DevTools chỉ gắn vào JS runtime; source map ánh xạ bundle JS về source JS, không liên quan tới code native.",
+            "en": "Believing the JS debugger can step into native code. React Native DevTools attaches only to the JS runtime; source maps map the JS bundle back to JS source and have nothing to do with native code."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0,
+      1,
+      2
+    ],
+    "explanation": {
+      "vi": "Code native được debug bằng IDE native. Trên Android, mở `android/` để Gradle sync cả app lẫn các module thư viện, đặt breakpoint trong file Kotlin, rồi attach vào process đang chạy thay vì chạy lại từ đầu. Code C++ cần debugger kiểu native hoặc dual. Trên iOS, mở `.xcworkspace` (vì có CocoaPods), rồi chạy từ Xcode hoặc attach theo tên hoặc PID; LLDB cho bạn `bt` và `po` để xem stack và giá trị. Debugger JS gắn vào Hermes, debugger native gắn vào process, nên hai cái chạy song song được. Lưu ý: dừng lâu ở breakpoint trên main thread làm UI đứng.",
+      "en": "Native code is debugged with the native IDE. On Android, open `android/` so Gradle syncs the app and library modules, set a breakpoint in the Kotlin file, then attach to the running process instead of relaunching. C++ code needs the native or dual debugger type. On iOS, open the `.xcworkspace` (because of CocoaPods), then run from Xcode or attach by name or PID; LLDB gives you `bt` and `po` to inspect the stack and values. The JS debugger attaches to Hermes and the native debugger to the process, so both can run side by side. Note that pausing long at a main-thread breakpoint freezes the UI."
+    }
+  },
+  {
+    "id": "debug-native-006",
+    "type": "spot-bug",
+    "topics": [
+      "debug/native"
+    ],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 120,
+    "lessons": [
+      "debug-native-core"
+    ],
+    "prompt": {
+      "vi": "App quét mã kho hàng crash ngay khi mở, nhưng chỉ trên máy vừa cài mới; máy của dev thì không sao. Đây là log từ `adb logcat -b crash`. Dòng nào là frame đầu tiên thuộc code của bạn trong exception gốc, và nguyên nhân là gì?",
+      "en": "A warehouse scanning app crashes on launch, but only on freshly installed devices; developers' phones are fine. This is the log from `adb logcat -b crash`. Which line is the first frame of your own code in the root exception, and what is the cause?"
+    },
+    "code": "E AndroidRuntime: FATAL EXCEPTION: main\nE AndroidRuntime: Process: com.shop.app, PID: 18342\nE AndroidRuntime: java.lang.RuntimeException: Unable to start activity ComponentInfo{com.shop.app/com.shop.app.MainActivity}: java.lang.IllegalStateException: Failed to open scanner session\nE AndroidRuntime: \tat android.app.ActivityThread.performLaunchActivity(ActivityThread.java:3645)\nE AndroidRuntime: \tat android.app.ActivityThread.handleLaunchActivity(ActivityThread.java:3782)\nE AndroidRuntime: \tat android.os.Looper.loop(Looper.java:288)\nE AndroidRuntime: Caused by: java.lang.IllegalStateException: Failed to open scanner session\nE AndroidRuntime: \tat com.shop.scanner.ScannerSession.open(ScannerSession.kt:54)\nE AndroidRuntime: \tat com.shop.app.MainActivity.onCreate(MainActivity.kt:22)\nE AndroidRuntime: \tat android.app.Activity.performCreate(Activity.java:8305)\nE AndroidRuntime: \t... 9 more\nE AndroidRuntime: Caused by: java.lang.SecurityException: validateClientPermissionsLocked: Caller \"com.shop.app\" (PID 18342, UID 10245) cannot open camera \"0\" without camera permission\nE AndroidRuntime: \tat android.hardware.camera2.CameraManager.openCameraDeviceUserAsync(CameraManager.java:802)\nE AndroidRuntime: \tat android.hardware.camera2.CameraManager.openCamera(CameraManager.java:1102)\nE AndroidRuntime: \tat com.shop.scanner.ScannerSession.open(ScannerSession.kt:48)\nE AndroidRuntime: \t... 12 more",
+    "answerLine": 15,
+    "causeOptions": [
+      {
+        "text": {
+          "vi": "Activity khởi động lỗi ở `ActivityThread`, nên theme hoặc khai báo Activity trong manifest đang sai",
+          "en": "The Activity fails to start in `ActivityThread`, so the theme or the Activity's manifest entry is wrong"
+        },
+        "misconception": {
+          "id": "dnat-outer-exception-is-cause",
+          "text": {
+            "vi": "Dừng ở exception ngoài cùng. `RuntimeException: Unable to start activity` chỉ là lớp bọc của framework; nguyên nhân nằm ở khối `Caused by:` cuối cùng.",
+            "en": "Stopping at the outermost exception. `RuntimeException: Unable to start activity` is just the framework's wrapper; the cause is in the last `Caused by:` block."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`ScannerSession.kt:54` ném `IllegalStateException`, nên phải sửa phần kiểm tra trạng thái ở dòng đó",
+          "en": "`ScannerSession.kt:54` throws `IllegalStateException`, so the state check on that line must be fixed"
+        },
+        "misconception": {
+          "id": "dnat-first-caused-by-is-root",
+          "text": {
+            "vi": "Lấy khối `Caused by:` đầu tiên làm gốc. Exception có thể bọc nhiều lớp; khối cuối cùng mới là lỗi gốc, ở đây là `SecurityException` mà dòng 54 chỉ bọc lại.",
+            "en": "Taking the first `Caused by:` block as the root. Exceptions can wrap several levels; the last block is the root cause, here the `SecurityException` that line 54 merely wraps."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "App mở camera khi quyền CAMERA chưa được cấp, điều chỉ xảy ra trên máy cài mới",
+          "en": "The app opens the camera before CAMERA is granted, which only happens on a fresh install"
+        }
+      },
+      {
+        "text": {
+          "vi": "Dòng `... 12 more` đã cắt mất các frame quan trọng, cần lấy log đầy đủ hơn trước khi kết luận",
+          "en": "The `... 12 more` line cut off the important frames, so you need a fuller log before concluding"
+        },
+        "misconception": {
+          "id": "dnat-more-hides-frames",
+          "text": {
+            "vi": "Hiểu sai `... N more`. Dòng này nghĩa là N frame còn lại giống hệt phần cuối của trace bọc bên ngoài, đã in ở trên; không có thông tin nào bị mất.",
+            "en": "Misreading `... N more`. It means the remaining N frames are identical to the end of the enclosing trace, already printed above; nothing is lost."
+          }
+        }
+      }
+    ],
+    "answerCause": 2,
+    "explanation": {
+      "vi": "Đọc chuỗi `Caused by:` tới khối cuối cùng: `SecurityException` ở dòng 12 là lỗi gốc, còn `IllegalStateException` và `RuntimeException` chỉ là lớp bọc. Trong khối đó, frame đầu tiên của app là `ScannerSession.open(ScannerSession.kt:48)` ở dòng 15, nơi gọi `openCamera` khi CAMERA là runtime permission chưa được cấp. Máy dev đã cấp quyền từ lâu, và `adb install -r` hay `adb install -g` giữ hoặc tự cấp quyền, nên dev không bao giờ thấy lỗi. Tái hiện bằng cách gỡ app rồi cài lại, hoặc `adb shell pm revoke com.shop.app android.permission.CAMERA`. Sửa bằng cách xin quyền và chỉ mở camera sau khi được cấp.",
+      "en": "Follow the `Caused by:` chain to the last block: the `SecurityException` on line 12 is the root cause, while the `IllegalStateException` and `RuntimeException` are only wrappers. In that block the first app frame is `ScannerSession.open(ScannerSession.kt:48)` on line 15, which calls `openCamera` while CAMERA, a runtime permission, is not yet granted. Developer phones granted it long ago, and `adb install -r` or `adb install -g` keeps or auto-grants permissions, so developers never see it. Reproduce by uninstalling and reinstalling, or with `adb shell pm revoke com.shop.app android.permission.CAMERA`. Fix it by requesting the permission and opening the camera only once it is granted."
+    }
+  },
+  {
+    "id": "debug-native-007",
+    "type": "spot-bug",
+    "topics": [
+      "debug/native",
+      "release/android"
+    ],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 105,
+    "lessons": [
+      "debug-native-core"
+    ],
+    "prompt": {
+      "vi": "Bản debug gọi API bình thường. Bản release cài lên cùng máy thì mọi `fetch` đều fail với `TypeError: Network request failed`, và logcat có `java.net.SocketException: socket failed: EPERM (Operation not permitted)`. Tab Merged Manifest của biến thể release không có quyền INTERNET. Dòng nào gây lỗi?",
+      "en": "The debug build calls the API fine. The release build on the same phone fails every `fetch` with `TypeError: Network request failed`, and logcat shows `java.net.SocketException: socket failed: EPERM (Operation not permitted)`. The Merged Manifest tab for the release variant has no INTERNET permission. Which line causes it?"
+    },
+    "code": "<!-- android/app/src/main/AndroidManifest.xml -->\n<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\">\n    <uses-permission android:name=\"android.permission.CAMERA\" />\n    <application\n        android:name=\".MainApplication\"\n        android:usesCleartextTraffic=\"false\">\n        <activity android:name=\".MainActivity\" android:exported=\"true\" />\n    </application>\n</manifest>\n\n<!-- android/app/src/debug/AndroidManifest.xml -->\n<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:tools=\"http://schemas.android.com/tools\">\n    <uses-permission android:name=\"android.permission.INTERNET\" />\n    <application\n        android:usesCleartextTraffic=\"true\"\n        tools:replace=\"android:usesCleartextTraffic\" />\n</manifest>",
+    "answerLine": 14,
+    "causeOptions": [
+      {
+        "text": {
+          "vi": "`usesCleartextTraffic=\"false\"` chặn mọi kết nối mạng của bản release",
+          "en": "`usesCleartextTraffic=\"false\"` blocks all network access in the release build"
+        },
+        "misconception": {
+          "id": "dnat-cleartext-blocks-all",
+          "text": {
+            "vi": "Nghĩ rằng tắt cleartext là tắt mạng. Nó chỉ chặn HTTP không mã hoá và báo lỗi về cleartext; HTTPS vẫn chạy, và `EPERM` khi mở socket là dấu hiệu thiếu quyền INTERNET.",
+            "en": "Believing cleartext off means network off. It only blocks unencrypted HTTP and reports a cleartext error; HTTPS still works, and `EPERM` when opening a socket points to a missing INTERNET permission."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "INTERNET chỉ khai báo trong manifest của source set `debug`, nên bản release không có",
+          "en": "INTERNET is declared only in the `debug` source set's manifest, so release never gets it"
+        }
+      },
+      {
+        "text": {
+          "vi": "INTERNET là runtime permission, phải xin bằng `PermissionsAndroid` trước khi gọi `fetch`",
+          "en": "INTERNET is a runtime permission that must be requested with `PermissionsAndroid` before `fetch`"
+        },
+        "misconception": {
+          "id": "dnat-internet-runtime-permission",
+          "text": {
+            "vi": "Nghĩ rằng INTERNET phải xin lúc chạy. Đây là quyền normal, được cấp lúc cài nếu có trong manifest; không có hộp thoại nào để xin.",
+            "en": "Believing INTERNET is requested at runtime. It is a normal permission, granted at install time if the manifest declares it; there is no dialog to ask for it."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "R8 đã xoá các class của OkHttp trong bản release",
+          "en": "R8 removed OkHttp's classes in the release build"
+        },
+        "misconception": {
+          "id": "dnat-blame-r8-first",
+          "text": {
+            "vi": "Đổ mọi lỗi chỉ-có-ở-release cho R8. Class bị R8 xoá hay đổi tên cho ra `ClassNotFoundException` hoặc `NoSuchMethodError`; lỗi `EPERM` khi mở socket là chuyện quyền.",
+            "en": "Blaming every release-only bug on R8. Classes removed or renamed by R8 produce `ClassNotFoundException` or `NoSuchMethodError`; `EPERM` when opening a socket is a permission problem."
+          }
+        }
+      }
+    ],
+    "answerCause": 1,
+    "explanation": {
+      "vi": "Gradle gộp manifest theo source set: `src/main` vào mọi biến thể, `src/debug` chỉ vào debug. Dòng 14 đặt INTERNET trong manifest debug, có lẽ khi ai đó dọn manifest chính, nên bản debug có mạng còn bản release thì không, trừ khi một thư viện tình cờ khai báo hộ. `socket failed: EPERM` trong logcat là dấu hiệu điển hình của thiếu INTERNET. Chuyển dòng đó về `src/main/AndroidManifest.xml`, và kiểm tra tab Merged Manifest của biến thể release mỗi khi đụng tới manifest. Bài học chung: lỗi chỉ có ở release thì cài đúng bản release và đọc logcat trước khi đoán.",
+      "en": "Gradle merges manifests by source set: `src/main` goes into every variant, `src/debug` only into debug. Line 14 puts INTERNET in the debug manifest, probably when someone tidied the main one, so debug has network and release does not, unless a library happens to declare it. `socket failed: EPERM` in logcat is the classic sign of a missing INTERNET permission. Move that line to `src/main/AndroidManifest.xml`, and check the release variant's Merged Manifest tab whenever you touch manifests. The general lesson: for a release-only bug, install the real release build and read logcat before guessing."
+    }
+  },
+  {
+    "id": "debug-native-008",
+    "type": "spot-bug",
+    "topics": [
+      "debug/native"
+    ],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 135,
+    "lessons": [
+      "debug-native-core"
+    ],
+    "prompt": {
+      "vi": "Sau bản release mới, Xcode Organizer có một cụm crash mới, phần lớn xảy ra khi người dùng đóng màn hình quét trong lúc một mã đang được giải. Đây là phần đầu của crash report đã symbolicate. Dòng nào là nơi bạn bắt đầu điều tra, và report cho thấy điều gì?",
+      "en": "After a new release, Xcode Organizer shows a new crash cluster, mostly when users close the scanner screen while a code is being decoded. This is the top of the symbolicated crash report. Which line do you start from, and what does the report tell you?"
+    },
+    "code": "Exception Type:  EXC_BAD_ACCESS (SIGSEGV)\nException Subtype: KERN_INVALID_ADDRESS at 0x00000b8c4e1a7f30\nTriggered by Thread:  6\n\nThread 0 name:  Dispatch queue: com.apple.main-thread\nThread 0:\n0   libsystem_kernel.dylib   mach_msg2_trap + 8\n1   CoreFoundation           __CFRunLoopServiceMachPort + 160\n2   CoreFoundation           __CFRunLoopRun + 1212\n3   UIKitCore                UIApplicationMain + 340\n\nThread 6 Crashed:\n0   libobjc.A.dylib          objc_msgSend + 32\n1   Shop                     -[ScanOverlayView showCode:] (ScanOverlayView.m:88)\n2   Shop                     __32-[ScannerModule handleFrame:]_block_invoke (ScannerModule.m:142)\n3   libdispatch.dylib        _dispatch_call_block_and_release + 32\n4   libdispatch.dylib        _dispatch_client_callout + 20\n5   libdispatch.dylib        _dispatch_lane_serial_drain + 668",
+    "answerLine": 14,
+    "causeOptions": [
+      {
+        "text": {
+          "vi": "Main thread (Thread 0) đã crash khi đang chờ trong run loop",
+          "en": "The main thread (Thread 0) crashed while waiting in its run loop"
+        },
+        "misconception": {
+          "id": "dnat-thread-zero-crashed",
+          "text": {
+            "vi": "Mặc định đọc Thread 0. Thread gây crash là thread được ghi ở `Triggered by Thread` và đánh dấu `Crashed`; Thread 0 ở đây chỉ đang chờ việc trong run loop như bình thường.",
+            "en": "Reading Thread 0 by default. The crashing thread is the one named in `Triggered by Thread` and marked `Crashed`; Thread 0 here is just idling in its run loop as usual."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Một block trên queue nền gọi vào một view đã bị giải phóng khi màn hình quét đóng",
+          "en": "A block on a background queue calls into a view that was freed when the scanner closed"
+        }
+      },
+      {
+        "text": {
+          "vi": "`objc_msgSend` nằm trên cùng, nên đây là lỗi trong runtime Objective-C của Apple",
+          "en": "`objc_msgSend` is on top, so this is a bug in Apple's Objective-C runtime"
+        },
+        "misconception": {
+          "id": "dnat-objc-msgsend-apple-bug",
+          "text": {
+            "vi": "Đổ lỗi cho `objc_msgSend`. Crash trong `objc_msgSend` gần như luôn là gửi message tới một object đã bị giải phóng; lỗi nằm ở code đã giữ con trỏ treo đó.",
+            "en": "Blaming `objc_msgSend`. A crash inside `objc_msgSend` almost always means a message sent to an already freed object; the bug is in the code that held that dangling pointer."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`EXC_BAD_ACCESS` nghĩa là iOS kill app vì dùng quá nhiều bộ nhớ",
+          "en": "`EXC_BAD_ACCESS` means iOS killed the app for using too much memory"
+        },
+        "misconception": {
+          "id": "dnat-bad-access-is-oom",
+          "text": {
+            "vi": "Nhầm EXC_BAD_ACCESS với bị kill vì bộ nhớ. Đây là truy cập một địa chỉ không hợp lệ; app bị jetsam kill thì không để lại crash report kiểu này.",
+            "en": "Confusing EXC_BAD_ACCESS with a memory kill. It is an access to an invalid address; an app killed by jetsam leaves no crash report like this."
+          }
+        }
+      }
+    ],
+    "answerCause": 1,
+    "explanation": {
+      "vi": "Đọc `Triggered by Thread: 6` rồi tới khối `Thread 6 Crashed`, không phải Thread 0. Frame trên cùng là `objc_msgSend`, dấu hiệu điển hình của việc gửi message tới object đã bị giải phóng, và địa chỉ lỗi trông như rác chứ không gần 0. Frame đầu tiên của app là `-[ScanOverlayView showCode:]` ở dòng 14, được gọi từ block của `ScannerModule` trên một queue nền. Kết hợp với thời điểm crash, block vẫn chạy sau khi màn hình đóng và view đã bị giải phóng; việc chạm vào UIKit ngoài main thread là lỗi thứ hai. Tái hiện bằng Address Sanitizer hoặc Zombie Objects trong phần diagnostics của scheme. Sửa bằng tham chiếu `weak`, chuyển việc cập nhật view về main queue, và huỷ việc giải mã khi màn hình đóng.",
+      "en": "Read `Triggered by Thread: 6` and go to the `Thread 6 Crashed` block, not Thread 0. The top frame is `objc_msgSend`, the classic sign of a message sent to a freed object, and the fault address looks like garbage rather than near zero. The first app frame is `-[ScanOverlayView showCode:]` on line 14, called from a `ScannerModule` block on a background queue. Combined with when it crashes, the block still runs after the screen closed and the view was freed; touching UIKit off the main thread is a second bug. Reproduce with Address Sanitizer or Zombie Objects in the scheme's diagnostics options. Fix it with a `weak` reference, by moving view updates to the main queue, and by cancelling decoding when the screen closes."
+    }
+  },
+  {
+    "id": "debug-native-009",
+    "type": "open",
+    "topics": [
+      "debug/native",
+      "release/android"
+    ],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 330,
+    "lessons": [
+      "debug-native-core"
+    ],
+    "prompt": {
+      "vi": "Bản release Android crash ngay khi mở sau khi bạn nâng một thư viện thanh toán. Bản debug chạy ổn, và crash báo cáo trong Crashlytics chỉ có tên đã bị làm rối. Kể lại cách bạn tìm ra và sửa lỗi này.",
+      "en": "After you bump a payments library, the Android release build crashes on launch. Debug runs fine, and the Crashlytics report only shows obfuscated names. Walk me through how you found and fixed it."
+    },
+    "keyPoints": [
+      {
+        "vi": "Tái hiện trên máy với đúng bản release (ví dụ `./gradlew installRelease`), không dùng bản debug",
+        "en": "Reproduce on a device with the actual release build (for example `./gradlew installRelease`), not the debug build"
+      },
+      {
+        "vi": "Lấy stack từ logcat: lọc theo PID, hoặc dùng `adb logcat -b crash` vì PID đổi sau mỗi lần crash",
+        "en": "Get the stack from logcat: filter by PID, or use `adb logcat -b crash` since the PID changes after each crash"
+      },
+      {
+        "vi": "Giải mã stack bằng `retrace` của R8 với `mapping.txt` của đúng bản build đó",
+        "en": "Decode the stack with R8's `retrace` and that exact build's `mapping.txt`"
+      },
+      {
+        "vi": "Nhận ra dấu hiệu của R8: `ClassNotFoundException`, `NoSuchMethodError` hoặc field bị đổi tên trong code dùng reflection hay JNI",
+        "en": "Recognise R8 symptoms: `ClassNotFoundException`, `NoSuchMethodError` or renamed fields in code reached by reflection or JNI"
+      },
+      {
+        "vi": "Xác nhận giả thuyết bằng một bản build tắt minify tạm thời, rồi thêm keep rule hẹp nhất thay vì tắt R8",
+        "en": "Confirm the hypothesis with a temporary build with minify off, then add the narrowest keep rule instead of disabling R8"
+      },
+      {
+        "vi": "Kiểm tra changelog và consumer rules của thư viện, và thêm một bước smoke test bản release vào CI",
+        "en": "Check the library's changelog and consumer rules, and add a release-build smoke test to CI"
+      }
+    ],
+    "modelAnswer": {
+      "vi": "Debug chạy ổn nên mình nghi ngay những gì chỉ có ở release: R8, `__DEV__`, cấu hình theo biến thể. Việc đầu tiên là cài đúng bản release lên máy bằng `./gradlew installRelease`. Vì PID đổi mỗi lần app crash rồi mở lại, mình đọc `adb logcat -b crash` để có stack của lần crash. Stack bị làm rối nên mình chạy `retrace` với `mapping.txt` của đúng bản build đó, và thấy `NoSuchMethodError`: code native của SDK gọi ngược vào một method Java qua JNI, mà R8 đã đổi tên method đó. Để chắc chắn, mình build tạm một bản tắt minify và crash biến mất. Sau đó mình thêm một keep rule hẹp cho đúng class đó, đối chiếu với changelog của thư viện, và báo cho tác giả vì consumer rules của họ thiếu. Cuối cùng mình thêm bước cài và mở bản release vào CI để bắt lỗi kiểu này trước khi tới người dùng.",
+      "en": "Debug worked, so I suspected what only exists in release: R8, `__DEV__`, per-variant configuration. First I installed the real release build with `./gradlew installRelease`. Because the PID changes every time the app crashes and restarts, I read `adb logcat -b crash` to get the crash stack. It was obfuscated, so I ran `retrace` with that exact build's `mapping.txt` and found a `NoSuchMethodError`: the SDK's native code called back into a Java method through JNI, and R8 had renamed that method. To confirm, I built once with minify off and the crash disappeared. Then I added a narrow keep rule for that class, checked the library's changelog, and reported it upstream because their consumer rules were missing it. Finally I added a step to CI that installs and launches the release build, to catch this before users do."
+    },
+    "followUps": [
+      {
+        "vi": "Vì sao không nên giải quyết bằng `-keep class com.paysdk.** { *; }` hoặc tắt R8 luôn?",
+        "en": "Why not fix it with `-keep class com.paysdk.** { *; }` or by turning R8 off for good?"
+      },
+      {
+        "vi": "Bạn làm sao để chắc chắn `mapping.txt` khớp với đúng bản build đang crash?",
+        "en": "How do you make sure the `mapping.txt` matches the exact build that crashed?"
+      }
+    ]
+  },
+  {
+    "id": "debug-native-010",
+    "type": "open",
+    "topics": [
+      "debug/native"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 300,
+    "lessons": [
+      "debug-native-core"
+    ],
+    "prompt": {
+      "vi": "Một native module đọc thông tin pin trả về đúng trên Android nhưng sai trên iOS. Code JS gọi nó giống nhau trên cả hai nền tảng. Bạn debug phía native như thế nào?",
+      "en": "A native module that reads battery info returns correct values on Android but wrong ones on iOS. The JS code calls it the same way on both platforms. How do you debug the native side?"
+    },
+    "keyPoints": [
+      {
+        "vi": "Khoanh vùng ranh giới trước: log hoặc breakpoint ở JS để biết giá trị sai đã có sẵn khi rời native hay bị biến đổi ở JS",
+        "en": "Isolate the boundary first: log or break in JS to see whether the value is already wrong when it leaves native or is changed in JS"
+      },
+      {
+        "vi": "Mở `.xcworkspace` trong Xcode, chạy app hoặc attach vào process, và đặt breakpoint trong method của module",
+        "en": "Open the `.xcworkspace` in Xcode, run the app or attach to the process, and set a breakpoint in the module's method"
+      },
+      {
+        "vi": "Dùng LLDB (`po`, `bt`) để xem tham số, giá trị trả về và thread đang chạy",
+        "en": "Use LLDB (`po`, `bt`) to inspect arguments, the returned value and the current thread"
+      },
+      {
+        "vi": "Thêm log native bằng `os_log` và đọc trong console của Xcode hoặc Console.app khi chạy ngoài Xcode",
+        "en": "Add native logs with `os_log` and read them in the Xcode console, or in Console.app when running outside Xcode"
+      },
+      {
+        "vi": "Kiểm tra khác biệt của nền tảng: API cần bật trước (ví dụ battery monitoring), đơn vị hoặc khoảng giá trị khác, simulator khác máy thật",
+        "en": "Check platform differences: an API that must be enabled first (such as battery monitoring), different units or ranges, simulator versus device"
+      }
+    ],
+    "modelAnswer": {
+      "vi": "Mình khoanh vùng trước: đặt breakpoint trong React Native DevTools ngay chỗ nhận kết quả, để biết giá trị đã sai từ native hay bị biến đổi ở JS. Nếu sai từ native, mình mở `ios/*.xcworkspace` trong Xcode, chạy app trên máy thật, và đặt breakpoint trong method của module. Dùng `po` để xem giá trị trước khi resolve, `bt` để xem đang ở thread nào. Mình cũng thêm vài dòng `os_log` để QA chạy bản build ngoài Xcode và mình đọc qua Console.app. Ca thật của mình: `batteryLevel` của `UIDevice` trả về -1 vì module quên bật `batteryMonitoringEnabled`, và simulator thì không có pin thật nên càng dễ nhầm. Android không cần bước đó nên chạy đúng. Sau khi sửa, mình thêm một kiểm tra ở JS cho giá trị ngoài khoảng hợp lệ để lần sau lỗi lộ ra sớm.",
+      "en": "I isolate the boundary first: a breakpoint in React Native DevTools right where the result arrives tells me whether the value is wrong from native or changed in JS. If native is wrong, I open `ios/*.xcworkspace` in Xcode, run on a real device, and set a breakpoint in the module's method. `po` shows the value before resolving, and `bt` shows which thread I am on. I also add a few `os_log` lines so QA can run a build outside Xcode and I can read them in Console.app. My real case: `UIDevice`'s `batteryLevel` returned -1 because the module never turned on `batteryMonitoringEnabled`, and the simulator has no real battery, which made it more confusing. Android needs no such step, so it worked there. After the fix, I added a JS check for out-of-range values so the next bug like this shows up early."
+    },
+    "followUps": [
+      {
+        "vi": "Nếu breakpoint native làm app đứng và JS báo timeout thì vì sao, và bạn xử lý thế nào?",
+        "en": "If a native breakpoint freezes the app and JS reports a timeout, why does that happen and how do you handle it?"
+      }
+    ]
+  },
+  {
+    "id": "debug-native-011",
+    "type": "open",
+    "topics": [
+      "debug/native",
+      "maintain/crash"
+    ],
+    "kind": "hard-issue",
+    "difficulty": 2,
+    "estSeconds": 300,
+    "lessons": [
+      "debug-native-core"
+    ],
+    "prompt": {
+      "vi": "Một tester báo app crash ngay khi mở trên iPhone của họ, chạy một phiên bản iOS cũ hơn máy của cả nhóm. Crashlytics không có gì, có lẽ vì crash xảy ra trước khi SDK khởi tạo. Kể lại cách bạn lấy được thông tin và sửa lỗi.",
+      "en": "A tester reports the app crashes on launch on their iPhone, which runs an older iOS version than anyone on the team. Crashlytics has nothing, probably because the crash happens before the SDK starts. Walk me through how you got the data and fixed it."
+    },
+    "keyPoints": [
+      {
+        "vi": "Lấy crash log từ máy: cắm vào Mac và xem trong cửa sổ thiết bị của Xcode, hoặc nhờ tester gửi file crash từ phần dữ liệu phân tích trong Settings, hoặc dùng feedback crash của TestFlight",
+        "en": "Get the crash log from the device: plug it into a Mac and use Xcode's devices window, have the tester share the crash file from the analytics data in Settings, or use TestFlight crash feedback"
+      },
+      {
+        "vi": "Symbolicate bằng dSYM của đúng bản build, rồi tìm thread crash và frame đầu tiên của app",
+        "en": "Symbolicate with that build's dSYM, then find the crashed thread and the first app frame"
+      },
+      {
+        "vi": "Stream log bằng Console.app trong lúc tester mở app để thấy những gì xảy ra trước crash",
+        "en": "Stream logs with Console.app while the tester opens the app to see what happens before the crash"
+      },
+      {
+        "vi": "Tái hiện trên đúng phiên bản iOS: simulator runtime của phiên bản đó hoặc máy thật cùng OS",
+        "en": "Reproduce on the same iOS version: a simulator runtime for that version or a real device on that OS"
+      },
+      {
+        "vi": "Tìm API chỉ có từ phiên bản iOS mới hơn được gọi mà không kiểm tra `#available` hoặc `@available`, kể cả trong các pod",
+        "en": "Look for an API from a newer iOS version called without an `#available` or `@available` check, including inside pods"
+      }
+    ],
+    "modelAnswer": {
+      "vi": "Crash trước khi SDK khởi tạo thì phải lấy log từ chính máy đó. Mình nhờ tester cắm máy vào Mac và mở cửa sổ thiết bị của Xcode để lấy crash log; nếu ở xa, họ gửi file crash từ phần dữ liệu phân tích trong Settings hoặc qua feedback của TestFlight. Mình symbolicate bằng dSYM của đúng bản build và thấy `unrecognized selector sent to instance` trong lúc khởi động: một pod Objective-C mới gọi một method chỉ có từ phiên bản iOS mới hơn mà không kiểm tra `@available`, trong khi deployment target của app vẫn hỗ trợ bản cũ. Mình tái hiện trên simulator runtime của phiên bản đó, mở Console.app để xem log trước crash, rồi sửa bằng cách nâng pod lên bản có kiểm tra phiên bản. Sau đó mình thêm một máy hoặc simulator chạy phiên bản thấp nhất được hỗ trợ vào bước smoke test.",
+      "en": "If it crashes before the SDK starts, the log has to come from that device. I had the tester plug the phone into a Mac and pulled the crash log from Xcode's devices window; remotely, they can share the crash file from the analytics data in Settings or through TestFlight feedback. I symbolicated it with that build's dSYM and saw `unrecognized selector sent to instance` during startup: a new Objective-C pod called a method that only exists on newer iOS versions without an `@available` check, while the app's deployment target still supported the older one. I reproduced it on a simulator runtime for that version, watched Console.app for logs before the crash, and fixed it by bumping the pod to a release with a version check. Then I added a device or simulator on the lowest supported version to the smoke test."
+    },
+    "followUps": [
+      {
+        "vi": "Vì sao lỗi kiểu này không lộ ra khi build, dù deployment target thấp hơn phiên bản của API?",
+        "en": "Why does this kind of bug not show up at build time, even though the deployment target is below the API's version?"
+      }
+    ]
+  },
+  {
+    "id": "debug-native-012",
+    "type": "mcq",
+    "topics": [
+      "debug/native"
+    ],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": [
+      "debug-native-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Một bug chỉ xảy ra ở lần mở app đầu tiên sau khi cài. Bạn muốn tái hiện nhiều lần trên máy Android mà không phải gỡ app. Lệnh nào đưa app về trạng thái như vừa cài?",
+      "en": "A bug only happens on the first launch after install. You want to reproduce it repeatedly on an Android device without uninstalling. Which command returns the app to its just-installed state?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "`adb shell am force-stop com.shop.app`",
+          "en": "`adb shell am force-stop com.shop.app`"
+        },
+        "misconception": {
+          "id": "dnat-force-stop-clears-data",
+          "text": {
+            "vi": "Nghĩ rằng force-stop xoá dữ liệu. Nó chỉ dừng process; file, database, AsyncStorage và SharedPreferences vẫn còn nguyên.",
+            "en": "Believing force-stop clears data. It only stops the process; files, databases, AsyncStorage and SharedPreferences stay intact."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`adb install -r app-debug.apk` để cài đè bản mới",
+          "en": "`adb install -r app-debug.apk` to reinstall over the top"
+        },
+        "misconception": {
+          "id": "dnat-reinstall-clears-data",
+          "text": {
+            "vi": "Nghĩ rằng cài đè xoá dữ liệu. `-r` giữ lại dữ liệu của app, như một lần cập nhật bình thường.",
+            "en": "Believing a reinstall clears data. `-r` keeps the app's data, just like a normal update."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`adb shell pm clear com.shop.app`",
+          "en": "`adb shell pm clear com.shop.app`"
+        }
+      },
+      {
+        "text": {
+          "vi": "`npx react-native start --reset-cache`",
+          "en": "`npx react-native start --reset-cache`"
+        },
+        "misconception": {
+          "id": "dnat-metro-cache-is-app-data",
+          "text": {
+            "vi": "Nhầm cache của Metro với dữ liệu app. `--reset-cache` chỉ xoá cache build bundle trên máy tính; dữ liệu app nằm trên thiết bị và không bị đụng tới.",
+            "en": "Confusing Metro's cache with app data. `--reset-cache` only clears the bundler cache on your computer; the app's data lives on the device and is untouched."
+          }
+        }
+      }
+    ],
+    "answer": [
+      2
+    ],
+    "explanation": {
+      "vi": "`pm clear` xoá toàn bộ dữ liệu của package trên thiết bị: file, database, SharedPreferences, và vì thế cả AsyncStorage hay MMKV, rồi dừng app. Lần mở tiếp theo chạy như lần đầu, đúng thứ bạn cần để tái hiện luồng onboarding hay migration. Force-stop và cài đè đều giữ dữ liệu, còn cache của Metro nằm trên máy tính. Trên iOS không có lệnh tương đương qua cáp; với simulator, gỡ app bằng `xcrun simctl uninstall` hoặc xoá nội dung simulator.",
+      "en": "`pm clear` wipes all of the package's data on the device: files, databases, SharedPreferences, and therefore AsyncStorage or MMKV too, then stops the app. The next launch behaves like the first, which is what you need to reproduce onboarding or migration flows. Force-stop and reinstalling both keep data, and Metro's cache lives on your computer. iOS has no equivalent over the cable; on a simulator, uninstall with `xcrun simctl uninstall` or erase the simulator."
+    }
+  }
+]

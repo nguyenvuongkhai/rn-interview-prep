@@ -1,0 +1,14 @@
+{
+  "id": "cart-checks",
+  "type": "challenge",
+  "topics": ["testing/unit"],
+  "kind": "core",
+  "difficulty": 2,
+  "estSeconds": 600,
+  "lessons": ["testing-unit-core"],
+  "title": { "vi": "Viết phần kiểm tra bắt lỗi của reducer giỏ hàng", "en": "Write the checks that catch a broken cart reducer" },
+  "hints": [
+    { "vi": "Viết một hàm `assert(condition, message)` ném `Error` khi điều kiện sai. Mỗi quy tắc trong đề là ít nhất một lần gọi `assert`.", "en": "Write an `assert(condition, message)` that throws an `Error` when the condition is false. Every rule in the task needs at least one `assert`." },
+    { "vi": "Lỗi \"sửa state cũ\" chỉ lộ ra khi bạn kiểm tra lại state cũ sau khi gọi reducer. Giữ lại `empty` và `one`, rồi xem chúng có còn nguyên không.", "en": "The \"changed the old state\" bug only shows if you look at the old state again after calling the reducer. Keep `empty` and `one` around and check they are unchanged." }
+  ]
+}

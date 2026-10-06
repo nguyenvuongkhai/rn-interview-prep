@@ -1,0 +1,818 @@
+[
+  {
+    "id": "testing-e2e-001",
+    "type": "mcq",
+    "topics": [
+      "testing/e2e"
+    ],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": [
+      "testing-e2e-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Khác biệt cốt lõi giữa cách Detox và Maestro chờ app trước mỗi bước là gì?",
+      "en": "What is the core difference in how Detox and Maestro wait for the app before each step?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Detox ở trong app và chờ app rảnh; Maestro điều khiển từ ngoài và thử lại tới khi thấy phần tử",
+          "en": "Detox sits inside the app and waits until it is idle; Maestro drives it from outside and retries until the element appears"
+        }
+      },
+      {
+        "text": {
+          "vi": "Detox chèn sleep cố định giữa các bước; Maestro chờ JS thread rảnh rồi mới chạy lệnh tiếp",
+          "en": "Detox inserts fixed sleeps between steps; Maestro waits for the JS thread to go idle before the next command"
+        },
+        "misconception": {
+          "id": "te2e-tools-swapped",
+          "text": {
+            "vi": "Đảo ngược hai công cụ. Detox là gray-box: nó theo dõi network, animation, timer và JS thread trong app để chờ app rảnh. Maestro là black-box: nó không biết JS thread đang làm gì, chỉ thử lại lệnh tới khi phần tử xuất hiện.",
+            "en": "Swapping the two tools. Detox is gray-box: it tracks network, animations, timers and the JS thread inside the app to wait for idle. Maestro is black-box: it cannot see the JS thread and simply retries a command until the element appears."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Hai công cụ chờ giống nhau, vì cả hai đều chạy như test Jest bên trong JS bundle",
+          "en": "They wait the same way, because both run as Jest tests inside the JS bundle"
+        },
+        "misconception": {
+          "id": "te2e-maestro-runs-in-jest",
+          "text": {
+            "vi": "Nghĩ rằng Maestro là test Jest. Flow Maestro là file YAML do Maestro CLI chạy từ bên ngoài app. Detox thì dùng Jest làm test runner nhưng test chạy trên máy host, không nằm trong JS bundle.",
+            "en": "Believing Maestro flows are Jest tests. A Maestro flow is a YAML file run by the Maestro CLI from outside the app. Detox does use Jest as its runner, but the tests run on the host machine, not inside the JS bundle."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Cả hai đều không chờ; bạn phải thêm một lệnh chờ cố định trước mỗi lần tap",
+          "en": "Neither waits; you have to add a fixed wait before every tap"
+        },
+        "misconception": {
+          "id": "te2e-e2e-needs-manual-waits",
+          "text": {
+            "vi": "Nghĩ rằng E2E tool không tự chờ. Detox tự synchronise với app, còn Maestro tự thử lại mỗi lệnh. Thêm sleep cố định trước mỗi bước làm suite chậm và vẫn flaky trên máy CI chậm.",
+            "en": "Believing E2E tools never wait on their own. Detox synchronises with the app and Maestro retries each command. A fixed sleep before every step makes the suite slow and still flaky on a slow CI machine."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0
+    ],
+    "explanation": {
+      "vi": "Detox là gray-box: một client trong process của app báo cho Detox biết khi nào còn request network, animation, timer hay việc trên JS thread, và Detox chờ app rảnh trước mỗi action và assertion. Maestro là black-box: nó điều khiển UI qua lớp automation của nền tảng, không biết app đang bận gì, nên mỗi lệnh tự thử lại tới khi phần tử xuất hiện hoặc hết timeout. Hệ quả: Detox treo khi app không bao giờ rảnh (animation lặp vô hạn), còn Maestro không phát hiện được trạng thái bận và chỉ dựa vào việc phần tử có xuất hiện hay không.",
+      "en": "Detox is gray-box: a client inside the app process tells it about pending network requests, animations, timers and JS thread work, and Detox waits for idle before each action and assertion. Maestro is black-box: it drives the UI through the platform automation layer without knowing what the app is busy with, so each command retries until the element appears or a timeout passes. The consequence: Detox hangs when the app never goes idle (an endless animation), while Maestro cannot see busy state and relies only on whether the element shows up."
+    }
+  },
+  {
+    "id": "testing-e2e-002",
+    "type": "mcq",
+    "topics": [
+      "testing/e2e",
+      "testing/unit"
+    ],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": [
+      "testing-e2e-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Form đăng ký kiểm tra email và mật khẩu với khoảng 20 quy tắc và edge case. Bạn test các quy tắc này ở đâu?",
+      "en": "Your sign-up form validates email and password against about 20 rules and edge cases. Where do you test those rules?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Unit test cho hàm validation, cộng một E2E happy path cho luồng đăng ký",
+          "en": "Unit tests on the validation function, plus one E2E happy path for sign-up"
+        }
+      },
+      {
+        "text": {
+          "vi": "Một E2E test cho mỗi quy tắc, để mỗi quy tắc được kiểm trên máy thật",
+          "en": "One E2E test per rule, so each rule is checked on a real device"
+        },
+        "misconception": {
+          "id": "te2e-e2e-for-every-case",
+          "text": {
+            "vi": "Nghĩ rằng E2E là nơi phủ mọi trường hợp. Mỗi E2E test tốn hàng chục giây và có thể flaky; 20 test cho logic thuần làm suite chậm mà không chứng minh thêm điều gì so với unit test chạy trong vài mili giây.",
+            "en": "Believing E2E is where every case belongs. Each E2E test costs tens of seconds and can flake; 20 of them for pure logic slow the suite without proving more than unit tests that run in milliseconds."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Chỉ QA kiểm tra thủ công, vì validation là phần UI người dùng nhìn thấy",
+          "en": "Manual QA only, because validation is UI the user can see"
+        },
+        "misconception": {
+          "id": "te2e-visible-means-manual",
+          "text": {
+            "vi": "Nghĩ rằng thứ hiện trên UI chỉ test thủ công được. Quy tắc validation là logic thuần; tách nó ra hàm riêng thì unit test kiểm được mọi trường hợp ở mỗi lần commit.",
+            "en": "Believing anything visible can only be tested by hand. Validation rules are pure logic; pull them into a function and unit tests cover every case on every commit."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Snapshot test của form ở từng trạng thái lỗi",
+          "en": "Snapshot tests of the form in each error state"
+        },
+        "misconception": {
+          "id": "te2e-snapshot-proves-logic",
+          "text": {
+            "vi": "Nghĩ rằng snapshot chứng minh logic đúng. Snapshot chỉ ghi lại cây render; nó không biết thông báo lỗi nào mới là đúng, và người review thường cập nhật snapshot mà không đọc kỹ.",
+            "en": "Believing snapshots prove logic. A snapshot only records the render tree; it does not know which error message is correct, and reviewers often update snapshots without reading them."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0
+    ],
+    "explanation": {
+      "vi": "Kim tự tháp test đặt mỗi kiểm tra ở tầng rẻ nhất chứng minh được nó. 20 quy tắc validation là logic thuần, nên unit test phủ hết trong vài mili giây. E2E chỉ cần chứng minh luồng đăng ký nối đúng màn hình, API và navigation, nên một happy path là đủ, có thể thêm một ca lỗi tiêu biểu. Viết E2E cho từng quy tắc là bẫy phổ biến: suite chậm, flaky, và mỗi lần fail khó biết do logic hay do môi trường.",
+      "en": "The test pyramid puts each check at the cheapest layer that can prove it. Twenty validation rules are pure logic, so unit tests cover them in milliseconds. E2E only needs to prove the sign-up journey wires screens, API and navigation together, so one happy path is enough, perhaps plus one representative error. Writing an E2E test per rule is the common trap: the suite gets slow and flaky, and each failure is hard to pin on logic or environment."
+    }
+  },
+  {
+    "id": "testing-e2e-003",
+    "type": "mcq",
+    "topics": [
+      "testing/e2e"
+    ],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": [
+      "testing-e2e-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "App có hai ngôn ngữ, tiếng Việt và tiếng Anh. Vì sao test Detox và Maestro nên chọn phần tử bằng `testID` thay vì bằng text hiển thị?",
+      "en": "Your app ships in Vietnamese and English. Why should your Detox and Maestro tests select elements by `testID` rather than visible text?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "`testID` không đổi khi câu chữ hay ngôn ngữ đổi, nên test chỉ vỡ khi hành vi thay đổi",
+          "en": "`testID` stays the same when copy or language changes, so tests break only when behaviour does"
+        }
+      },
+      {
+        "text": {
+          "vi": "Chọn theo text chỉ chạy trên iOS, nên Android bắt buộc phải dùng `testID`",
+          "en": "Matching by text only works on iOS, so Android requires `testID`"
+        },
+        "misconception": {
+          "id": "te2e-text-match-ios-only",
+          "text": {
+            "vi": "Nghĩ rằng chọn theo text chỉ có trên một nền tảng. Detox có `by.text` và Maestro có `tapOn` theo text trên cả iOS lẫn Android; vấn đề của text là nó đổi theo bản dịch và câu chữ.",
+            "en": "Believing text matching works on only one platform. Detox has `by.text` and Maestro taps by text on both iOS and Android; the problem with text is that it changes with translations and copy."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`testID` giúp screen reader đọc được phần tử, nên vừa test được vừa tăng accessibility",
+          "en": "`testID` lets screen readers announce the element, so it improves accessibility too"
+        },
+        "misconception": {
+          "id": "te2e-testid-is-a11y",
+          "text": {
+            "vi": "Nhầm `testID` với thuộc tính accessibility. Screen reader đọc `accessibilityLabel` và text, không đọc `testID`; `testID` chỉ là định danh cho công cụ test.",
+            "en": "Confusing `testID` with accessibility props. Screen readers announce `accessibilityLabel` and text, not `testID`; `testID` is only a handle for test tools."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Tìm theo text chậm hơn nhiều, và đó là nguyên nhân chính khiến E2E flaky",
+          "en": "Text lookups are much slower, and that is the main cause of flaky E2E tests"
+        },
+        "misconception": {
+          "id": "te2e-text-lookup-slow",
+          "text": {
+            "vi": "Đổ flaky cho tốc độ tìm phần tử. Chênh lệch tốc độ giữa hai cách tìm không đáng kể; flaky đến từ timing, animation, network và dữ liệu dùng chung.",
+            "en": "Blaming flakiness on lookup speed. The speed difference between the two lookups is negligible; flakiness comes from timing, animations, network and shared data."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0
+    ],
+    "explanation": {
+      "vi": "`testID` là định danh ổn định do dev đặt: đổi câu chữ, sửa bản dịch hay chuyển ngôn ngữ mặc định không làm nó đổi. Detox tìm nó bằng `by.id`, Maestro bằng `id:` trong `tapOn`. Chọn theo text làm test vỡ mỗi lần marketing sửa một nút, và với app hai ngôn ngữ, test chỉ chạy đúng ở một locale. Text vẫn hữu ích trong assertion khi chính nội dung là thứ cần kiểm, ví dụ thông báo lỗi.",
+      "en": "`testID` is a stable handle the developer sets: editing copy, fixing a translation or changing the default language does not change it. Detox finds it with `by.id`, Maestro with `id:` in `tapOn`. Selecting by text breaks tests every time marketing edits a button, and in a bilingual app the test only works in one locale. Text is still useful in assertions when the content itself is what you are checking, such as an error message."
+    }
+  },
+  {
+    "id": "testing-e2e-004",
+    "type": "mcq",
+    "topics": [
+      "testing/e2e"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": [
+      "testing-e2e-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Một test Detox timeout ở màn Home dù màn hình trông đã sẵn sàng. Log synchronisation của Detox liệt kê một animation vẫn đang chạy. Màn Home có một badge nhấp nháy dùng `Animated.loop` không bao giờ dừng. Chuyện gì đang xảy ra?",
+      "en": "A Detox test times out on the Home screen even though the screen looks ready. Detox's synchronisation log lists an animation still running. Home has a pulsing badge driven by an `Animated.loop` that never stops. What is happening?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Detox chờ app rảnh trước mỗi bước, và animation lặp vô hạn khiến app không bao giờ rảnh",
+          "en": "Detox waits for the app to be idle before each step, and the endless loop means it never is"
+        }
+      },
+      {
+        "text": {
+          "vi": "Badge chưa có `testID`, nên Detox không tìm thấy phần tử và báo app đang bận",
+          "en": "The badge has no `testID`, so Detox cannot find the element and reports the app as busy"
+        },
+        "misconception": {
+          "id": "te2e-busy-means-missing-element",
+          "text": {
+            "vi": "Nhầm hai loại lỗi. Không tìm thấy phần tử cho ra lỗi không khớp phần tử, không phải log app đang bận; log ở đây nói rõ còn một animation đang chạy.",
+            "en": "Mixing up two failures. A missing element gives a no-match error, not a busy log; this log says plainly that an animation is still running."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Simulator trên CI quá chậm; tăng timeout của Jest là đủ để test qua",
+          "en": "The CI simulator is too slow; raising the Jest timeout is enough to pass"
+        },
+        "misconception": {
+          "id": "te2e-raise-timeout-fixes-busy",
+          "text": {
+            "vi": "Nghĩ rằng chờ lâu hơn sẽ giải quyết. Animation lặp vô hạn không bao giờ kết thúc, nên timeout dài bao nhiêu thì Detox vẫn chờ tới hết.",
+            "en": "Believing a longer wait solves it. An endless loop never finishes, so however long the timeout, Detox waits until it runs out."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Detox không hỗ trợ màn hình có animation, nên phải chuyển test này sang Maestro",
+          "en": "Detox does not support screens with animations, so this test must move to Maestro"
+        },
+        "misconception": {
+          "id": "te2e-detox-no-animations",
+          "text": {
+            "vi": "Nghĩ rằng Detox không làm việc được với animation. Detox chờ animation có điểm kết thúc rồi chạy tiếp; chỉ animation không bao giờ dừng mới làm nó treo, và có cách xử lý ngay trong Detox.",
+            "en": "Believing Detox cannot handle animations. Detox waits for finite animations to finish and carries on; only an animation that never stops makes it hang, and there are fixes inside Detox."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0
+    ],
+    "explanation": {
+      "vi": "Synchronisation của Detox theo dõi animation, timer, request network và JS thread, và chỉ chạy bước tiếp theo khi tất cả đã rảnh. `Animated.loop` không có điểm kết thúc nên app luôn bận, và test treo tới timeout. Cách sửa: tắt vòng lặp trong build E2E (ví dụ đọc một cờ truyền qua `launchArgs`), hoặc gọi `device.disableSynchronization()` quanh bước đó rồi chờ một phần tử cụ thể bằng `waitFor(...).withTimeout(...)` và bật lại sau. Cùng kiểu lỗi xảy ra với `setInterval` polling hay một request không bao giờ trả về; với request, `device.setURLBlacklist` cho Detox bỏ qua URL đó.",
+      "en": "Detox synchronisation tracks animations, timers, network requests and the JS thread, and only runs the next step once all are idle. `Animated.loop` has no end, so the app is always busy and the test hangs until it times out. Fix it by switching the loop off in E2E builds (for example via a flag passed in `launchArgs`), or by calling `device.disableSynchronization()` around that step, waiting on a specific element with `waitFor(...).withTimeout(...)`, and turning it back on. The same failure comes from a polling `setInterval` or a request that never completes; for requests, `device.setURLBlacklist` tells Detox to ignore that URL."
+    }
+  },
+  {
+    "id": "testing-e2e-005",
+    "type": "mcq",
+    "topics": [
+      "testing/e2e"
+    ],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": [
+      "testing-e2e-core"
+    ],
+    "multi": true,
+    "prompt": {
+      "vi": "Khoảng một trong mười lần chạy, bộ E2E fail, và mỗi lần ở một bước khác nhau. Thay đổi nào giảm flaky? (chọn tất cả đáp án đúng)",
+      "en": "About one run in ten, your E2E suite fails, each time at a different step. Which changes reduce the flakiness? (select all that apply)"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Thay sleep cố định bằng việc chờ một phần tử cụ thể, như `waitFor(...).withTimeout()`",
+          "en": "Replace fixed sleeps with waits on a specific element, such as `waitFor(...).withTimeout()`"
+        }
+      },
+      {
+        "text": {
+          "vi": "Cho mỗi test dữ liệu riêng, như một tài khoản mới, thay vì dùng chung một tài khoản",
+          "en": "Give each test its own data, such as a fresh account, instead of one shared account"
+        }
+      },
+      {
+        "text": {
+          "vi": "Chạy với backend có seed sẵn hoặc mock server thay vì staging dùng chung",
+          "en": "Run against a seeded backend or a mock server instead of shared staging"
+        }
+      },
+      {
+        "text": {
+          "vi": "Bật retry tự động, coi test là pass nếu một lần retry xanh, và thôi theo dõi",
+          "en": "Turn on automatic retries, count a test as passing if any retry is green, and move on"
+        },
+        "misconception": {
+          "id": "te2e-retry-hides-flake",
+          "text": {
+            "vi": "Nghĩ rằng retry là cách sửa. Retry có thể tạm giữ pipeline xanh, nhưng nếu không ghi lại test nào cần retry thì nguyên nhân vẫn còn, suite chậm dần, và có lúc một bug thật cũng bị retry che mất.",
+            "en": "Believing retries are a fix. Retries can keep the pipeline green for a while, but without tracking which tests needed them the cause stays, the suite slows down, and sometimes a real bug gets retried away."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Tăng mọi sleep lên 5 giây để máy CI chậm có đủ thời gian",
+          "en": "Raise every sleep to 5 seconds so slow CI machines have enough time"
+        },
+        "misconception": {
+          "id": "te2e-longer-sleeps",
+          "text": {
+            "vi": "Nghĩ rằng sleep dài hơn sẽ an toàn. Không có con số nào luôn đủ trên mọi máy, và mỗi sleep dài cộng dồn thành nhiều phút; chờ theo điều kiện vừa nhanh hơn vừa ổn định hơn.",
+            "en": "Believing longer sleeps are safe. No number is always enough on every machine, and each long sleep adds up to minutes; waiting on a condition is both faster and more stable."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0,
+      1,
+      2
+    ],
+    "explanation": {
+      "vi": "Fail ở bước ngẫu nhiên là dấu hiệu của timing hoặc dữ liệu, không phải của một bug cố định. Chờ theo điều kiện loại bỏ việc đoán thời gian. Dữ liệu riêng cho từng test giúp các test không phá nhau khi chạy song song hay chạy lại. Backend có seed hoặc mock server loại bỏ thay đổi từ team khác trên staging. Retry chỉ nên là biện pháp tạm thời có theo dõi; còn sleep dài hơn chỉ đổi flaky lấy chậm.",
+      "en": "Failing at random steps points to timing or data, not a fixed bug. Waiting on a condition removes the guesswork about time. Per-test data stops tests from breaking each other when they run in parallel or are re-run. A seeded backend or mock server removes changes other teams make on staging. Retries should only be a tracked stopgap, and longer sleeps just trade flakiness for slowness."
+    }
+  },
+  {
+    "id": "testing-e2e-006",
+    "type": "mcq",
+    "topics": [
+      "testing/e2e",
+      "release/ota-ci"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": [
+      "testing-e2e-core"
+    ],
+    "multi": true,
+    "prompt": {
+      "vi": "Bộ E2E mất 55 phút trên CI và chặn mọi PR. Thay đổi nào hợp lý? (chọn tất cả đáp án đúng)",
+      "en": "The E2E suite takes 55 minutes on CI and blocks every PR. Which changes are sound? (select all that apply)"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Build test binary một lần rồi dùng lại cho các shard chạy song song",
+          "en": "Build the test binary once and reuse it across parallel shards"
+        }
+      },
+      {
+        "text": {
+          "vi": "Chạy bộ smoke nhỏ ở mỗi PR, và cả bộ vào ban đêm hoặc trước release",
+          "en": "Run a small smoke set on each PR, and the full suite nightly or before release"
+        }
+      },
+      {
+        "text": {
+          "vi": "Lưu video, screenshot và log của test fail làm artifact của CI",
+          "en": "Keep videos, screenshots and logs from failed tests as CI artifacts"
+        }
+      },
+      {
+        "text": {
+          "vi": "Build lại app trong từng shard để mỗi shard hoàn toàn độc lập",
+          "en": "Rebuild the app inside each shard so every shard is fully independent"
+        },
+        "misconception": {
+          "id": "te2e-rebuild-per-shard",
+          "text": {
+            "vi": "Nghĩ rằng mỗi shard nên tự build. Build native thường là bước tốn thời gian nhất; build lại ở mọi shard nhân chi phí đó lên, và các shard có thể test những binary khác nhau.",
+            "en": "Believing each shard should build its own app. The native build is usually the most expensive step; rebuilding in every shard multiplies that cost, and shards may end up testing different binaries."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Cho test chạy với backend production để khỏi phải duy trì backend test",
+          "en": "Point the tests at production so there is no test backend to maintain"
+        },
+        "misconception": {
+          "id": "te2e-test-on-prod",
+          "text": {
+            "vi": "Nghĩ rằng production là môi trường test tiện nhất. Test sẽ tạo đơn hàng và tài khoản thật, phụ thuộc dữ liệu bạn không kiểm soát, và không nhanh hơn chút nào.",
+            "en": "Believing production is the handiest test environment. Tests would create real orders and accounts, depend on data you do not control, and run no faster."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0,
+      1,
+      2
+    ],
+    "explanation": {
+      "vi": "Hai đòn bẩy lớn nhất là bớt việc lặp lại và chạy song song: build một lần, chia test cho nhiều shard cùng dùng binary đó. Bộ smoke ở PR giữ phản hồi nhanh cho các luồng quan trọng, còn cả bộ chạy định kỳ để bắt phần còn lại. Artifact của test fail không làm suite nhanh hơn, nhưng giảm thời gian điều tra, vì bạn xem được chuyện gì đã xảy ra mà không cần chạy lại. Lưu ý iOS simulator cần runner macOS, nên chi phí shard trên iOS cao hơn Android.",
+      "en": "The two biggest levers are cutting repeated work and running in parallel: build once, then split tests across shards that share that binary. A smoke set on PRs keeps feedback fast for critical journeys, while the full suite runs on a schedule to catch the rest. Failure artifacts do not make the suite faster, but they cut investigation time because you can see what happened without re-running. Note that iOS simulators need macOS runners, so an iOS shard costs more than an Android one."
+    }
+  },
+  {
+    "id": "testing-e2e-007",
+    "type": "spot-bug",
+    "topics": [
+      "testing/e2e"
+    ],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 105,
+    "lessons": [
+      "testing-e2e-core"
+    ],
+    "prompt": {
+      "vi": "Test này luôn xanh trên CI, vậy mà một bản build không bao giờ hiện `order-number` vẫn được phát hành. Dòng nào gây lỗi?",
+      "en": "This test is always green on CI, yet a build that never rendered `order-number` still shipped. Which line is the bug?"
+    },
+    "code": "import { by, device, element, expect, waitFor } from 'detox';\n\ndescribe('checkout', () => {\n  beforeEach(async () => {\n    await device.launchApp({ newInstance: true, delete: true });\n  });\n\n  it('places an order from the cart', async () => {\n    await element(by.id('add-to-cart-0')).tap();\n    await element(by.id('cart-tab')).tap();\n    await element(by.id('checkout-button')).tap();\n    await waitFor(element(by.id('order-confirmation')))\n      .toBeVisible()\n      .withTimeout(10000);\n    expect(element(by.id('order-number'))).toBeVisible();\n  });\n});",
+    "answerLine": 15,
+    "causeOptions": [
+      {
+        "text": {
+          "vi": "`expect` của Detox trả về promise không được `await`, nên test xong trước assertion",
+          "en": "Detox's `expect` returns a promise that is never awaited, so the test ends first"
+        }
+      },
+      {
+        "text": {
+          "vi": "Timeout 10 giây của `waitFor` quá ngắn, nên assertion sau đó bị bỏ qua",
+          "en": "The 10-second `waitFor` timeout is too short, so the assertion after it is skipped"
+        },
+        "misconception": {
+          "id": "te2e-short-timeout-skips",
+          "text": {
+            "vi": "Nghĩ rằng timeout ngắn làm bỏ qua bước sau. Nếu `waitFor` hết giờ, nó reject và test fail ngay ở đó, không âm thầm bỏ qua assertion phía sau.",
+            "en": "Believing a short timeout skips later steps. If `waitFor` runs out it rejects and the test fails right there; it does not silently skip the assertion after it."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Phải dùng `by.text` thay cho `by.id`, vì số đơn hàng là nội dung thay đổi",
+          "en": "It should use `by.text` instead of `by.id`, because the order number is dynamic content"
+        },
+        "misconception": {
+          "id": "te2e-dynamic-needs-text",
+          "text": {
+            "vi": "Nghĩ rằng nội dung động cần chọn theo text. Chính vì số đơn hàng thay đổi mỗi lần, `testID` mới là cách chọn ổn định; text là thứ bạn kiểm sau khi đã tìm được phần tử.",
+            "en": "Believing dynamic content needs a text selector. Precisely because the order number changes each run, `testID` is the stable way to find it; text is what you check once you have the element."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`delete: true` xoá app giữa các test nên assertion chạy trên một bản cài khác",
+          "en": "`delete: true` removes the app between tests, so the assertion runs on a different install"
+        },
+        "misconception": {
+          "id": "te2e-delete-breaks-assert",
+          "text": {
+            "vi": "Hiểu sai `delete: true`. Nó xoá và cài lại app lúc launch trong `beforeEach`, trước khi test bắt đầu, để mỗi test có state sạch; nó không động tới app giữa chừng một test.",
+            "en": "Misreading `delete: true`. It uninstalls and reinstalls the app at launch in `beforeEach`, before the test starts, so each test gets clean state; it does not touch the app in the middle of a test."
+          }
+        }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "Mọi API của Detox đều bất đồng bộ, kể cả `expect(...).toBeVisible()`. Ở dòng 15 thiếu `await`, nên hàm test resolve ngay và Jest đánh dấu pass trước khi Detox kiểm tra xong; nếu assertion fail sau đó, lỗi thành một unhandled rejection không gắn với test này, hoặc mất hẳn. Sửa bằng `await expect(element(by.id('order-number'))).toBeVisible();`. Bật rule `@typescript-eslint/no-floating-promises` cho thư mục e2e để lint bắt kiểu lỗi này.",
+      "en": "Every Detox API is async, including `expect(...).toBeVisible()`. Line 15 has no `await`, so the test function resolves at once and Jest marks it passed before Detox finishes checking; if the assertion fails later, it becomes an unhandled rejection not tied to this test, or is lost entirely. Fix it with `await expect(element(by.id('order-number'))).toBeVisible();`. Turn on `@typescript-eslint/no-floating-promises` for the e2e folder so lint catches this class of bug."
+    }
+  },
+  {
+    "id": "testing-e2e-008",
+    "type": "spot-bug",
+    "topics": [
+      "testing/e2e"
+    ],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 105,
+    "lessons": [
+      "testing-e2e-core"
+    ],
+    "prompt": {
+      "vi": "Flow Maestro này pass trên simulator vừa tạo mới. Lần chạy thứ hai trên máy bạn, và trên emulator CI được dùng lại, nó fail ở `tapOn: \"Log in\"` vì app mở thẳng vào màn Home. Dòng nào gây lỗi?",
+      "en": "This Maestro flow passes on a freshly created simulator. On the second run on your machine, and on a reused CI emulator, it fails at `tapOn: \"Log in\"` because the app opens straight to Home. Which line is the bug?"
+    },
+    "code": "appId: com.acme.shop\n---\n- launchApp\n- tapOn: \"Log in\"\n- tapOn:\n    id: \"email-input\"\n- inputText: \"qa-e2e@acme.test\"\n- tapOn:\n    id: \"password-input\"\n- inputText: ${E2E_PASSWORD}\n- tapOn:\n    id: \"sign-in-button\"\n- assertVisible: \"Welcome back\"",
+    "answerLine": 3,
+    "causeOptions": [
+      {
+        "text": {
+          "vi": "`launchApp` mở app với state cũ, nên phiên đăng nhập từ lần chạy trước vẫn còn",
+          "en": "`launchApp` opens the app with its old state, so the session from the previous run is still there"
+        }
+      },
+      {
+        "text": {
+          "vi": "Maestro không tự chờ, nên phải thêm một bước chờ trước `tapOn: \"Log in\"`",
+          "en": "Maestro does not wait on its own, so a wait step is needed before `tapOn: \"Log in\"`"
+        },
+        "misconception": {
+          "id": "te2e-maestro-no-auto-wait",
+          "text": {
+            "vi": "Nghĩ rằng Maestro không tự chờ. Mỗi lệnh của Maestro tự thử lại tới khi phần tử xuất hiện hoặc hết timeout; ở đây nút Log in không bao giờ xuất hiện vì app đã đăng nhập sẵn.",
+            "en": "Believing Maestro never waits. Each Maestro command retries until the element appears or a timeout passes; here the Log in button never appears because the app is already signed in."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`tapOn` chỉ nhận `id`, nên `tapOn: \"Log in\"` không bao giờ khớp được",
+          "en": "`tapOn` only accepts an `id`, so `tapOn: \"Log in\"` can never match"
+        },
+        "misconception": {
+          "id": "te2e-tapon-id-only",
+          "text": {
+            "vi": "Nghĩ rằng `tapOn` chỉ chọn theo id. Maestro chọn được theo text lẫn theo `id`; và flow này đã pass ở lần chạy đầu, nên cách chọn không phải là vấn đề.",
+            "en": "Believing `tapOn` only selects by id. Maestro selects by text as well as by `id`; and this flow passed on the first run, so the selector is not the problem."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`${E2E_PASSWORD}` không được thay giá trị, nên Maestro gõ nguyên chuỗi đó vào ô mật khẩu",
+          "en": "`${E2E_PASSWORD}` is not substituted, so Maestro types the literal string into the password field"
+        },
+        "misconception": {
+          "id": "te2e-env-var-literal",
+          "text": {
+            "vi": "Đoán lỗi ở bước sau chỗ fail. Maestro thay biến `${...}` bằng giá trị truyền qua `-e`; hơn nữa flow fail ở `tapOn: \"Log in\"`, trước khi tới ô mật khẩu.",
+            "en": "Guessing at a step after the failure. Maestro substitutes `${...}` with values passed through `-e`; besides, the flow fails at `tapOn: \"Log in\"`, before it reaches the password field."
+          }
+        }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "`launchApp` không có tham số chỉ mở app, giữ nguyên dữ liệu đã lưu như token đăng nhập. Lần chạy đầu trên máy mới thì không có token nên flow pass; từ lần thứ hai app vào thẳng Home. Sửa dòng 3 thành `- launchApp:` với `clearState: true` ở dòng thụt vào bên dưới, để mỗi flow bắt đầu từ trạng thái chưa đăng nhập. Nguyên tắc chung: mỗi flow hoặc test phải tự dựng state nó cần, không dựa vào việc máy đã sạch hay chưa.",
+      "en": "`launchApp` with no options just opens the app and keeps stored data such as the sign-in token. The first run on a new device has no token, so the flow passes; from the second run the app goes straight to Home. Change line 3 to `- launchApp:` with `clearState: true` indented beneath it, so every flow starts signed out. The general rule: each flow or test sets up the state it needs and never relies on whether the device happens to be clean."
+    }
+  },
+  {
+    "id": "testing-e2e-009",
+    "type": "spot-bug",
+    "topics": [
+      "testing/e2e"
+    ],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 150,
+    "lessons": [
+      "testing-e2e-core"
+    ],
+    "prompt": {
+      "vi": "Test này luôn pass khi chạy một mình. Từ khi CI chạy Detox với 3 worker, `cart-badge` lúc thì hiện 3, lúc thì 0. Các file spec khác (`wishlist.e2e.ts`, `checkout.e2e.ts`) cũng copy cùng phần setup này. Dòng nào gây lỗi?",
+      "en": "This test always passes when run alone. Since CI started running Detox with 3 workers, `cart-badge` sometimes shows 3 and sometimes 0. Other spec files (`wishlist.e2e.ts`, `checkout.e2e.ts`) copy the same setup. Which line is the bug?"
+    },
+    "code": "import { by, device, element, expect } from 'detox';\nimport { resetCart, seedUser } from './helpers/api';\n\nconst EMAIL = 'e2e-shopper@acme.test';\n\ndescribe('cart', () => {\n  beforeEach(async () => {\n    await seedUser(EMAIL);\n    await resetCart(EMAIL);\n    await device.launchApp({ newInstance: true, delete: true, launchArgs: { e2eEmail: EMAIL } });\n  });\n\n  it('shows the item count after adding two products', async () => {\n    await element(by.id('add-to-cart-0')).tap();\n    await element(by.id('add-to-cart-1')).tap();\n    await expect(element(by.id('cart-badge'))).toHaveText('2');\n  });\n});",
+    "answerLine": 4,
+    "causeOptions": [
+      {
+        "text": {
+          "vi": "Mọi spec dùng chung một tài khoản cố định, nên các worker cùng sửa một giỏ hàng",
+          "en": "Every spec shares one fixed account, so parallel workers add to and reset the same cart"
+        }
+      },
+      {
+        "text": {
+          "vi": "Hai lần tap liên tiếp quá nhanh, nên cần một sleep ngắn giữa chúng",
+          "en": "The two taps fire too quickly in a row, so a short sleep is needed between them"
+        },
+        "misconception": {
+          "id": "te2e-sleep-between-taps",
+          "text": {
+            "vi": "Đổ lỗi cho tốc độ tap. Detox chờ app rảnh trước mỗi action; hơn nữa badge hiện 3 hoặc 0, tức là có thêm hoặc bớt món mà test này không hề làm.",
+            "en": "Blaming tap speed. Detox waits for idle before each action; besides, the badge shows 3 or 0, meaning items were added or removed by something other than this test."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`resetCart` không được `await`, nên giỏ hàng chưa kịp xoá trước khi app mở",
+          "en": "`resetCart` is not awaited, so the cart is not cleared before the app launches"
+        },
+        "misconception": {
+          "id": "te2e-misread-await",
+          "text": {
+            "vi": "Đọc sai code. `resetCart` có `await` ở dòng 9; và test đã pass khi chạy một mình, nên lỗi chỉ xuất hiện khi có worker khác chạm vào cùng dữ liệu.",
+            "en": "Misreading the code. `resetCart` is awaited on line 9; and the test passes alone, so the failure only appears when another worker touches the same data."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`toHaveText` so sánh trước khi badge render xong, nên phải bọc trong `waitFor`",
+          "en": "`toHaveText` compares before the badge finishes rendering, so it must be wrapped in `waitFor`"
+        },
+        "misconception": {
+          "id": "te2e-assert-before-render",
+          "text": {
+            "vi": "Nghĩ rằng assertion chạy trước khi UI cập nhật. Detox chờ app rảnh trước assertion; badge sai giá trị một cách ổn định (3 hoặc 0), không phải chậm một nhịp.",
+            "en": "Believing the assertion runs before the UI updates. Detox waits for idle before asserting; the badge shows a steadily wrong value (3 or 0), not a value that is one beat late."
+          }
+        }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "Dòng 4 cố định một email, và các spec khác cũng dùng nó. Khi 3 worker chạy song song, `checkout.e2e.ts` có thể gọi `resetCart` lúc test này vừa thêm hàng (badge về 0), hoặc `wishlist.e2e.ts` thêm một món vào cùng giỏ (badge thành 3). Chạy một mình thì không có ai chen vào nên luôn pass. Sửa bằng cách tạo dữ liệu riêng cho mỗi test, ví dụ email chứa `process.env.JEST_WORKER_ID` cộng một timestamp, và seed tài khoản đó trong `beforeEach`. Nguyên tắc: test song song không được chia sẻ dữ liệu có thể thay đổi.",
+      "en": "Line 4 hard-codes one email, and the other specs use it too. With 3 workers in parallel, `checkout.e2e.ts` can call `resetCart` just after this test adds items (badge drops to 0), or `wishlist.e2e.ts` adds an item to the same cart (badge becomes 3). Run alone, nothing interferes, so it always passes. Fix it by giving each test its own data, for example an email built from `process.env.JEST_WORKER_ID` plus a timestamp, seeded in `beforeEach`. The rule: parallel tests must not share mutable data."
+    }
+  },
+  {
+    "id": "testing-e2e-010",
+    "type": "open",
+    "topics": [
+      "testing/e2e"
+    ],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 330,
+    "lessons": [
+      "testing-e2e-core"
+    ],
+    "prompt": {
+      "vi": "Bộ E2E của team fail khoảng 15% số lần chạy trên CI, ai cũng bấm chạy lại, và có người đề xuất xoá hẳn nó. Kể lại cách bạn xử lý tình huống này.",
+      "en": "Your team's E2E suite fails on about 15% of CI runs, everyone just hits re-run, and someone proposes deleting it. Walk me through how you handled it."
+    },
+    "keyPoints": [
+      {
+        "vi": "Đo trước: tỉ lệ fail theo từng test và theo từng bước, từ lịch sử CI, thay vì đoán",
+        "en": "Measure first: failure rate per test and per step from CI history, instead of guessing"
+      },
+      {
+        "vi": "Cách ly (quarantine) các test tệ nhất khỏi pipeline chặn PR, có ticket và người phụ trách",
+        "en": "Quarantine the worst tests out of the PR-blocking pipeline, with a ticket and an owner"
+      },
+      {
+        "vi": "Dùng video, screenshot và log của lần fail để xếp nguyên nhân: timing, animation, network, dữ liệu dùng chung",
+        "en": "Use failure videos, screenshots and logs to classify the cause: timing, animations, network, shared data"
+      },
+      {
+        "vi": "Sửa từng nguyên nhân: chờ theo điều kiện, dữ liệu riêng cho từng test, reset state lúc launch, backend có seed hoặc mock",
+        "en": "Fix each cause: condition-based waits, per-test data, state reset at launch, a seeded or mocked backend"
+      },
+      {
+        "vi": "Thu nhỏ suite về các luồng quan trọng, đẩy edge case xuống unit và component test",
+        "en": "Shrink the suite to critical journeys and push edge cases down to unit and component tests"
+      },
+      {
+        "vi": "Theo dõi số lần retry như một chỉ số, không dùng retry để giấu flaky",
+        "en": "Track retries as a metric instead of using them to hide flakiness"
+      }
+    ],
+    "modelAnswer": {
+      "vi": "Mình không xoá suite, vì nó là thứ duy nhất chứng minh luồng đăng nhập và checkout chạy trên build thật. Việc đầu tiên là lấy lịch sử CI hai tuần và tính tỉ lệ fail theo từng test: thường chỉ vài test chiếm phần lớn số lần fail. Mấy test đó mình chuyển sang job quarantine không chặn PR, mỗi cái có ticket. Rồi mình xem video và log của từng lần fail. Ở team gần nhất, nguyên nhân chính là hai thứ: một tài khoản test dùng chung cho mọi worker, và vài chỗ dùng sleep cố định. Mình đổi sang tạo tài khoản riêng qua API seed trong beforeEach, thay sleep bằng waitFor trên phần tử cụ thể, và reset state lúc launch. Mình cũng chuyển mười mấy test kiểm tra validation xuống unit test. Sau đó tỉ lệ fail giảm còn dưới 1%, và mình đặt cảnh báo khi số lần retry tăng lại.",
+      "en": "I would not delete it, because it is the only thing proving login and checkout work on a real build. First I pulled two weeks of CI history and computed the failure rate per test; usually a handful of tests cause most failures. I moved those into a quarantine job that does not block PRs, each with a ticket. Then I watched the failure videos and logs. On my last team the main causes were two: one test account shared by every worker, and a few fixed sleeps. I switched to creating an account per test through a seed API in beforeEach, replaced sleeps with waitFor on specific elements, and reset state at launch. I also moved a dozen validation tests down to unit tests. The failure rate dropped below 1%, and I added an alert for when retries start climbing again."
+    },
+    "followUps": [
+      {
+        "vi": "Bạn quyết định thế nào khi nào một test được ra khỏi quarantine?",
+        "en": "How do you decide when a test can leave quarantine?"
+      },
+      {
+        "vi": "Nếu flaky chỉ xảy ra trên CI mà không tái hiện được trên máy bạn, bạn làm gì?",
+        "en": "What do you do if the flakiness only happens on CI and you cannot reproduce it locally?"
+      }
+    ]
+  },
+  {
+    "id": "testing-e2e-011",
+    "type": "open",
+    "topics": [
+      "testing/e2e"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 270,
+    "lessons": [
+      "testing-e2e-core"
+    ],
+    "prompt": {
+      "vi": "Team bạn sắp viết bộ E2E đầu tiên cho app RN và đang phân vân giữa Detox và Maestro. Bạn sẽ chọn thế nào?",
+      "en": "Your team is about to write its first E2E suite for an RN app and is torn between Detox and Maestro. How would you choose?"
+    },
+    "keyPoints": [
+      {
+        "vi": "Detox là gray-box: synchronise với network, animation, timer và JS thread trong app, nên ít phải chờ thủ công",
+        "en": "Detox is gray-box: it synchronises with network, animations, timers and the JS thread inside the app, so fewer manual waits"
+      },
+      {
+        "vi": "Maestro là black-box: flow YAML, chạy với mọi bản build, tự thử lại mỗi lệnh thay vì biết app có đang bận",
+        "en": "Maestro is black-box: YAML flows, works with any build, retries each command instead of knowing whether the app is busy"
+      },
+      {
+        "vi": "Ai viết và bảo trì test: dev viết TypeScript với Jest, hay QA cần định dạng dễ đọc",
+        "en": "Who writes and maintains tests: developers in TypeScript with Jest, or QA who need a readable format"
+      },
+      {
+        "vi": "Chi phí cài đặt: Detox cần cấu hình build test cho từng nền tảng; Maestro không cần sửa app",
+        "en": "Setup cost: Detox needs a test build configured per platform; Maestro needs no app changes"
+      },
+      {
+        "vi": "Nhu cầu kiểm soát: mock, launch args, điều khiển synchronisation bằng code so với flow khai báo",
+        "en": "Control needs: mocks, launch args and programmatic sync control versus declarative flows"
+      },
+      {
+        "vi": "Thử cả hai trên một luồng thật (ví dụ đăng nhập) rồi quyết định dựa trên độ ổn định và tốc độ viết",
+        "en": "Spike both on one real journey, such as login, and decide on stability and authoring speed"
+      }
+    ],
+    "modelAnswer": {
+      "vi": "Mình bắt đầu từ việc ai sẽ viết test. Nếu dev viết và muốn test sống cạnh code bằng TypeScript, Detox hợp hơn: nó chạy trên Jest, nằm trong app nên biết khi nào network, animation và JS thread rảnh, và cho kiểm soát bằng code như launch args. Đổi lại, phải cấu hình build test cho từng nền tảng và xử lý những thứ không bao giờ rảnh như animation lặp. Nếu QA tham gia nhiều hoặc team cần kết quả nhanh, Maestro hợp hơn: flow YAML dễ đọc, chạy với bất kỳ bản build nào, tự thử lại mỗi lệnh. Nhưng nó không nhìn được bên trong app, nên ít công cụ hơn khi cần dựng state phức tạp. Mình thường cho team dựng thử luồng đăng nhập bằng cả hai trong một hai ngày, chạy trên CI vài chục lần, rồi chọn theo độ ổn định và tốc độ viết.",
+      "en": "I start with who will write the tests. If developers own them and want tests next to the code in TypeScript, Detox fits better: it runs on Jest, sits inside the app so it knows when network, animations and the JS thread are idle, and gives programmatic control such as launch args. The cost is configuring a test build per platform and handling things that never go idle, like looping animations. If QA is heavily involved or the team needs results fast, Maestro fits better: readable YAML flows, works with any build, retries each command on its own. But it cannot see inside the app, so you have fewer tools for setting up complex state. I usually have the team spike the login journey in both over a day or two, run each a few dozen times on CI, and pick on stability and authoring speed."
+    },
+    "followUps": [
+      {
+        "vi": "Có nên dùng cả hai trong cùng một dự án không?",
+        "en": "Would you ever use both in the same project?"
+      }
+    ]
+  },
+  {
+    "id": "testing-e2e-012",
+    "type": "open",
+    "topics": [
+      "testing/e2e"
+    ],
+    "kind": "advanced",
+    "difficulty": 3,
+    "estSeconds": 330,
+    "lessons": [
+      "testing-e2e-core"
+    ],
+    "prompt": {
+      "vi": "Bạn dẫn dắt một app RN mới và cần đặt chiến lược test từ đầu. Bạn chia gì vào unit, component và E2E, chạy chúng ở đâu và khi nào, và lo dữ liệu, môi trường test ra sao?",
+      "en": "You lead a new RN app and need to set the test strategy from the start. What goes into unit, component and E2E tests, where and when do they run, and how do you handle test data and environments?"
+    },
+    "keyPoints": [
+      {
+        "vi": "Unit test cho logic thuần (validation, reducer, formatter, xử lý lỗi API), phủ mọi edge case",
+        "en": "Unit tests for pure logic (validation, reducers, formatters, API error handling), covering every edge case"
+      },
+      {
+        "vi": "Component test với React Native Testing Library cho hành vi của từng màn hình, mock native module và network",
+        "en": "Component tests with React Native Testing Library for each screen's behaviour, with native modules and network mocked"
+      },
+      {
+        "vi": "E2E chỉ cho vài luồng quan trọng: đăng ký, đăng nhập, luồng thanh toán, deep link",
+        "en": "E2E only for a few critical journeys: sign-up, login, the payment flow, deep links"
+      },
+      {
+        "vi": "Không viết E2E cho màn hình native không thuộc về mình (payment sheet, hộp thoại quyền) hay cho từng biến thể UI",
+        "en": "No E2E for native screens you do not own (payment sheets, permission dialogs) or for every UI variant"
+      },
+      {
+        "vi": "Unit và component chạy ở mỗi PR; E2E smoke ở PR, cả bộ ban đêm hoặc trước release, build một lần và chia shard",
+        "en": "Unit and component tests on every PR; an E2E smoke set on PRs and the full suite nightly or pre-release, built once and sharded"
+      },
+      {
+        "vi": "Dữ liệu E2E riêng cho mỗi test qua API seed hoặc mock server, không dùng staging chung hay production",
+        "en": "Per-test E2E data via a seed API or mock server, never shared staging or production"
+      }
+    ],
+    "modelAnswer": {
+      "vi": "Mình đặt mỗi kiểm tra ở tầng rẻ nhất chứng minh được nó. Logic thuần như validation, reducer, tính giá và xử lý lỗi API được tách khỏi component để unit test phủ hết edge case. Mỗi màn hình có component test với React Native Testing Library, mock native module và network, kiểm tra hành vi người dùng thấy: loading, lỗi, rỗng. E2E chỉ giữ năm, sáu luồng làm ra tiền: đăng ký, đăng nhập, thêm vào giỏ tới thanh toán, và deep link. Mình không viết E2E cho payment sheet của hệ thống hay hộp thoại quyền, vì đó không phải code của mình và rất dễ flaky. Unit và component chạy ở mọi PR; E2E smoke chạy ở PR, cả bộ chạy ban đêm, build một lần rồi chia shard. Dữ liệu E2E được tạo riêng cho từng test qua API seed trên một backend test, và mọi test chọn phần tử bằng testID.",
+      "en": "I put each check at the cheapest layer that can prove it. Pure logic such as validation, reducers, pricing and API error handling is kept out of components so unit tests cover every edge case. Each screen gets component tests with React Native Testing Library, with native modules and network mocked, checking what the user sees: loading, error, empty. E2E keeps only the five or six journeys that make money: sign-up, login, add to cart through payment, and deep links. I do not write E2E tests for the system payment sheet or permission dialogs, because that is not my code and they flake easily. Unit and component tests run on every PR; an E2E smoke set runs on PRs and the full suite nightly, built once and sharded. E2E data is created per test through a seed API on a test backend, and every test selects elements by testID."
+    },
+    "followUps": [
+      {
+        "vi": "Bạn đo thế nào để biết chiến lược này đang hiệu quả sau sáu tháng?",
+        "en": "How would you measure whether this strategy is working after six months?"
+      },
+      {
+        "vi": "Bạn xử lý luồng thanh toán dùng SDK bên thứ ba thế nào trong E2E?",
+        "en": "How do you handle a payment flow that uses a third-party SDK in E2E?"
+      }
+    ]
+  }
+]

@@ -1,0 +1,807 @@
+[
+  {
+    "id": "debug-js-001",
+    "type": "mcq",
+    "topics": [
+      "debug/js"
+    ],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": [
+      "debug-js-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Bạn tạo project mới trên RN 0.76 trở lên và muốn dừng ở một breakpoint trong code JS. Debugger mặc định là gì?",
+      "en": "You start a new project on RN 0.76 or later and want to stop at a breakpoint in your JS. What is the default debugger?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Chrome, qua tuỳ chọn \"Debug JS Remotely\" cũ trong dev menu",
+          "en": "Chrome, through the old \"Debug JS Remotely\" option in the dev menu"
+        },
+        "misconception": {
+          "id": "djs-remote-debug-default",
+          "text": {
+            "vi": "Nghĩ rằng remote debugging qua Chrome vẫn là mặc định. Cách này đã bị deprecate và không chạy với chế độ bridgeless của kiến trúc mới, vốn bật mặc định từ RN 0.76.",
+            "en": "Believing remote debugging in Chrome is still the default. It is deprecated and does not work with the New Architecture's bridgeless mode, which is on by default from RN 0.76."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "React Native DevTools, mở từ dev menu hoặc từ terminal của Metro",
+          "en": "React Native DevTools, opened from the dev menu or from the Metro terminal"
+        }
+      },
+      {
+        "text": {
+          "vi": "Plugin Hermes debugger của Flipper, có sẵn trong project mới",
+          "en": "Flipper's Hermes debugger plugin, which new projects ship with"
+        },
+        "misconception": {
+          "id": "djs-flipper-default",
+          "text": {
+            "vi": "Nghĩ rằng Flipper vẫn đi kèm project mới. Từ RN 0.74, template không còn tích hợp Flipper; debugger mặc định hiện nay là React Native DevTools.",
+            "en": "Believing Flipper still ships with new projects. Since RN 0.74 the template no longer integrates Flipper; the default debugger now is React Native DevTools."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Không có; với RN bạn chỉ debug JS được bằng `console.log`",
+          "en": "None; in RN you can only debug JS with `console.log`"
+        },
+        "misconception": {
+          "id": "djs-no-js-breakpoints",
+          "text": {
+            "vi": "Nghĩ rằng RN không có debugger cho JS. React Native DevTools hỗ trợ breakpoint, chạy từng bước, xem call stack và scope trên chính engine của máy.",
+            "en": "Believing RN has no JS debugger. React Native DevTools supports breakpoints, stepping, the call stack and scope, on the engine running on the device."
+          }
+        }
+      }
+    ],
+    "answer": [
+      1
+    ],
+    "explanation": {
+      "vi": "Từ RN 0.76, React Native DevTools là debugger mặc định. Bạn mở nó từ dev menu, hoặc bấm `j` trong terminal đang chạy Metro. Nó nối thẳng vào Hermes trên máy hoặc simulator, nên bạn đặt breakpoint, chạy từng bước, xem call stack, scope và console trên đúng engine đang chạy app. Các panel có sẵn có thể khác nhau giữa các phiên bản, nên hãy xem tài liệu của phiên bản bạn dùng. Bẫy chính là nghĩ tới các cách cũ: remote debugging qua Chrome đã bị deprecate và không chạy với bridgeless, còn Flipper đã bị bỏ khỏi template từ RN 0.74.",
+      "en": "From RN 0.76, React Native DevTools is the default debugger. You open it from the dev menu, or by pressing `j` in the terminal running Metro. It connects straight to Hermes on the device or simulator, so you set breakpoints, step, and read the call stack, scope and console on the engine that actually runs the app. The available panels can differ between versions, so check the docs for yours. The main trap is reaching for older tools: remote debugging in Chrome is deprecated and does not work in bridgeless mode, and Flipper left the template in RN 0.74."
+    }
+  },
+  {
+    "id": "debug-js-002",
+    "type": "mcq",
+    "topics": [
+      "debug/js"
+    ],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 75,
+    "lessons": [
+      "debug-js-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Trong một project RN cũ, một lỗi parse ngày biến mất mỗi khi đồng nghiệp bật \"Debug JS Remotely\", và quay lại khi tắt. Lý do khả dĩ nhất là gì?",
+      "en": "On an older RN project, a date-parsing bug disappears whenever a teammate turns on \"Debug JS Remotely\" and comes back when they turn it off. What is the most likely reason?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Remote debugging chạy JS trong Chrome trên máy tính, không phải trên thiết bị",
+          "en": "With remote debugging, the JS runs in Chrome on the computer, not in the engine on the device"
+        }
+      },
+      {
+        "text": {
+          "vi": "Remote debugging chuyển bundle sang chế độ release, nên code chạy khác",
+          "en": "Remote debugging switches the bundle to release mode, so the code behaves differently"
+        },
+        "misconception": {
+          "id": "djs-remote-is-release",
+          "text": {
+            "vi": "Nghĩ rằng bật debugger làm đổi chế độ build. Bundle vẫn là bản dev; thứ thay đổi là nơi JS được thực thi.",
+            "en": "Believing the debugger changes the build mode. The bundle is still a dev bundle; what changes is where the JS executes."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Chrome DevTools vá lại `Date` để việc debug dễ hơn",
+          "en": "Chrome DevTools patches `Date` to make debugging easier"
+        },
+        "misconception": {
+          "id": "djs-devtools-patch-globals",
+          "text": {
+            "vi": "Nghĩ rằng debugger sửa các global như `Date`. Debugger không vá global nào; khác biệt đến từ engine khác nhau, mỗi engine có cách parse riêng với chuỗi ngày không chuẩn.",
+            "en": "Believing the debugger patches globals such as `Date`. It patches nothing; the difference comes from a different engine, and engines parse non-standard date strings differently."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Remote debugging bật source map, và source map sửa luôn lỗi parse",
+          "en": "Remote debugging turns on source maps, and the source maps fix the parsing"
+        },
+        "misconception": {
+          "id": "djs-sourcemaps-change-behaviour",
+          "text": {
+            "vi": "Nghĩ rằng source map làm thay đổi hành vi. Source map chỉ ánh xạ vị trí trong bundle về file nguồn để hiển thị; nó không đổi code chạy.",
+            "en": "Believing source maps change behaviour. A source map only maps bundle positions back to source files for display; it does not change the code that runs."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0
+    ],
+    "explanation": {
+      "vi": "Remote debugging kiểu cũ chạy toàn bộ JS trong V8 của Chrome trên máy tính, rồi nói chuyện với native qua websocket. Vì vậy bạn đang debug một engine khác với engine trên thiết bị: cách parse chuỗi ngày không chuẩn, `Intl` hay thời gian chạy đều có thể khác, và lỗi biến mất đúng lúc bạn nhìn vào. Cách này đã bị deprecate và không chạy với bridgeless. React Native DevTools nối vào Hermes trên chính thiết bị, nên thứ bạn debug là thứ người dùng chạy. Với lỗi ngày, hãy dùng chuỗi ISO 8601 hoặc một thư viện parse rõ ràng.",
+      "en": "Legacy remote debugging ran all the JS in Chrome's V8 on the computer and talked to native over a websocket. So you were debugging a different engine from the one on the device: parsing of non-standard date strings, `Intl` and timing can all differ, and the bug vanishes exactly when you look at it. It is deprecated and does not work in bridgeless mode. React Native DevTools connects to Hermes on the device itself, so what you debug is what users run. For the date bug, use ISO 8601 strings or an explicit parsing library."
+    }
+  },
+  {
+    "id": "debug-js-003",
+    "type": "mcq",
+    "topics": [
+      "debug/js",
+      "render/memo"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 75,
+    "lessons": [
+      "debug-js-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Một hàng trong list re-render mỗi lần gõ phím vào một ô tìm kiếm không liên quan. Bạn muốn biết prop hay hook nào thay đổi đã gây ra từng lần render. Công cụ nào cho bạn câu trả lời đó trực tiếp?",
+      "en": "A list row re-renders on every keystroke in an unrelated search box. You want to know which prop or hook change caused each render. Which tool tells you that directly?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Overlay Perf Monitor trong dev menu",
+          "en": "The Perf Monitor overlay from the dev menu"
+        },
+        "misconception": {
+          "id": "djs-perf-monitor-shows-renders",
+          "text": {
+            "vi": "Nghĩ rằng Perf Monitor cho biết component nào render. Nó chỉ hiện FPS của JS và UI thread cùng bộ nhớ, không có thông tin theo từng component.",
+            "en": "Believing the Perf Monitor shows which component rendered. It only shows JS and UI thread FPS and memory, nothing per component."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Panel Components, nơi lưu lịch sử giá trị cũ của từng prop",
+          "en": "The Components panel, which keeps a history of each prop's past values"
+        },
+        "misconception": {
+          "id": "djs-components-panel-history",
+          "text": {
+            "vi": "Nghĩ rằng panel Components lưu lịch sử. Nó chỉ hiện props, state và hooks hiện tại của component đang chọn; muốn biết vì sao render thì cần ghi lại bằng Profiler.",
+            "en": "Believing the Components panel keeps history. It only shows the current props, state and hooks of the selected component; to see why it rendered you record with the Profiler."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "React DevTools Profiler, có bật ghi lại lý do render của mỗi component",
+          "en": "The React DevTools Profiler, with recording of why each component rendered turned on"
+        }
+      },
+      {
+        "text": {
+          "vi": "Một breakpoint trong hàm render, vì call stack sẽ ghi tên prop đã đổi",
+          "en": "A breakpoint in the render function, since the call stack names the changed prop"
+        },
+        "misconception": {
+          "id": "djs-callstack-shows-cause",
+          "text": {
+            "vi": "Nghĩ rằng call stack cho biết nguyên nhân render. Stack lúc render chủ yếu là frame của React scheduler và reconciler; nó không nói prop hay state nào đã đổi.",
+            "en": "Believing the call stack explains a render. The stack during render is mostly React scheduler and reconciler frames; it does not say which prop or state changed."
+          }
+        }
+      }
+    ],
+    "answer": [
+      2
+    ],
+    "explanation": {
+      "vi": "React DevTools (có sẵn trong React Native DevTools) có Profiler ghi lại mỗi lần commit. Khi bật tuỳ chọn ghi lý do render trong phần cài đặt của Profiler, mỗi component trong một commit cho biết nó render vì props nào đổi, hook nào đổi, hay vì component cha render. Từ đó bạn biết nên ổn định callback, tách state hay dùng `React.memo`. Panel Components hữu ích để xem giá trị hiện tại, nhưng không trả lời được câu \"vì sao\". Perf Monitor chỉ cho biết thread nào đang chậm.",
+      "en": "React DevTools (built into React Native DevTools) has a Profiler that records each commit. With the setting that records why each component rendered turned on in the Profiler settings, every component in a commit shows whether it rendered because of changed props, a changed hook, or its parent rendering. That tells you whether to stabilise a callback, split state or use `React.memo`. The Components panel is useful for current values but cannot answer \"why\". The Perf Monitor only tells you which thread is slow."
+    }
+  },
+  {
+    "id": "debug-js-004",
+    "type": "mcq",
+    "topics": [
+      "debug/js"
+    ],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": [
+      "debug-js-core"
+    ],
+    "multi": true,
+    "prompt": {
+      "vi": "Màn hình xác nhận thanh toán bị treo, chỉ trên Android release build; dev build chạy bình thường. Những bước nào hợp lý? (chọn tất cả đáp án đúng)",
+      "en": "The payment confirmation screen hangs, but only in the Android release build; the dev build works. Which steps are sound? (select all that apply)"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Build và chạy bản release trên máy thật để dựng lại lỗi",
+          "en": "Build and run the release variant on a real device to reproduce it"
+        }
+      },
+      {
+        "text": {
+          "vi": "Đọc log của thiết bị (ví dụ `adb logcat`) trong lúc dựng lại lỗi",
+          "en": "Read the device logs (for example `adb logcat`) while reproducing it"
+        }
+      },
+      {
+        "text": {
+          "vi": "Gắn React Native DevTools vào bản release và đặt breakpoint",
+          "en": "Attach React Native DevTools to the release build and set breakpoints"
+        },
+        "misconception": {
+          "id": "djs-devtools-release",
+          "text": {
+            "vi": "Nghĩ rằng debugger JS chạy được trên release build. React Native DevTools chỉ dùng được với dev build; ở release bạn dựa vào log, crash reporter và source map.",
+            "en": "Believing the JS debugger works on release builds. React Native DevTools only works with dev builds; in release you rely on logs, the crash reporter and source maps."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Symbolicate stack bằng source map tạo ra cho đúng bản release đó",
+          "en": "Symbolicate any stack with the source map generated for that release build"
+        }
+      },
+      {
+        "text": {
+          "vi": "Symbolicate stack bằng source map của debug build cùng commit",
+          "en": "Symbolicate any stack with the source map from a debug build of the same commit"
+        },
+        "misconception": {
+          "id": "debug-sourcemap-works",
+          "text": {
+            "vi": "Nghĩ rằng source map của debug build dùng được cho release. Bundle debug không minify và không compile sang bytecode, nên vị trí trong đó không khớp với bundle release.",
+            "en": "Believing a debug build's source map works for release. The debug bundle is not minified or compiled to bytecode, so its positions do not match the release bundle."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0,
+      1,
+      3
+    ],
+    "explanation": {
+      "vi": "Lỗi chỉ có ở release nghĩa là bạn phải nhìn vào đúng bản release: build variant release, chạy trên máy thật, đọc log trong lúc dựng lại. Ở release, `console.log` vẫn được ghi ra log hệ thống (logcat trên Android) trừ khi bạn đã cấu hình loại bỏ nó. Stack từ release cần source map của chính bản build đó, vì bundle đã minify và compile sang bytecode. Debugger không gắn được vào release, nên đừng chờ breakpoint. Sau khi dựng lại được, hãy liệt kê khác biệt giữa dev và release: nhánh `__DEV__`, minify đổi tên, cấu hình môi trường.",
+      "en": "A release-only bug means you must look at the release build itself: the release variant, on a real device, reading logs while you reproduce it. In release, `console.log` still goes to the system log (logcat on Android) unless you configured it away. A release stack needs the source map of that exact build, because the bundle is minified and compiled to bytecode. The debugger cannot attach to release, so do not wait for a breakpoint. Once you can reproduce it, list what differs between dev and release: `__DEV__` branches, minifier renaming, environment config."
+    }
+  },
+  {
+    "id": "debug-js-005",
+    "type": "mcq",
+    "topics": [
+      "debug/js"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": [
+      "debug-js-core"
+    ],
+    "multi": true,
+    "prompt": {
+      "vi": "Bạn debug JS bằng React Native DevTools trên dev build. Những phát biểu nào đúng? (chọn tất cả đáp án đúng)",
+      "en": "You debug JS with React Native DevTools on a dev build. Which statements are true? (select all that apply)"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "`debugger;` chỉ dừng khi có debugger gắn vào; nếu không thì nó không làm gì",
+          "en": "A `debugger;` statement pauses only when a debugger is attached; otherwise it does nothing"
+        }
+      },
+      {
+        "text": {
+          "vi": "Câu lệnh `debugger;` ném lỗi khi không có debugger nào đang gắn vào",
+          "en": "A `debugger;` statement throws an error when no debugger is attached"
+        },
+        "misconception": {
+          "id": "djs-debugger-throws",
+          "text": {
+            "vi": "Nghĩ rằng `debugger;` gây lỗi khi không có debugger. Theo đặc tả JS, khi không có debugger nó là lệnh rỗng; dù vậy vẫn nên để lint chặn nó trước khi merge.",
+            "en": "Believing `debugger;` throws without a debugger. Per the JS spec it is a no-op when no debugger is attached; still, let your linter block it before merge."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Breakpoint có điều kiện cho bạn dừng ở đúng giá trị lỗi mà không phải sửa code",
+          "en": "A conditional breakpoint lets you stop on the one bad value without editing code"
+        }
+      },
+      {
+        "text": {
+          "vi": "Breakpoint chỉ dùng được trong file mà bạn đã thêm câu lệnh `debugger;`",
+          "en": "Breakpoints only work in files where you have added a `debugger;` statement"
+        },
+        "misconception": {
+          "id": "djs-breakpoints-need-statement",
+          "text": {
+            "vi": "Nghĩ rằng phải có `debugger;` mới đặt được breakpoint. Bạn mở file nguồn trong panel Sources (nhờ source map) và đặt breakpoint ở bất kỳ dòng nào.",
+            "en": "Believing breakpoints need a `debugger;` statement. You open the source file in the Sources panel (thanks to source maps) and set a breakpoint on any line."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Khi đang dừng, timer và cập nhật do JS điều khiển không chạy vì JS thread đã dừng",
+          "en": "While paused, timers and JS-driven updates do not run, because the JS thread is stopped"
+        }
+      }
+    ],
+    "answer": [
+      0,
+      2,
+      4
+    ],
+    "explanation": {
+      "vi": "`debugger;` là lệnh rỗng khi không có debugger, và là một breakpoint cứng khi có. Nó tiện khi code chỉ chạy một lần lúc khởi động, nhưng dễ bị quên trong code, nên hãy để lint chặn. Breakpoint đặt trong panel Sources không cần sửa code, và breakpoint có điều kiện như `item.price === undefined` giúp bạn bỏ qua hàng trăm lần chạy bình thường. Khi dừng, cả JS thread đứng lại: timer, callback mạng và mọi cập nhật do JS điều khiển phải chờ, nên thời gian dừng có thể làm đổi hành vi của lỗi liên quan tới timing.",
+      "en": "`debugger;` is a no-op without a debugger and a hard breakpoint with one. It is handy for code that runs once at startup, but it is easy to leave behind, so let lint block it. Breakpoints set in the Sources panel need no code change, and a conditional breakpoint such as `item.price === undefined` skips hundreds of normal runs. When paused, the whole JS thread stops: timers, network callbacks and every JS-driven update wait, so the pause itself can change the behaviour of a timing-related bug."
+    }
+  },
+  {
+    "id": "debug-js-006",
+    "type": "spot-bug",
+    "topics": [
+      "debug/js"
+    ],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 120,
+    "lessons": [
+      "debug-js-core"
+    ],
+    "prompt": {
+      "vi": "Log của release build cho mọi đơn hàng thất bại đều có `\"error\":{}`, nên team không biết lỗi là gì. Dòng nào gây ra điều này, và vì sao?",
+      "en": "In release build logs, every failed order shows `\"error\":{}`, so the team cannot tell what went wrong. Which line causes this, and why?"
+    },
+    "code": "type LogFields = Record<string, unknown>;\n\nexport function logEvent(event: string, fields: LogFields): void {\n  const line = JSON.stringify({ event, ts: Date.now(), ...fields });\n  sendToLogService(line);\n}\n\nexport async function submitOrder(orderId: string, requestId: string): Promise<void> {\n  try {\n    await api.post('/orders', { orderId }, { headers: { 'x-request-id': requestId } });\n    logEvent('order_submitted', { orderId, requestId });\n  } catch (error: unknown) {\n    logEvent('order_failed', { orderId, requestId, error });\n    throw error;\n  }\n}",
+    "answerLine": 13,
+    "causeOptions": [
+      {
+        "text": {
+          "vi": "`message` và `stack` của `Error` không enumerable, nên `JSON.stringify` cho ra `{}`",
+          "en": "`Error`'s `message` and `stack` are non-enumerable, so `JSON.stringify` yields `{}`"
+        }
+      },
+      {
+        "text": {
+          "vi": "Hermes xoá message của lỗi trong release build để giảm kích thước",
+          "en": "Hermes strips error messages in release builds to save size"
+        },
+        "misconception": {
+          "id": "djs-release-strips-errors",
+          "text": {
+            "vi": "Nghĩ rằng release build xoá message của lỗi. Message và stack vẫn còn ở release; thứ mất là do cách bạn serialize đối tượng lỗi.",
+            "en": "Believing release builds strip error messages. The message and stack are still there in release; they are lost by how you serialise the error object."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Spread `...fields` bỏ đi các object lồng bên trong trước khi serialize",
+          "en": "The `...fields` spread drops nested objects before serialising"
+        },
+        "misconception": {
+          "id": "djs-spread-drops-nested",
+          "text": {
+            "vi": "Nghĩ rằng spread bỏ object lồng. Spread là shallow copy nhưng vẫn giữ tham chiếu tới object lồng, và `JSON.stringify` vẫn serialize chúng.",
+            "en": "Believing spread drops nested objects. Spread is a shallow copy that keeps references to nested objects, and `JSON.stringify` still serialises them."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Kiểu `unknown` làm TypeScript xoá giá trị của `error` lúc chạy",
+          "en": "The `unknown` type makes TypeScript erase the value of `error` at runtime"
+        },
+        "misconception": {
+          "id": "djs-unknown-erases-value",
+          "text": {
+            "vi": "Nghĩ rằng kiểu TypeScript ảnh hưởng giá trị lúc chạy. Kiểu bị xoá khi compile; `error` vẫn là object lỗi gốc.",
+            "en": "Believing TypeScript types affect runtime values. Types are erased at compile time; `error` is still the original error object."
+          }
+        }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "Dòng 13 đưa nguyên object lỗi vào log, rồi dòng 4 gọi `JSON.stringify`. `message` và `stack` của `Error` là own property nhưng không enumerable, nên kết quả là `{}`. Trong console của DevTools, lỗi vẫn hiện đầy đủ, nên bug này thường chỉ lộ ra ở log production. Sửa bằng cách chuẩn hoá trước khi log: `error instanceof Error ? { name: error.name, message: error.message, stack: error.stack } : { value: String(error) }`. Việc giữ `requestId` trong mọi dòng log là đúng: nó cho bạn nối log của app với log backend của cùng một request.",
+      "en": "Line 13 puts the raw error object into the log, then line 4 calls `JSON.stringify`. An `Error`'s `message` and `stack` are own properties but not enumerable, so the result is `{}`. In the DevTools console the error still prints in full, so this bug usually shows up only in production logs. Fix it by normalising before logging: `error instanceof Error ? { name: error.name, message: error.message, stack: error.stack } : { value: String(error) }`. Keeping `requestId` on every log line is right: it lets you join app logs with backend logs for the same request."
+    }
+  },
+  {
+    "id": "debug-js-007",
+    "type": "spot-bug",
+    "topics": [
+      "debug/js"
+    ],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 120,
+    "lessons": [
+      "debug-js-core"
+    ],
+    "prompt": {
+      "vi": "Trong console của React Native DevTools, bạn mở rộng object được log ở `cart before merge` và thấy 3 item, vậy mà event `merge_into_empty_cart` vẫn được gửi. Đồng nghiệp kết luận câu `if` bị sai. Dòng nào giải thích điều bạn thấy trong console?",
+      "en": "In the React Native DevTools console, you expand the object logged as `cart before merge` and see 3 items, yet the `merge_into_empty_cart` event was sent. A teammate concludes the `if` is wrong. Which line explains what you see in the console?"
+    },
+    "code": "type CartItem = { id: string; qty: number };\ntype Cart = { items: CartItem[] };\n\nexport function mergeGuestCart(cart: Cart, guestItems: CartItem[]): Cart {\n  console.log('cart before merge', cart);\n  if (cart.items.length === 0) {\n    trackEvent('merge_into_empty_cart');\n  }\n  for (const item of guestItems) {\n    cart.items.push(item);\n  }\n  return cart;\n}",
+    "answerLine": 10,
+    "causeOptions": [
+      {
+        "text": {
+          "vi": "Vòng lặp sửa object đã log, và console đọc nội dung lúc bạn mở rộng",
+          "en": "The loop mutates the logged object, and the console reads it when expanded"
+        }
+      },
+      {
+        "text": {
+          "vi": "`console.log` là bất đồng bộ, nên nó chạy sau khi vòng lặp xong",
+          "en": "`console.log` is asynchronous, so it runs after the loop has finished"
+        },
+        "misconception": {
+          "id": "djs-console-log-async",
+          "text": {
+            "vi": "Nghĩ rằng `console.log` chạy trễ. Lời gọi chạy ngay tại dòng đó; chỉ có phần nội dung khi mở rộng là đọc từ object hiện tại, tức sau khi đã bị sửa.",
+            "en": "Believing `console.log` runs late. The call runs on that line; only the expanded contents are read from the current object, after it was mutated."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Hermes sắp xếp lại thứ tự lệnh, nên câu `if` chạy trước `console.log`",
+          "en": "Hermes reorders statements, so the `if` runs before the `console.log`"
+        },
+        "misconception": {
+          "id": "djs-engine-reorders",
+          "text": {
+            "vi": "Nghĩ rằng engine đổi thứ tự lệnh theo cách quan sát được. Engine có thể tối ưu nhưng phải giữ đúng thứ tự hiệu ứng của code đơn luồng.",
+            "en": "Believing the engine reorders statements observably. An engine may optimise, but it must keep the order of effects in single-threaded code."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Hàm được gọi hai lần, và log đang xem là của lần gọi thứ hai",
+          "en": "The function ran twice, and the log you are looking at is from the second call"
+        },
+        "misconception": {
+          "id": "djs-blame-double-call",
+          "text": {
+            "vi": "Đoán một nguyên nhân không có bằng chứng. Nếu hàm chạy hai lần, bạn sẽ thấy hai dòng log; ở đây chỉ có một, và hiện tượng giải thích được bằng việc log theo tham chiếu.",
+            "en": "Guessing a cause with no evidence. If it ran twice you would see two log lines; there is one, and logging by reference explains what you see."
+          }
+        }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "Console giữ tham chiếu tới `cart`, không chụp lại nó. Bản xem trước thu gọn được ghi lúc log, nhưng khi bạn mở rộng, console đọc object ở thời điểm đó, sau khi dòng 10 đã đẩy item vào `cart.items`. Vì vậy câu `if` đúng: lúc nó chạy, giỏ hàng rỗng thật. Khi cần giá trị tại một thời điểm, hãy log một bản chụp như `JSON.stringify(cart)` hoặc `cart.items.length`, hay dừng ở breakpoint và xem scope. Ở đây việc sửa trực tiếp object đầu vào cũng là một mùi code; trả về object mới sẽ dễ debug hơn.",
+      "en": "The console keeps a reference to `cart`, not a snapshot. The collapsed preview is captured when you log, but when you expand it the console reads the object as it is now, after line 10 has pushed items into `cart.items`. So the `if` is right: when it ran, the cart really was empty. When you need the value at a point in time, log a snapshot such as `JSON.stringify(cart)` or `cart.items.length`, or stop at a breakpoint and read the scope. Mutating the input here is also a smell; returning a new object makes it easier to debug."
+    }
+  },
+  {
+    "id": "debug-js-008",
+    "type": "spot-bug",
+    "topics": [
+      "debug/js"
+    ],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 150,
+    "lessons": [
+      "debug-js-core"
+    ],
+    "prompt": {
+      "vi": "Ở dev build, khi mất mạng app hiện banner offline. Ở release build, cùng tình huống đó người dùng thấy màn hình lỗi chung chung. Dòng nào gây ra khác biệt này, và vì sao?",
+      "en": "In the dev build, losing the network shows the offline banner. In the release build, the same situation shows users the generic error screen. Which line causes the difference, and why?"
+    },
+    "code": "type Profile = { id: string; name: string };\n\nclass NetworkError extends Error {\n  constructor(message: string, readonly status: number) {\n    super(message);\n  }\n}\n\nexport async function loadProfile(userId: string): Promise<Profile | null> {\n  try {\n    return await fetchProfile(userId);\n  } catch (error: unknown) {\n    if (error instanceof Object && error.constructor.name === 'NetworkError') {\n      showOfflineBanner();\n      return null;\n    }\n    throw error;\n  }\n}",
+    "answerLine": 13,
+    "causeOptions": [
+      {
+        "text": {
+          "vi": "Bundle release được minify, nên tên class lúc chạy bị đổi và phép so sánh sai",
+          "en": "The release bundle is minified, so the runtime class name changes and the check fails"
+        }
+      },
+      {
+        "text": {
+          "vi": "Hermes chỉ dùng ở release, và trên Hermes `constructor` luôn là `undefined`",
+          "en": "Hermes is only used in release, and on Hermes `constructor` is always `undefined`"
+        },
+        "misconception": {
+          "id": "djs-hermes-release-only",
+          "text": {
+            "vi": "Nghĩ rằng Hermes chỉ chạy ở release. Hermes là engine mặc định cho cả dev và release; khác biệt nằm ở bước minify của bundle release.",
+            "en": "Believing Hermes only runs in release. Hermes is the default engine for both dev and release; the difference is the minify step of the release bundle."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`readonly status` bị bỏ ở release, nên constructor ném lỗi",
+          "en": "`readonly status` is stripped in release, so the constructor throws"
+        },
+        "misconception": {
+          "id": "djs-ts-differs-in-release",
+          "text": {
+            "vi": "Nghĩ rằng TypeScript được compile khác nhau giữa dev và release. Kiểu bị xoá giống nhau ở cả hai; parameter property vẫn gán `this.status` bình thường.",
+            "en": "Believing TypeScript compiles differently in dev and release. Types are erased the same way in both; the parameter property still assigns `this.status`."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Ở release, lỗi từ `await` không đi vào `try/catch`",
+          "en": "In release, errors from `await` are not caught by `try/catch`"
+        },
+        "misconception": {
+          "id": "djs-release-skips-catch",
+          "text": {
+            "vi": "Nghĩ rằng `try/catch` hoạt động khác ở release. Lỗi từ promise được `await` luôn đi vào `catch`; ở đây `catch` có chạy, nhưng điều kiện bên trong sai.",
+            "en": "Believing `try/catch` behaves differently in release. An awaited rejection always reaches `catch`; here `catch` does run, but the check inside it fails."
+          }
+        }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "Dòng 13 dựa vào tên class lúc chạy. Ở dev, bundle không minify nên `constructor.name` là `NetworkError`. Ở release, minifier của Metro đổi tên các biến cục bộ trong module, gồm cả tên class, nên `constructor.name` thành một chữ cái ngắn, điều kiện sai, lỗi bị ném lại và màn hình lỗi chung hiện ra. Đừng dựa vào `name` của hàm hay class để rẽ nhánh. Hãy gán một trường rõ ràng, như `this.name = 'NetworkError'` hoặc `code`, trong constructor rồi kiểm tra trường đó. Cách tìm ra: dựng lại trên release build, log `error.constructor.name` hoặc `error.name`, và so với dev.",
+      "en": "Line 13 relies on the class name at runtime. In dev the bundle is not minified, so `constructor.name` is `NetworkError`. In release, Metro's minifier renames local names inside modules, class names included, so `constructor.name` becomes a short letter, the check fails, the error is rethrown and the generic screen appears. Do not branch on function or class names. Set an explicit field such as `this.name = 'NetworkError'` or a `code` in the constructor and check that. How you find it: reproduce on a release build, log `error.constructor.name` or `error.name`, and compare with dev."
+    }
+  },
+  {
+    "id": "debug-js-009",
+    "type": "open",
+    "topics": [
+      "debug/js",
+      "maintain/crash"
+    ],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 330,
+    "lessons": [
+      "debug-js-core"
+    ],
+    "prompt": {
+      "vi": "Trên Android release build, một số người dùng bấm \"Thanh toán\" mà không có gì xảy ra, không crash, không báo lỗi. Dev build chạy bình thường. Kể lại cách bạn tìm ra nguyên nhân.",
+      "en": "In the Android release build, some users tap \"Pay\" and nothing happens: no crash, no error message. The dev build works fine. Walk me through how you found the cause."
+    },
+    "keyPoints": [
+      {
+        "vi": "Dựng lại trên release build chạy trên máy thật, không dựa vào dev build",
+        "en": "Reproduce on a release build on a real device, not on the dev build"
+      },
+      {
+        "vi": "Đọc log thiết bị và breadcrumb của crash reporter; tìm cả promise bị reject mà không ai báo cáo",
+        "en": "Read device logs and crash reporter breadcrumbs; look for rejected promises that nobody reports"
+      },
+      {
+        "vi": "Log có cấu trúc kèm request id để nối hành động của người dùng với log backend",
+        "en": "Use structured logs with a request id to join the user's action with backend logs"
+      },
+      {
+        "vi": "Symbolicate stack bằng source map của đúng bản release",
+        "en": "Symbolicate stacks with the source map of that exact release"
+      },
+      {
+        "vi": "Liệt kê khác biệt giữa dev và release: nhánh `__DEV__`, minify đổi tên, loại bỏ `console`, cấu hình môi trường",
+        "en": "List what differs between dev and release: `__DEV__` branches, minifier renaming, stripped `console` calls, environment config"
+      },
+      {
+        "vi": "Thu nhỏ thành bản tái hiện tối thiểu, sửa, rồi thêm log hoặc test để lần sau bắt được sớm",
+        "en": "Shrink it to a minimal reproduction, fix it, then add a log or test so it is caught earlier next time"
+      }
+    ],
+    "modelAnswer": {
+      "vi": "Việc đầu tiên là dựng lại trên đúng release build, cài lên máy thật, vì debugger không gắn được vào release và dev build không có lỗi. Mình mở `adb logcat` trong lúc bấm \"Thanh toán\" nhưng không thấy gì, nên mình nghi một promise bị reject, thứ ở release biến mất lặng lẽ. Mình thêm `.catch` tạm thời log `name`, `message` và `stack`, build release lại. Stack là offset bytecode, nên mình symbolicate bằng source map của bản build đó. Nó chỉ tới chỗ tạo idempotency key bằng `uuid`, báo thiếu `crypto.getRandomValues`. Polyfill cho hàm này chỉ được import trong file setup nằm sau `if (__DEV__)`, nên release không có nó. Mình xác nhận bằng một bản release chỉ gọi `uuid()` lúc khởi động. Mình chuyển import polyfill lên đầu `index.js`, báo rejection về crash reporter như non-fatal, và thêm log có request id cho luồng thanh toán.",
+      "en": "First I reproduced it on the actual release build on a real device, because the debugger cannot attach to release and the dev build had no bug. I ran `adb logcat` while tapping \"Pay\" and saw nothing, so I suspected a rejected promise, which in release disappears silently. I added a temporary `.catch` that logged `name`, `message` and `stack`, and rebuilt release. The stack was bytecode offsets, so I symbolicated it with that build's source map. It pointed to where we create an idempotency key with `uuid`, failing on a missing `crypto.getRandomValues`. The polyfill for it was only imported in a setup file behind `if (__DEV__)`, so release never had it. I confirmed it with a release build that just called `uuid()` at startup. I moved the polyfill import to the top of `index.js`, reported rejections to the crash reporter as non-fatals, and added request-id logs to the payment flow."
+    },
+    "followUps": [
+      {
+        "vi": "Bạn làm sao để `console.log` không làm lộ dữ liệu nhạy cảm trong log của release?",
+        "en": "How do you keep `console.log` from leaking sensitive data into release logs?"
+      },
+      {
+        "vi": "Nếu không dựng lại được lỗi trên máy của bạn thì bạn làm gì tiếp?",
+        "en": "What do you do next if you cannot reproduce it on your own device?"
+      }
+    ]
+  },
+  {
+    "id": "debug-js-010",
+    "type": "open",
+    "topics": [
+      "debug/js",
+      "workflow/git-agile"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 300,
+    "lessons": [
+      "debug-js-core"
+    ],
+    "prompt": {
+      "vi": "Sau khi nâng một thư viện, một màn hình bắt đầu hiện sai dữ liệu. Bạn nghi lỗi nằm trong thư viện chứ không phải code của mình. Kể lại cách bạn chứng minh điều đó và khoanh vùng nguyên nhân.",
+      "en": "After upgrading a library, one screen starts showing wrong data. You suspect the bug is in the library, not your code. Walk me through how you proved it and narrowed down the cause."
+    },
+    "keyPoints": [
+      {
+        "vi": "Dựng bản tái hiện tối thiểu: project mới, cùng phiên bản RN và thư viện, chỉ giữ đoạn code cần thiết",
+        "en": "Build a minimal reproduction: a fresh project with the same RN and library versions, keeping only the code you need"
+      },
+      {
+        "vi": "Bỏ code theo từng nửa cho tới khi lỗi biến mất, để tìm phần nhỏ nhất còn gây lỗi",
+        "en": "Remove code by halves until the bug disappears, to find the smallest part that still triggers it"
+      },
+      {
+        "vi": "Dùng `git bisect` trên lịch sử của bạn, hoặc thử từng phiên bản thư viện, để tìm thay đổi đầu tiên gây lỗi",
+        "en": "Use `git bisect` on your history, or step through library versions, to find the first change that breaks it"
+      },
+      {
+        "vi": "Tự động hoá bước kiểm tra nếu được (`git bisect run` với một script hoặc test)",
+        "en": "Automate the check when you can (`git bisect run` with a script or test)"
+      },
+      {
+        "vi": "Tìm trong issue tracker và changelog, rồi gửi bản tái hiện cho maintainer; trong lúc chờ thì pin phiên bản hoặc patch",
+        "en": "Search the issue tracker and changelog, then send the reproduction to the maintainers; meanwhile pin the version or patch it"
+      }
+    ],
+    "modelAnswer": {
+      "vi": "Mình không kết luận \"lỗi của thư viện\" cho tới khi có bằng chứng. Đầu tiên mình tạo một project mới với cùng phiên bản RN và thư viện, chép vào đúng component và dữ liệu mẫu. Nếu lỗi không hiện, vấn đề nằm ở code của mình. Nếu có, mình bỏ dần code theo từng nửa cho tới khi còn khoảng 20 dòng vẫn gây lỗi. Song song, mình chạy `git bisect` giữa commit tốt cuối cùng và commit nâng cấp; nếu kiểm tra được bằng một test thì dùng `git bisect run` cho nhanh. Lần đó bisect chỉ đúng commit nâng cấp, và thử từng bản patch của thư viện cho thấy lỗi bắt đầu ở một bản đổi cách memo selector. Mình tìm thấy issue đang mở, gắn bản tái hiện vào, và pin phiên bản cũ cho tới khi có bản sửa.",
+      "en": "I do not call it a library bug until I have evidence. First I create a fresh project with the same RN and library versions and copy in just the component and sample data. If the bug does not show, the problem is in my code. If it does, I remove code by halves until about 20 lines still reproduce it. In parallel I run `git bisect` between the last good commit and the upgrade; if a test can check it, `git bisect run` makes it fast. That time bisect pointed at the upgrade commit, and stepping through the library's patch releases showed the bug started in one that changed how selectors were memoised. I found an open issue, attached my reproduction, and pinned the old version until a fix shipped."
+    },
+    "followUps": [
+      {
+        "vi": "Một bản tái hiện tốt để gửi cho maintainer cần có những gì?",
+        "en": "What makes a good reproduction to send to maintainers?"
+      }
+    ]
+  },
+  {
+    "id": "debug-js-011",
+    "type": "open",
+    "topics": [
+      "debug/js"
+    ],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 300,
+    "lessons": [
+      "debug-js-core"
+    ],
+    "prompt": {
+      "vi": "Trên dev build, `user.address` là `undefined` chỉ trên điện thoại Android thật của bạn, còn trên simulator thì đúng. Kể lại cách bạn dùng React Native DevTools và React DevTools để tìm ra nguyên nhân.",
+      "en": "On a dev build, `user.address` is `undefined` only on your physical Android phone; on the simulator it is correct. Walk me through how you used React Native DevTools and React DevTools to find the cause."
+    },
+    "keyPoints": [
+      {
+        "vi": "Đặt breakpoint (hoặc breakpoint có điều kiện) ở chỗ đọc `user.address`, rồi xem scope và call stack",
+        "en": "Set a breakpoint (or a conditional one) where `user.address` is read, then inspect the scope and call stack"
+      },
+      {
+        "vi": "Lần ngược call stack để tìm nơi `user` được tạo ra: response mạng, cache hay storage",
+        "en": "Walk up the call stack to where `user` came from: a network response, a cache or storage"
+      },
+      {
+        "vi": "Dùng React DevTools xem props và state của component để biết giá trị sai bắt đầu từ đâu trong cây",
+        "en": "Use React DevTools to inspect component props and state and find where in the tree the bad value starts"
+      },
+      {
+        "vi": "So sánh môi trường giữa hai máy: dữ liệu lưu từ bản cũ, URL API, locale, account đăng nhập",
+        "en": "Compare the environment of the two devices: data persisted by an older version, API URL, locale, signed-in account"
+      },
+      {
+        "vi": "Sửa tận gốc (migration hoặc validate dữ liệu ở biên), không chỉ thêm `?.` ở chỗ hiển thị",
+        "en": "Fix the root cause (a migration or validation at the boundary), not just a `?.` where it renders"
+      }
+    ],
+    "modelAnswer": {
+      "vi": "Mình mở React Native DevTools và đặt breakpoint có điều kiện `user.address === undefined` ở component hiển thị địa chỉ. Khi dừng, scope cho thấy `user` có đủ field trừ `address`. Mình lần lên call stack và thấy `user` không đến từ API mà từ hàm khôi phục state lúc khởi động. Trong React DevTools, prop `user` của màn hình đã thiếu `address` ngay từ provider, nên không phải lỗi render. Khác biệt giữa hai máy là dữ liệu: điện thoại thật đã cài bản cũ, khi đó `user` được lưu xuống storage trước khi có field `address`; simulator được cài mới. Mình thêm migration theo version cho state đã lưu, validate dữ liệu khi đọc từ storage, và thêm test cho trường hợp dữ liệu cũ.",
+      "en": "I opened React Native DevTools and set a conditional breakpoint, `user.address === undefined`, in the component that renders the address. When it paused, the scope showed `user` had every field except `address`. Walking up the call stack, `user` did not come from the API but from the function that restores state at startup. In React DevTools, the screen's `user` prop already lacked `address` at the provider, so it was not a render bug. The difference between the devices was data: the phone had an older version installed, which persisted `user` before the `address` field existed; the simulator was a fresh install. I added a versioned migration for persisted state, validated data when reading from storage, and added a test for the old shape."
+    },
+    "followUps": [
+      {
+        "vi": "Nếu breakpoint làm lỗi biến mất vì thay đổi timing thì bạn làm gì?",
+        "en": "What do you do if pausing at a breakpoint makes the bug disappear because it changes timing?"
+      }
+    ]
+  },
+  {
+    "id": "debug-js-012",
+    "type": "mcq",
+    "topics": [
+      "debug/js"
+    ],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": [
+      "debug-js-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Red box ở dev hiện `RangeError: Invalid time value`. Các frame đầu của call stack nằm trong `node_modules/date-fns`, và bên dưới là `formatOrderDate` trong `src/orders/format.ts`. Bạn bắt đầu xem từ đâu?",
+      "en": "A red box in development shows `RangeError: Invalid time value`. The first frames of the call stack are inside `node_modules/date-fns`, and below them is `formatOrderDate` in `src/orders/format.ts`. Where do you start?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Trong date-fns, vì frame trên cùng là nơi có lỗi",
+          "en": "Inside date-fns, because the top frame is where the bug is"
+        },
+        "misconception": {
+          "id": "djs-top-frame-library",
+          "text": {
+            "vi": "Nghĩ rằng frame trên cùng là thủ phạm. Thư viện thường đang làm đúng việc với dữ liệu sai được truyền vào; hãy bắt đầu từ frame đầu tiên thuộc code của bạn.",
+            "en": "Believing the top frame is the culprit. The library is usually doing its job on bad input; start from the first frame in your own code."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Ở `formatOrderDate`, frame đầu tiên của code bạn, và giá trị nó truyền vào",
+          "en": "At `formatOrderDate`, the first frame of your code, and the value it passes in"
+        }
+      },
+      {
+        "text": {
+          "vi": "Tắt red box đi, vì lỗi hiện ở dev sẽ không xảy ra ở release",
+          "en": "Dismiss the red box, since errors shown in dev do not happen in release"
+        },
+        "misconception": {
+          "id": "djs-redbox-dev-only",
+          "text": {
+            "vi": "Nghĩ rằng lỗi trong red box chỉ có ở dev. Red box chỉ là cách dev build hiển thị lỗi; ở release cùng exception đó vẫn bị ném, và nếu không được bắt thì app crash.",
+            "en": "Believing red box errors are dev-only. The red box is just how dev builds display the error; in release the same exception is still thrown, and if uncaught the app crashes."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Cài lại `node_modules`, vì lỗi trong thư viện nghĩa là cài đặt bị hỏng",
+          "en": "Reinstall `node_modules`, since an error inside a library means a broken install"
+        },
+        "misconception": {
+          "id": "djs-library-error-corrupt",
+          "text": {
+            "vi": "Nghĩ rằng lỗi ném ra từ thư viện là do cài đặt hỏng. Thư viện ném lỗi vì đầu vào không hợp lệ; cài lại không đổi được dữ liệu bạn truyền vào.",
+            "en": "Believing an error thrown from a library means a broken install. The library throws because its input is invalid; reinstalling does not change what you pass in."
+          }
+        }
+      }
+    ],
+    "answer": [
+      1
+    ],
+    "explanation": {
+      "vi": "Red box là cách dev build hiển thị một lỗi không được bắt, còn LogBox hiện cảnh báo và lỗi được log. Khi đọc stack, frame trên cùng thường là thư viện đang báo đầu vào sai. Hãy tìm frame đầu tiên thuộc code của bạn, ở đây là `formatOrderDate`, rồi đặt breakpoint ở đó để xem giá trị ngày nó truyền vào: thường là `undefined`, một chuỗi không parse được hoặc `NaN`. Bấm vào frame trong red box sẽ mở đúng dòng trong editor nếu được cấu hình. Sửa ở chỗ dữ liệu đi vào, không phải trong thư viện.",
+      "en": "The red box is how dev builds show an uncaught error, while LogBox shows logged warnings and errors. When reading the stack, the top frames are usually a library reporting bad input. Find the first frame of your own code, here `formatOrderDate`, and set a breakpoint there to see the date value it passes in: usually `undefined`, an unparseable string or `NaN`. Tapping a frame in the red box opens that line in your editor when that is set up. Fix it where the data comes in, not inside the library."
+    }
+  }
+]

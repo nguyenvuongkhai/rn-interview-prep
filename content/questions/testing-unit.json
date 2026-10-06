@@ -1,0 +1,807 @@
+[
+  {
+    "id": "testing-unit-001",
+    "type": "mcq",
+    "topics": [
+      "testing/unit"
+    ],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": [
+      "testing-unit-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Test của một selector fail với thông báo `Received: serializes to the same string`. Dòng assert là `expect(selectCartSummary(state)).toBe({ count: 2, total: 30 })`. Vì sao nó fail?",
+      "en": "A selector test fails with `Received: serializes to the same string`. The assertion is `expect(selectCartSummary(state)).toBe({ count: 2, total: 30 })`. Why does it fail?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "`toBe` so sánh bằng `Object.is`, và object literal mới không bao giờ cùng tham chiếu",
+          "en": "`toBe` compares with `Object.is`, and a new object literal is never the same reference"
+        }
+      },
+      {
+        "text": {
+          "vi": "Giá trị khác nhau, vì `toBe` và `toEqual` đều so sánh object theo giá trị",
+          "en": "The values differ, since `toBe` and `toEqual` both compare objects by value"
+        },
+        "misconception": {
+          "id": "tunit-tobe-deep",
+          "text": {
+            "vi": "Nghĩ rằng `toBe` so sánh sâu. `toBe` dùng `Object.is`, tức là so tham chiếu với object; thông báo \"serializes to the same string\" nghĩa là giá trị giống nhau nhưng là hai object khác nhau.",
+            "en": "Believing `toBe` compares deeply. `toBe` uses `Object.is`, which checks identity for objects; \"serializes to the same string\" means the values match but they are two different objects."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Selector phải được memoize bằng `createSelector` thì `toBe` mới pass",
+          "en": "The selector must be memoized with `createSelector` for `toBe` to pass"
+        },
+        "misconception": {
+          "id": "tunit-memo-makes-tobe",
+          "text": {
+            "vi": "Nghĩ rằng memoize làm kết quả trùng với literal trong test. Selector đã memoize trả về cùng tham chiếu khi gọi lại với cùng input, nhưng không bao giờ là cùng object với một literal mới tạo trong test.",
+            "en": "Believing memoization makes the result match a literal. A memoized selector returns the same reference when called again with the same input, but it can never be the same object as a new literal in the test."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`toBe` fail vì thứ tự key của hai object có thể khác nhau",
+          "en": "`toBe` fails because the key order of the two objects may differ"
+        },
+        "misconception": {
+          "id": "tunit-key-order-matters",
+          "text": {
+            "vi": "Nghĩ rằng thứ tự key ảnh hưởng tới so sánh. Không matcher so sánh bằng nhau nào của Jest quan tâm thứ tự key; `toBe` fail vì nó so tham chiếu.",
+            "en": "Believing key order affects the comparison. No Jest equality matcher cares about key order; `toBe` fails because it compares references."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0
+    ],
+    "explanation": {
+      "vi": "`toBe` dùng `Object.is`: với số và chuỗi nó so giá trị, với object nó so tham chiếu. Selector trả về một object mới và test tạo một literal mới, nên hai bên không bao giờ là một. Dùng `toEqual` để so sâu theo giá trị, hoặc `toStrictEqual` nếu bạn muốn bắt cả property có giá trị `undefined` và khác class. Chỉ dùng `toBe` với object khi bạn thật sự kiểm tra tham chiếu, ví dụ selector memoize trả về cùng object ở lần gọi thứ hai.",
+      "en": "`toBe` uses `Object.is`: for numbers and strings it compares values, for objects it compares references. The selector returns a new object and the test builds a new literal, so they are never the same. Use `toEqual` for deep value comparison, or `toStrictEqual` if you also want to catch properties set to `undefined` and class mismatches. Use `toBe` on objects only when identity is what you are testing, such as a memoized selector returning the same object on its second call."
+    }
+  },
+  {
+    "id": "testing-unit-002",
+    "type": "mcq",
+    "topics": [
+      "testing/unit"
+    ],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": [
+      "testing-unit-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Trong `checkout.test.ts`, dòng 1 là `import { submitOrder } from './checkout'`, còn `jest.mock('./payments')` nằm ở dòng 5, dưới mọi import. File `checkout` import `./payments`. Với babel-jest (mặc định của preset RN), `submitOrder` dùng bản `payments` nào?",
+      "en": "In `checkout.test.ts`, line 1 is `import { submitOrder } from './checkout'` and `jest.mock('./payments')` sits on line 5, below every import. `checkout` imports `./payments`. With babel-jest (the RN preset default), which `payments` does `submitOrder` use?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Bản mock tự động, vì babel-jest đưa `jest.mock` lên trên các import",
+          "en": "The automatic mock, because babel-jest hoists `jest.mock` above the imports"
+        }
+      },
+      {
+        "text": {
+          "vi": "Bản thật, vì import đã chạy xong trước dòng `jest.mock`",
+          "en": "The real one, because the import ran before the `jest.mock` line"
+        },
+        "misconception": {
+          "id": "tunit-mock-after-import",
+          "text": {
+            "vi": "Nghĩ rằng `jest.mock` chỉ có tác dụng với các import nằm bên dưới nó. babel-jest đưa lời gọi `jest.mock` lên đầu file, nên mock được đăng ký trước khi bất kỳ import nào được chạy.",
+            "en": "Believing `jest.mock` only affects imports below it. babel-jest hoists `jest.mock` calls to the top of the file, so the mock is registered before any import is evaluated."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Bản thật, vì mock chỉ áp dụng cho import trực tiếp trong file test",
+          "en": "The real one, because mocks only apply to the test file's direct imports"
+        },
+        "misconception": {
+          "id": "tunit-mock-direct-only",
+          "text": {
+            "vi": "Nghĩ rằng `jest.mock` chỉ thay import của chính file test. Nó thay module trong module registry, nên mọi module import nó trong lúc chạy test đều nhận bản mock.",
+            "en": "Believing `jest.mock` only replaces the test file's own imports. It replaces the module in the registry, so every module that imports it during the test gets the mock."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Không bản nào, vì Jest báo lỗi khi `jest.mock` nằm sau một import",
+          "en": "Neither, because Jest throws when `jest.mock` comes after an import"
+        },
+        "misconception": {
+          "id": "tunit-late-mock-throws",
+          "text": {
+            "vi": "Nghĩ rằng đặt `jest.mock` sau import là lỗi. Jest chấp nhận nó ở bất kỳ đâu trong top level và tự hoist; thứ bị từ chối là factory tham chiếu biến bên ngoài không có tiền tố `mock`.",
+            "en": "Believing a late `jest.mock` is an error. Jest accepts it anywhere at top level and hoists it; what gets rejected is a factory that references outer variables not prefixed with `mock`."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0
+    ],
+    "explanation": {
+      "vi": "babel-plugin-jest-hoist (nằm trong babel-jest) đưa mọi lời gọi `jest.mock` lên đầu file, trước các `require` mà import được biên dịch thành. Vì vậy `./payments` đã bị thay trong registry khi `checkout` được nạp, và `checkout` nhận bản mock tự động. Hệ quả của việc hoist: factory của `jest.mock` chạy trước các dòng `const` trong file, nên nó chỉ được tham chiếu biến có tiền tố `mock`, và kể cả khi đó, biến phải được khởi tạo trước lúc factory thật sự chạy.",
+      "en": "babel-plugin-jest-hoist (part of babel-jest) moves every `jest.mock` call to the top of the file, ahead of the `require` calls that imports compile to. So `./payments` is already replaced in the registry when `checkout` loads, and `checkout` gets the automatic mock. A side effect of hoisting: the `jest.mock` factory runs before the file's `const` lines, so it may only reference variables prefixed with `mock`, and even then the variable must be initialised by the time the factory actually runs."
+    }
+  },
+  {
+    "id": "testing-unit-003",
+    "type": "mcq",
+    "topics": [
+      "testing/unit"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 75,
+    "lessons": [
+      "testing-unit-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Một bug làm luồng thanh toán gọi `track` hai lần: `('purchase', { total: 30 })` rồi `('purchase', { total: 0 })`. Test `expect(track).toHaveBeenCalledWith('purchase', { total: 30 })` vẫn pass. Nhận định nào đúng?",
+      "en": "A bug makes the checkout flow call `track` twice: `('purchase', { total: 30 })`, then `('purchase', { total: 0 })`. The test `expect(track).toHaveBeenCalledWith('purchase', { total: 30 })` still passes. Which statement is correct?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Nó pass khi một lần gọi bất kỳ khớp; kiểm lần cuối thì dùng `toHaveBeenLastCalledWith`",
+          "en": "It passes if any one call matches; to check the last call use `toHaveBeenLastCalledWith`"
+        }
+      },
+      {
+        "text": {
+          "vi": "Nó chỉ kiểm lần gọi đầu tiên, nên lần gọi thứ hai không bao giờ được so sánh",
+          "en": "It only checks the first call, so the second call is never compared"
+        },
+        "misconception": {
+          "id": "tunit-calledwith-first",
+          "text": {
+            "vi": "Nghĩ rằng `toHaveBeenCalledWith` kiểm lần gọi đầu tiên. Nó pass khi bất kỳ lần gọi nào đã ghi lại khớp; muốn cố định một lần gọi thì dùng `toHaveBeenNthCalledWith` hoặc `toHaveBeenLastCalledWith`.",
+            "en": "Believing `toHaveBeenCalledWith` checks the first call. It passes when any recorded call matches; to pin one call use `toHaveBeenNthCalledWith` or `toHaveBeenLastCalledWith`."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Nó so `{ total: 30 }` một cách lỏng lẻo, nên `{ total: 0 }` cũng khớp",
+          "en": "It compares `{ total: 30 }` loosely, so `{ total: 0 }` matches too"
+        },
+        "misconception": {
+          "id": "tunit-calledwith-loose",
+          "text": {
+            "vi": "Nghĩ rằng tham số được so lỏng lẻo. Tham số được so bằng cùng phép so sánh đệ quy như `toEqual`, nên `{ total: 0 }` không khớp với `{ total: 30 }`.",
+            "en": "Believing arguments are matched loosely. They are compared with the same recursive equality as `toEqual`, so `{ total: 0 }` does not match `{ total: 30 }`."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Mock xoá lịch sử sau mỗi lần gọi, nên chỉ lần gọi khớp được ghi lại",
+          "en": "The mock clears its history after each call, so only the matching call is kept"
+        },
+        "misconception": {
+          "id": "tunit-mock-forgets-calls",
+          "text": {
+            "vi": "Nghĩ rằng mock quên các lần gọi trước. `jest.fn` ghi mọi lần gọi vào `mock.calls` cho tới khi bạn clear hoặc reset nó.",
+            "en": "Believing a mock forgets earlier calls. `jest.fn` records every call in `mock.calls` until you clear or reset it."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0
+    ],
+    "explanation": {
+      "vi": "`toHaveBeenCalledWith` duyệt `mock.calls` và pass nếu có ít nhất một lần gọi khớp, so tham số bằng phép so sánh đệ quy giống `toEqual`. Lần gọi đúng ở đầu che mất lần gọi sai ở sau. Khi số lần gọi là một phần của hành vi, hãy assert nó: `toHaveBeenCalledTimes(1)`, hoặc kiểm đúng lần gọi bằng `toHaveBeenLastCalledWith` hay `toHaveBeenNthCalledWith(2, …)`.",
+      "en": "`toHaveBeenCalledWith` walks `mock.calls` and passes if at least one call matches, comparing arguments with the same recursive equality as `toEqual`. The correct first call hides the wrong second one. When the number of calls is part of the behaviour, assert it: `toHaveBeenCalledTimes(1)`, or check the exact call with `toHaveBeenLastCalledWith` or `toHaveBeenNthCalledWith(2, …)`."
+    }
+  },
+  {
+    "id": "testing-unit-004",
+    "type": "mcq",
+    "topics": [
+      "testing/unit"
+    ],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": [
+      "testing-unit-core"
+    ],
+    "multi": true,
+    "prompt": {
+      "vi": "Những cách viết test nào có thể pass trong khi code đang test bị hỏng? Chọn tất cả đáp án đúng.",
+      "en": "Which of these can let a test pass while the code under test is broken? Select all that apply."
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "`expect(promise).resolves.toEqual(x)` mà không có `await` hay `return`",
+          "en": "`expect(promise).resolves.toEqual(x)` with no `await` or `return`"
+        }
+      },
+      {
+        "text": {
+          "vi": "Test `try`/`catch` chỉ assert trong `catch`, thiếu `expect.assertions`",
+          "en": "A `try`/`catch` test asserting only in `catch`, without `expect.assertions`"
+        }
+      },
+      {
+        "text": {
+          "vi": "Assert trong `forEach` trên kết quả selector đang rỗng",
+          "en": "Assertions inside `forEach` over a selector result that is empty"
+        }
+      },
+      {
+        "text": {
+          "vi": "Một test `async` có `await` promise nhưng không nhận callback `done`",
+          "en": "An `async` test that awaits its promises but takes no `done` callback"
+        },
+        "misconception": {
+          "id": "tunit-async-needs-done",
+          "text": {
+            "vi": "Nghĩ rằng test bất đồng bộ cần callback `done`. Jest chờ promise mà test `async` trả về; `done` chỉ dành cho code kiểu callback, và dùng `done` cùng lúc với `async` là lỗi.",
+            "en": "Believing an async test needs `done`. Jest waits for the promise an `async` test returns; `done` is only for callback-style code, and combining it with `async` is an error."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Hai file test cùng import và sửa một store khai báo ở cấp module",
+          "en": "Two test files that import and change the same module-level store"
+        },
+        "misconception": {
+          "id": "tunit-files-share-modules",
+          "text": {
+            "vi": "Nghĩ rằng các file test dùng chung state của module. Mỗi file test có module registry riêng, nên store khai báo ở cấp module được tạo mới cho từng file.",
+            "en": "Believing test files share module state. Each test file gets its own module registry, so a module-level store is created fresh for every file."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0,
+      1,
+      2
+    ],
+    "explanation": {
+      "vi": "Cả ba cách đầu đều kết thúc test mà không có assertion nào fail. Assertion `resolves` không được `await` chỉ settle sau khi test đã xong, nên Jest không tính nó cho test này. Nếu code không ném lỗi, khối `catch` không chạy và test không có assertion nào; `expect.assertions(1)` (hoặc `await expect(fn()).rejects.toThrow()`) chặn được điều đó. `forEach` trên mảng rỗng không chạy assert lần nào; hãy assert độ dài trước. Test `async` không cần `done`, và mỗi file test có module registry riêng.",
+      "en": "The first three all end the test without a failing assertion. An un-awaited `resolves` assertion settles after the test has finished, so Jest does not count it for this test. If the code does not throw, the `catch` block never runs and the test has no assertions; `expect.assertions(1)` (or `await expect(fn()).rejects.toThrow()`) prevents that. `forEach` over an empty array runs no assertions at all; assert the length first. An `async` test does not need `done`, and every test file has its own module registry."
+    }
+  },
+  {
+    "id": "testing-unit-005",
+    "type": "mcq",
+    "topics": [
+      "testing/unit"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": [
+      "testing-unit-core"
+    ],
+    "multi": true,
+    "prompt": {
+      "vi": "Cả file `cart.test.ts` pass, nhưng chạy riêng một test bằng `-t 'applies coupon'` thì test đó fail. Đâu là nguyên nhân hợp lý? Chọn tất cả đáp án đúng.",
+      "en": "The whole `cart.test.ts` file passes, but running one test alone with `-t 'applies coupon'` makes it fail. Which are plausible causes? Select all that apply."
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Test trước đăng nhập user vào store cấp module mà test coupon cần",
+          "en": "An earlier test logs a user into a module-level store the coupon test needs"
+        }
+      },
+      {
+        "text": {
+          "vi": "`mockReturnValue` từ một test trước không được reset",
+          "en": "A `mockReturnValue` from an earlier test that is never reset"
+        }
+      },
+      {
+        "text": {
+          "vi": "Fixture cấp module bị một test trước sửa trực tiếp",
+          "en": "A module-level fixture that an earlier test mutates in place"
+        }
+      },
+      {
+        "text": {
+          "vi": "Mặc định Jest chạy song song các test trong một file, nên chúng xen kẽ nhau",
+          "en": "By default Jest runs the tests inside one file concurrently, so they interleave"
+        },
+        "misconception": {
+          "id": "tunit-tests-in-file-parallel",
+          "text": {
+            "vi": "Nghĩ rằng các test trong một file chạy song song. Trong một file, Jest chạy test lần lượt theo thứ tự, trừ khi bạn dùng `test.concurrent`; song song chỉ diễn ra giữa các file.",
+            "en": "Believing tests in one file run in parallel. Within a file Jest runs tests one after another in order, unless you use `test.concurrent`; parallelism happens between files."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`beforeEach` chỉ chạy một lần mỗi file, nên các test sau thấy setup cũ của nó",
+          "en": "`beforeEach` runs only once per file, so later tests see its stale setup"
+        },
+        "misconception": {
+          "id": "tunit-beforeeach-once",
+          "text": {
+            "vi": "Nghĩ rằng `beforeEach` chỉ chạy một lần mỗi file. Nó chạy trước mọi test trong phạm vi của nó; hook chạy một lần là `beforeAll`.",
+            "en": "Believing `beforeEach` runs once per file. It runs before every test in its scope; the hook that runs once is `beforeAll`."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0,
+      1,
+      2
+    ],
+    "explanation": {
+      "vi": "Test chạy riêng mà fail nghĩa là nó phụ thuộc vào thứ tự: một test trước để lại state mà nó cần. Ba nguồn hay gặp là store hoặc singleton ở cấp module, mock không được reset giữa các test, và fixture bị sửa trực tiếp. Trong một file, Jest chạy test lần lượt nên thứ tự cố định, và lỗi này nằm im cho tới khi ai đó chạy riêng, thêm test mới, hoặc dùng `--randomize` (có từ Jest 29.2). Cách sửa: mỗi test tự dựng state trong `beforeEach`, và bật `clearMocks` hoặc `restoreMocks` trong cấu hình Jest.",
+      "en": "A test that fails when run alone depends on order: an earlier test leaves behind state it needs. The usual sources are module-level stores or singletons, mocks that are not reset between tests, and fixtures mutated in place. Within a file Jest runs tests sequentially, so the order is fixed and the bug stays hidden until someone runs the test alone, adds a new test, or uses `--randomize` (available since Jest 29.2). The fix: have each test build its own state in `beforeEach`, and turn on `clearMocks` or `restoreMocks` in the Jest config."
+    }
+  },
+  {
+    "id": "testing-unit-006",
+    "type": "spot-bug",
+    "topics": [
+      "testing/unit"
+    ],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 105,
+    "lessons": [
+      "testing-unit-core"
+    ],
+    "prompt": {
+      "vi": "Một đồng nghiệp xoá đoạn kiểm tra `null` trong `loadProfile`, nên hàm không còn reject khi không có user. Test dưới đây vẫn xanh trên CI. Dòng nào cho phép nó pass?",
+      "en": "A teammate removed the `null` check in `loadProfile`, so it no longer rejects when the user is missing. The test below stayed green on CI. Which line lets it pass?"
+    },
+    "code": "import { fetchUser } from './api';\nimport { loadProfile } from './profile';\n\njest.mock('./api');\nconst mockedFetchUser = jest.mocked(fetchUser);\n\ndescribe('loadProfile', () => {\n  it('rejects when the user does not exist', async () => {\n    mockedFetchUser.mockResolvedValue(null);\n\n    expect(loadProfile('u1')).rejects.toThrow('User not found');\n  });\n});",
+    "answerLine": 11,
+    "causeOptions": [
+      {
+        "text": {
+          "vi": "Assertion `rejects` không được `await`, nên test kết thúc trước khi nó settle",
+          "en": "The `rejects` assertion is not awaited, so the test ends before it settles"
+        }
+      },
+      {
+        "text": {
+          "vi": "`jest.mock` nằm sau import, nên `loadProfile` vẫn gọi API thật",
+          "en": "`jest.mock` sits after the imports, so `loadProfile` still calls the real API"
+        },
+        "misconception": {
+          "id": "tunit-mock-after-import",
+          "text": {
+            "vi": "Nghĩ rằng `jest.mock` chỉ có tác dụng với các import nằm bên dưới nó. babel-jest đưa lời gọi `jest.mock` lên đầu file, nên mock được đăng ký trước khi bất kỳ import nào được chạy.",
+            "en": "Believing `jest.mock` only affects imports below it. babel-jest hoists `jest.mock` calls to the top of the file, so the mock is registered before any import is evaluated."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`rejects.toThrow` chỉ bắt lỗi ném đồng bộ, không bắt promise bị reject",
+          "en": "`rejects.toThrow` only catches synchronous throws, not rejected promises"
+        },
+        "misconception": {
+          "id": "tunit-rejects-needs-sync-throw",
+          "text": {
+            "vi": "Nghĩ rằng `rejects.toThrow` cần lỗi ném đồng bộ. Nó kiểm lý do reject của promise; hàm `async` ném lỗi sẽ trả về promise bị reject, và matcher bắt được.",
+            "en": "Believing `rejects.toThrow` needs a synchronous throw. It checks the promise's rejection reason; an `async` function that throws returns a rejected promise, which the matcher handles."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Test bất đồng bộ cần callback `done` để Jest biết khi nào nó kết thúc",
+          "en": "An async test needs a `done` callback so Jest knows when it finishes"
+        },
+        "misconception": {
+          "id": "tunit-async-needs-done",
+          "text": {
+            "vi": "Nghĩ rằng test bất đồng bộ cần callback `done`. Jest chờ promise mà test `async` trả về; `done` chỉ dành cho code kiểu callback, và dùng `done` cùng lúc với `async` là lỗi.",
+            "en": "Believing an async test needs `done`. Jest waits for the promise an `async` test returns; `done` is only for callback-style code, and combining it with `async` is an error."
+          }
+        }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "`expect(...).rejects.toThrow(...)` trả về một promise. Không có `await` (hoặc `return`), hàm test kết thúc ngay, Jest đánh dấu pass, và assertion settle sau đó, khi không còn test nào để fail. Tuỳ phiên bản Jest và Node, lỗi đó có thể hiện ra ở chỗ khác dưới dạng unhandled rejection, hoặc không hiện gì. Sửa bằng `await expect(loadProfile('u1')).rejects.toThrow('User not found')`. Rule `jest/valid-expect` của eslint-plugin-jest bắt được lỗi này. `jest.mock` được hoist, nên mock vẫn có hiệu lực.",
+      "en": "`expect(...).rejects.toThrow(...)` returns a promise. Without `await` (or `return`), the test function finishes at once, Jest marks it as passed, and the assertion settles later, when there is no test left to fail. Depending on the Jest and Node versions, that failure may show up elsewhere as an unhandled rejection, or not at all. Fix it with `await expect(loadProfile('u1')).rejects.toThrow('User not found')`. The `jest/valid-expect` rule from eslint-plugin-jest catches this. `jest.mock` is hoisted, so the mock does apply."
+    }
+  },
+  {
+    "id": "testing-unit-007",
+    "type": "spot-bug",
+    "topics": [
+      "testing/unit",
+      "state/redux"
+    ],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 120,
+    "lessons": [
+      "testing-unit-core"
+    ],
+    "prompt": {
+      "vi": "Test thứ hai pass khi chạy riêng bằng `-t`, nhưng fail khi chạy cả file với `Received: [\"a\", \"b\"]`. Dòng nào gây ra lỗi?",
+      "en": "The second test passes when run alone with `-t`, but fails in the full file with `Received: [\"a\", \"b\"]`. Which line causes it?"
+    },
+    "code": "type CartState = { items: string[] };\nexport const initialState: CartState = { items: [] };\n\nexport function cartReducer(state: CartState, action: { type: 'cart/add'; id: string }): CartState {\n  if (action.type === 'cart/add') {\n    state.items.push(action.id);\n    return { ...state };\n  }\n  return state;\n}\n\n// cartReducer.test.ts\nit('adds the first item', () => {\n  expect(cartReducer(initialState, { type: 'cart/add', id: 'a' }).items).toEqual(['a']);\n});\n\nit('adds an item to an empty cart', () => {\n  expect(cartReducer(initialState, { type: 'cart/add', id: 'b' }).items).toEqual(['b']);\n});",
+    "answerLine": 6,
+    "causeOptions": [
+      {
+        "text": {
+          "vi": "`push` sửa mảng của `initialState` dùng chung, nên test đầu để lại `'a'` trong đó",
+          "en": "`push` mutates the shared `initialState` array, leaving `'a'` for later tests"
+        }
+      },
+      {
+        "text": {
+          "vi": "Jest chạy hai test cùng lúc, nên chúng tranh nhau sửa `initialState`",
+          "en": "Jest runs both tests at the same time, so they race on `initialState`"
+        },
+        "misconception": {
+          "id": "tunit-tests-in-file-parallel",
+          "text": {
+            "vi": "Nghĩ rằng các test trong một file chạy song song. Trong một file, Jest chạy test lần lượt theo thứ tự, trừ khi bạn dùng `test.concurrent`; song song chỉ diễn ra giữa các file.",
+            "en": "Believing tests in one file run in parallel. Within a file Jest runs tests one after another in order, unless you use `test.concurrent`; parallelism happens between files."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`toEqual` so mảng theo tham chiếu, nên nó thấy mảng cũ",
+          "en": "`toEqual` compares arrays by reference, so it sees the old array"
+        },
+        "misconception": {
+          "id": "tunit-toequal-reference",
+          "text": {
+            "vi": "Nghĩ rằng `toEqual` so tham chiếu. `toEqual` so đệ quy theo giá trị; nó thấy `[\"a\", \"b\"]` vì mảng thật sự chứa hai phần tử.",
+            "en": "Believing `toEqual` compares references. `toEqual` compares recursively by value; it sees `[\"a\", \"b\"]` because the array really holds two items."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Dòng `return state` trả về state cũ thay vì một bản sao mới",
+          "en": "The `return state` line returns the old state instead of a new copy"
+        },
+        "misconception": {
+          "id": "tunit-reducer-always-copies",
+          "text": {
+            "vi": "Nghĩ rằng reducer luôn phải trả về object mới. Trả về đúng `state` cũ cho action không liên quan là đúng và giúp selector bỏ qua việc tính lại; quy tắc là không được sửa state được truyền vào.",
+            "en": "Believing a reducer must always return a new object. Returning the same `state` for an action it ignores is correct and lets selectors skip work; the rule is never to mutate the state you were given."
+          }
+        }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "`state.items.push` sửa trực tiếp mảng của `initialState`, object mà cả hai test dùng chung. `{ ...state }` chỉ copy tầng ngoài, nên state mới vẫn trỏ tới cùng mảng đó, và một test kiểu `not.toBe(prev)` vẫn pass. Sau test đầu, `initialState.items` là `['a']`, nên test thứ hai nhận `['a', 'b']`. Sửa reducer: `return { ...state, items: [...state.items, action.id] }`. Muốn test bắt được loại lỗi này, hãy `Object.freeze` fixture hoặc tạo state mới cho từng test. Redux Toolkit dùng Immer nên không gặp lỗi này trong `createSlice`.",
+      "en": "`state.items.push` mutates the array of `initialState`, the object both tests share. `{ ...state }` only copies the top level, so the new state still points at the same array, and a check like `not.toBe(prev)` still passes. After the first test, `initialState.items` is `['a']`, so the second test gets `['a', 'b']`. Fix the reducer: `return { ...state, items: [...state.items, action.id] }`. To make tests catch this class of bug, `Object.freeze` the fixture or build fresh state per test. Redux Toolkit uses Immer, so `createSlice` reducers do not have this bug."
+    }
+  },
+  {
+    "id": "testing-unit-008",
+    "type": "spot-bug",
+    "topics": [
+      "testing/unit",
+      "state/async"
+    ],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 150,
+    "lessons": [
+      "testing-unit-core"
+    ],
+    "prompt": {
+      "vi": "Test này luôn fail với `Exceeded timeout of 5000 ms`, dù `retry` chạy đúng trong app. Dòng nào gây ra timeout?",
+      "en": "This test always fails with `Exceeded timeout of 5000 ms`, even though `retry` works in the app. Which line causes the timeout?"
+    },
+    "code": "async function retry<T>(fn: () => Promise<T>, delayMs: number): Promise<T> {\n  try {\n    return await fn();\n  } catch {\n    await new Promise((resolve) => setTimeout(resolve, delayMs));\n    return fn();\n  }\n}\n\nit('retries once after one second', async () => {\n  jest.useFakeTimers();\n  const fetchPrices = jest.fn()\n    .mockRejectedValueOnce(new Error('503'))\n    .mockResolvedValueOnce('ok');\n\n  const result = retry(fetchPrices, 1000);\n  jest.advanceTimersByTime(1000);\n\n  await expect(result).resolves.toBe('ok');\n});",
+    "answerLine": 17,
+    "causeOptions": [
+      {
+        "text": {
+          "vi": "`advanceTimersByTime` chạy trước khi lỗi được xử lý, nên timer retry chưa tồn tại",
+          "en": "`advanceTimersByTime` runs before the rejection is handled, so the retry timer does not exist yet"
+        }
+      },
+      {
+        "text": {
+          "vi": "Fake timer làm đóng băng cả promise, nên `await` không bao giờ chạy tiếp",
+          "en": "Fake timers also freeze promises, so `await` never resumes"
+        },
+        "misconception": {
+          "id": "tunit-fake-timers-freeze-promises",
+          "text": {
+            "vi": "Nghĩ rằng fake timer chặn cả promise. Fake timer của Jest thay các hàm như `setTimeout` và `Date`; callback của promise gốc vẫn chạy như microtask.",
+            "en": "Believing fake timers stop promises. Jest's fake timers replace functions such as `setTimeout` and `Date`; native promise callbacks still run as microtasks."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`mockRejectedValueOnce` ném lỗi đồng bộ, nên `retry` thoát ra trước khối `try`",
+          "en": "`mockRejectedValueOnce` throws synchronously, so `retry` exits before its `try`"
+        },
+        "misconception": {
+          "id": "tunit-mock-rejected-throws",
+          "text": {
+            "vi": "Nghĩ rằng `mockRejectedValueOnce` ném lỗi. Nó làm mock trả về một promise bị reject, và `await` biến nó thành exception bên trong `try`.",
+            "en": "Believing `mockRejectedValueOnce` throws. It makes the mock return a rejected promise, which `await` turns into an exception inside `try`."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`advanceTimersByTime(1000)` chỉ chạy timer có delay nhỏ hơn hẳn 1000 ms",
+          "en": "`advanceTimersByTime(1000)` only fires timers with a delay strictly below 1000 ms"
+        },
+        "misconception": {
+          "id": "tunit-advance-exclusive",
+          "text": {
+            "vi": "Nghĩ rằng mốc thời gian bị loại trừ. `advanceTimersByTime(1000)` chạy cả timer đến hạn đúng tại 1000 ms.",
+            "en": "Believing the boundary is exclusive. `advanceTimersByTime(1000)` also fires a timer due at exactly 1000 ms."
+          }
+        }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "Khi gọi `retry`, `fn()` trả về promise bị reject và hàm dừng ở `await`. Khối `catch`, và cả `setTimeout`, chỉ chạy ở một microtask sau đó. `jest.advanceTimersByTime` chạy đồng bộ ngay lập tức, lúc chưa có timer nào, nên không làm gì. Tới `await expect(...)`, microtask chạy và timer được đăng ký, nhưng không ai đẩy đồng hồ giả nữa, nên promise treo tới khi hết 5 giây. Sửa bằng `await jest.advanceTimersByTimeAsync(1000)` (có từ Jest 29.5), hàm này cho microtask chạy giữa các bước đẩy thời gian.",
+      "en": "When `retry` is called, `fn()` returns a rejected promise and the function pauses at `await`. The `catch` block, and with it `setTimeout`, only runs in a later microtask. `jest.advanceTimersByTime` runs synchronously right away, when no timer exists yet, so it does nothing. By the time `await expect(...)` lets microtasks run, the timer is registered, but nothing advances the fake clock again, so the promise hangs until the 5 second timeout. Fix it with `await jest.advanceTimersByTimeAsync(1000)` (available since Jest 29.5), which lets microtasks run while it advances time."
+    }
+  },
+  {
+    "id": "testing-unit-009",
+    "type": "open",
+    "topics": [
+      "testing/unit"
+    ],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 330,
+    "lessons": [
+      "testing-unit-core"
+    ],
+    "prompt": {
+      "vi": "`checkout.test.ts` fail trên CI khoảng một lần trong mười lần chạy, và chưa bao giờ fail trên máy bạn. Kể lại cách bạn tìm ra nguyên nhân và sửa nó.",
+      "en": "`checkout.test.ts` fails on CI about once in ten runs and never on your machine. Walk me through how you found the cause and fixed it."
+    },
+    "keyPoints": [
+      {
+        "vi": "Tái hiện trước: chạy file nhiều lần liên tiếp, chạy riêng từng test bằng `-t`, và thử `--randomize` với `--seed` để có thứ tự lặp lại được",
+        "en": "Reproduce first: run the file many times in a row, run single tests with `-t`, and try `--randomize` with `--seed` to get a repeatable order"
+      },
+      {
+        "vi": "Tìm state dùng chung: store hoặc singleton ở cấp module, fixture bị sửa trực tiếp, mock không được reset giữa các test",
+        "en": "Look for shared state: module-level stores or singletons, fixtures mutated in place, mocks not reset between tests"
+      },
+      {
+        "vi": "Tìm phụ thuộc thời gian: `Date.now()`, timer thật, timeout ngắn; thay bằng `jest.useFakeTimers()` và `jest.setSystemTime`",
+        "en": "Look for time dependencies: `Date.now()`, real timers, tight timeouts; replace them with `jest.useFakeTimers()` and `jest.setSystemTime`"
+      },
+      {
+        "vi": "Tìm promise không được `await` làm assertion settle muộn và rơi vào test khác",
+        "en": "Look for un-awaited promises whose assertions settle late and land in another test"
+      },
+      {
+        "vi": "Sửa tận gốc: mỗi test tự dựng state trong `beforeEach`, bật `restoreMocks`; không dùng retry để che lỗi",
+        "en": "Fix the root cause: each test builds its own state in `beforeEach`, turn on `restoreMocks`; do not hide it with retries"
+      }
+    ],
+    "modelAnswer": {
+      "vi": "Đầu tiên mình cố tái hiện. Mình chạy file đó hai mươi lần liên tiếp và chạy riêng từng test bằng `-t`. Test \"applies coupon\" fail khi chạy riêng, nên nó phụ thuộc thứ tự. Mình đọc test chạy trước nó và thấy một store tạo ở cấp module: test trước đăng nhập user và không dọn dẹp. Trên CI, một test mới được thêm vào giữa hai test đó tuỳ nhánh, nên lỗi lúc có lúc không. Mình cũng thấy test tính ngày hết hạn coupon bằng `Date.now()`, nên mình dùng `jest.useFakeTimers()` và `jest.setSystemTime` để cố định thời gian. Cách sửa là tạo store mới trong `beforeEach` và bật `restoreMocks` trong cấu hình. Sau đó mình chạy `--randomize` với vài seed trên CI để chắc không còn test nào phụ thuộc thứ tự. Mình không bật retry, vì nó chỉ giấu lỗi.",
+      "en": "First I tried to reproduce it. I ran the file twenty times in a row and ran each test alone with `-t`. The \"applies coupon\" test failed when run alone, so it depended on order. I read the test before it and found a module-level store: the earlier test logged a user in and never cleaned up. On CI, a newer test sometimes ran between the two depending on the branch, so the failure came and went. I also saw the coupon expiry check used `Date.now()`, so I pinned time with `jest.useFakeTimers()` and `jest.setSystemTime`. The fix was creating a fresh store in `beforeEach` and enabling `restoreMocks` in the config. Then I ran `--randomize` with a few seeds on CI to make sure no other test depended on order. I did not add retries, because they only hide the bug."
+    },
+    "followUps": [
+      {
+        "vi": "`clearMocks`, `resetMocks` và `restoreMocks` khác nhau thế nào?",
+        "en": "How do `clearMocks`, `resetMocks` and `restoreMocks` differ?"
+      },
+      {
+        "vi": "Khi nào bạn chấp nhận retry test trên CI, nếu có?",
+        "en": "When, if ever, would you accept retrying tests on CI?"
+      }
+    ]
+  },
+  {
+    "id": "testing-unit-010",
+    "type": "open",
+    "topics": [
+      "testing/unit"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 300,
+    "lessons": [
+      "testing-unit-core"
+    ],
+    "prompt": {
+      "vi": "Coverage của team là 92%, nhưng một bug tính giảm giá vẫn lên production, trong đúng đoạn code được báo là đã cover. Bạn giải thích với team thế nào, và bạn thay đổi gì?",
+      "en": "Your team has 92% coverage, yet a discount bug shipped in code that the report showed as covered. How do you explain that to the team, and what do you change?"
+    },
+    "keyPoints": [
+      {
+        "vi": "Coverage đo dòng hay nhánh nào đã được chạy, không đo hành vi nào đã được kiểm; một test không có assertion vẫn tạo coverage",
+        "en": "Coverage measures which lines or branches ran, not which behaviour was checked; a test with no assertions still adds coverage"
+      },
+      {
+        "vi": "Line coverage che mất nhánh: `a && b`, `??` hay giá trị mặc định có thể chưa từng chạy cả hai phía; xem branch coverage",
+        "en": "Line coverage hides branches: `a && b`, `??` or default values may never run both ways; look at branch coverage"
+      },
+      {
+        "vi": "Viết test cho các giá trị biên của hàm thuần: 0, số âm, làm tròn, giảm giá lớn hơn tổng tiền",
+        "en": "Test boundary values of the pure function: 0, negatives, rounding, a discount larger than the total"
+      },
+      {
+        "vi": "Muốn đo chất lượng test thì dùng mutation testing (ví dụ Stryker): sửa code và xem test có fail không",
+        "en": "To measure test quality, use mutation testing (for example Stryker): change the code and see whether tests fail"
+      },
+      {
+        "vi": "Dùng coverage để tìm code chưa test, không làm chỉ tiêu; đặt `coverageThreshold` riêng cho module quan trọng nếu cần",
+        "en": "Use coverage to find untested code, not as a target; set a per-path `coverageThreshold` for critical modules if needed"
+      }
+    ],
+    "modelAnswer": {
+      "vi": "Mình sẽ nói rõ: coverage chỉ cho biết dòng nào đã chạy khi test chạy, không cho biết có ai kiểm kết quả hay không. Trong ca này, test gọi `applyDiscount` để render màn giỏ hàng và chỉ assert là màn hình hiện ra, nên mọi dòng đều xanh. Bug nằm ở trường hợp giảm giá lớn hơn tổng tiền, mà không test nào chạm tới. Mình đổi ba việc. Một, viết test trực tiếp cho hàm thuần đó với các giá trị biên: 0, số âm, làm tròn, giảm giá vượt tổng. Hai, xem branch coverage thay vì line coverage trong review. Ba, chạy thử mutation testing trên module giá để xem test có bắt được khi đổi `>` thành `>=` không. Mình giữ coverage như công cụ tìm chỗ trống, không biến nó thành KPI, vì làm vậy chỉ sinh thêm test không có assertion.",
+      "en": "I would be direct: coverage only tells you which lines ran during the tests, not whether anyone checked the result. In this case a test called `applyDiscount` while rendering the cart screen and only asserted that the screen appeared, so every line was green. The bug was a discount larger than the total, which no test touched. I changed three things. One, direct tests for that pure function with boundary values: 0, negatives, rounding, a discount above the total. Two, branch coverage instead of line coverage in review. Three, a trial of mutation testing on the pricing module, to see whether the tests notice when `>` becomes `>=`. I keep coverage as a tool for finding gaps, not a KPI, because a KPI just produces more tests without assertions."
+    },
+    "followUps": [
+      {
+        "vi": "Bạn đặt `coverageThreshold` cho cả repo hay chỉ cho vài thư mục? Vì sao?",
+        "en": "Would you set `coverageThreshold` for the whole repo or only for some paths? Why?"
+      }
+    ]
+  },
+  {
+    "id": "testing-unit-011",
+    "type": "open",
+    "topics": [
+      "testing/unit",
+      "state/redux"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 300,
+    "lessons": [
+      "testing-unit-core"
+    ],
+    "prompt": {
+      "vi": "Bạn viết unit test cho tính năng giỏ hàng gồm một reducer, vài selector có memoize và một thunk gọi API. Bạn test từng phần thế nào, và bạn mock những gì?",
+      "en": "You are unit testing a cart feature made of a reducer, a few memoized selectors and a thunk that calls an API. How do you test each part, and what do you mock?"
+    },
+    "keyPoints": [
+      {
+        "vi": "Reducer là hàm thuần: đưa state và action vào, assert state ra; không cần mock, và kiểm rằng state đầu vào không bị sửa",
+        "en": "The reducer is a pure function: feed state and an action, assert the output state; no mocks, and check the input state was not mutated"
+      },
+      {
+        "vi": "Selector: dựng một object state thuần, assert giá trị trả về bằng `toEqual`",
+        "en": "Selectors: build a plain state object and assert the return value with `toEqual`"
+      },
+      {
+        "vi": "Memoize: gọi hai lần với cùng state và assert cùng tham chiếu bằng `toBe`; có thể dùng `recomputations()` của Reselect",
+        "en": "Memoization: call twice with the same state and assert the same reference with `toBe`; Reselect's `recomputations()` also helps"
+      },
+      {
+        "vi": "Thunk: chỉ mock ranh giới mạng (module API), dispatch vào một store thật và assert state cuối cùng",
+        "en": "Thunk: mock only the network boundary (the API module), dispatch into a real store and assert the final state"
+      },
+      {
+        "vi": "Test cả nhánh lỗi của thunk: API reject thì state lỗi đúng",
+        "en": "Test the thunk's failure path: when the API rejects, the error state is right"
+      },
+      {
+        "vi": "Tránh assert chi tiết bên trong như danh sách action đã dispatch, trừ khi đó là hành vi cần giữ",
+        "en": "Avoid asserting internals such as the list of dispatched actions, unless that is the behaviour you need to keep"
+      }
+    ],
+    "modelAnswer": {
+      "vi": "Reducer là phần dễ nhất vì nó thuần: mình đưa state và action vào, assert state ra bằng `toEqual`, không mock gì. Mình `Object.freeze` state đầu vào để test fail nếu reducer sửa trực tiếp. Với selector, mình dựng một object state nhỏ bằng tay và assert kết quả. Với selector có memoize, mình gọi hai lần với cùng state và assert `toBe`, vì một selector trả object mới mỗi lần sẽ làm component re-render. Với thunk, mình chỉ `jest.mock` module API, tạo store thật bằng `configureStore`, dispatch thunk, `await` nó, rồi assert state cuối, cả nhánh thành công lẫn nhánh API reject. Mình không assert danh sách action đã dispatch, vì đổi cách cài đặt mà hành vi không đổi thì test không nên vỡ.",
+      "en": "The reducer is the easy part because it is pure: I feed state and an action and assert the output with `toEqual`, no mocks. I `Object.freeze` the input state so the test fails if the reducer mutates it. For selectors I build a small state object by hand and assert the result. For memoized selectors I call twice with the same state and assert `toBe`, because a selector that returns a new object each time makes components re-render. For the thunk I `jest.mock` only the API module, create a real store with `configureStore`, dispatch the thunk, `await` it, and assert the final state, both on success and when the API rejects. I do not assert the list of dispatched actions, because changing the implementation without changing behaviour should not break the test."
+    },
+    "followUps": [
+      {
+        "vi": "Khi nào bạn chuyển từ test thunk với store thật sang mock cả store?",
+        "en": "When would you switch from a real store to a mocked store when testing thunks?"
+      }
+    ]
+  },
+  {
+    "id": "testing-unit-012",
+    "type": "mcq",
+    "topics": [
+      "testing/unit"
+    ],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": [
+      "testing-unit-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Một PR xanh trên CI, nhưng `cart.test.ts` chứa một test đang hỏng. Bạn thấy `it.only('adds an item', …)` trong file đó. Chuyện gì đã xảy ra?",
+      "en": "A PR is green on CI, but `cart.test.ts` contains a broken test. You find `it.only('adds an item', …)` in that file. What happened?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Jest chỉ chạy test `.only` trong file đó và bỏ qua các test còn lại của file",
+          "en": "Jest ran only the `.only` test in that file and skipped the rest of that file"
+        }
+      },
+      {
+        "text": {
+          "vi": "Jest chỉ chạy đúng một test đó trong toàn bộ test suite",
+          "en": "Jest ran only that single test across the whole test suite"
+        },
+        "misconception": {
+          "id": "tunit-only-global",
+          "text": {
+            "vi": "Nghĩ rằng `.only` có tác dụng toàn cục. Nó chỉ áp dụng trong file chứa nó: các file test khác vẫn chạy đầy đủ, chỉ các test khác trong file đó bị bỏ qua.",
+            "en": "Believing `.only` is global. Focus applies per file: other test files still run in full, and only the other tests in that file are skipped."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Jest bỏ qua `.only` trên CI, nên test hỏng thật ra đang pass",
+          "en": "Jest ignores `.only` on CI, so the broken test is actually passing"
+        },
+        "misconception": {
+          "id": "tunit-ci-ignores-only",
+          "text": {
+            "vi": "Nghĩ rằng CI bỏ qua `.only`. Jest tôn trọng nó ở mọi nơi, kể cả với `--ci`; hãy chặn nó bằng lint rule như `jest/no-focused-tests`.",
+            "en": "Believing CI ignores `.only`. Jest honours it everywhere, `--ci` included; catch it with a lint rule such as `jest/no-focused-tests`."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`.only` biến các test khác thành cảnh báo, không còn làm CI fail",
+          "en": "`.only` turns the other tests into warnings that no longer fail CI"
+        },
+        "misconception": {
+          "id": "tunit-only-makes-warnings",
+          "text": {
+            "vi": "Nghĩ rằng `.only` đổi cách tính lỗi. Các test khác không được chạy chút nào; chúng hiện là skipped, không phải cảnh báo.",
+            "en": "Believing `.only` changes how failures count. The other tests do not run at all; they show as skipped, not as warnings."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0
+    ],
+    "explanation": {
+      "vi": "`it.only` (hay `fit`, `describe.only`) đánh dấu test được focus. Jest chỉ chạy các test được focus trong file đó và báo phần còn lại là skipped, nên test hỏng không bao giờ chạy và CI vẫn xanh. Các file khác không bị ảnh hưởng. Chặn lỗi này bằng rule `jest/no-focused-tests` của eslint-plugin-jest trong CI, và để ý số test skipped trong output.",
+      "en": "`it.only` (or `fit`, `describe.only`) marks a test as focused. Jest runs only the focused tests in that file and reports the rest as skipped, so the broken test never runs and CI stays green. Other files are unaffected. Catch it with the `jest/no-focused-tests` rule from eslint-plugin-jest in CI, and watch the skipped count in the output."
+    }
+  }
+]

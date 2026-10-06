@@ -1,0 +1,819 @@
+[
+  {
+    "id": "ai-workflow-001",
+    "type": "mcq",
+    "topics": [
+      "ai/workflow"
+    ],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": [
+      "ai-workflow-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Bạn nhờ AI assistant viết một hàm format giá tiền, tự đọc qua rồi commit và merge. Hai tuần sau hàm này làm sai tổng tiền trên production. Ai chịu trách nhiệm về đoạn code đó?",
+      "en": "You ask an AI assistant to write a price-formatting function, skim it, then commit and merge it. Two weeks later it produces wrong totals in production. Who is accountable for that code?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Người commit nó, giống như mọi code khác họ đưa vào repo",
+          "en": "The person who committed it, like any other code they ship"
+        }
+      },
+      {
+        "text": {
+          "vi": "Nhà cung cấp công cụ AI, vì công cụ đã sinh ra lỗi",
+          "en": "The AI tool vendor, because the tool produced the bug"
+        },
+        "misconception": {
+          "id": "aiwf-vendor-owns-output",
+          "text": {
+            "vi": "Nghĩ rằng công cụ chịu trách nhiệm về code nó sinh ra. Điều khoản của các công cụ này đều đặt trách nhiệm dùng output lên người dùng; với team, code bạn commit là code của bạn.",
+            "en": "Believing the tool is responsible for the code it generates. These tools put responsibility for using the output on the user; to your team, code you commit is your code."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Chỉ người review, vì người viết không thật sự tự viết",
+          "en": "Only the reviewer, since the author did not really write it"
+        },
+        "misconception": {
+          "id": "aiwf-reviewer-owns-ai-code",
+          "text": {
+            "vi": "Nghĩ rằng code do AI viết chuyển trách nhiệm sang người review. Review là lớp kiểm tra thứ hai; người mở PR vẫn phải hiểu và bảo đảm từng dòng mình đưa lên.",
+            "en": "Believing AI-written code moves accountability to the reviewer. Review is a second check; the author of the PR still has to understand and stand behind every line."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Không ai cụ thể, vì code sinh ra được coi như thư viện ngoài",
+          "en": "No one in particular, since generated code counts as third-party"
+        },
+        "misconception": {
+          "id": "aiwf-generated-is-third-party",
+          "text": {
+            "vi": "Nghĩ rằng code do AI sinh ra giống một dependency bên ngoài. Nó nằm trong repo của bạn, không có maintainer nào khác, và đi qua cùng quy trình review và test như code bạn tự gõ.",
+            "en": "Believing AI-generated code is like an external dependency. It lives in your repo with no other maintainer, and goes through the same review and testing as code you typed yourself."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0
+    ],
+    "explanation": {
+      "vi": "Công cụ chỉ gợi ý; người quyết định đưa code vào repo là người commit. Vì vậy chuẩn cho code do AI viết giống hệt code tự viết: bạn phải hiểu nó, có test cho các trường hợp quan trọng (ở đây là làm tròn và đơn vị tiền tệ), và giải thích được nó khi review. Bẫy chính là coi \"AI viết\" như một lý do để đọc lướt.",
+      "en": "The tool only suggests; the person who puts the code into the repo is the one who commits it. So the bar for AI-written code is the same as for code you type: you understand it, it has tests for the cases that matter (here rounding and currency), and you can explain it in review. The main trap is treating \"the AI wrote it\" as a reason to skim."
+    }
+  },
+  {
+    "id": "ai-workflow-002",
+    "type": "mcq",
+    "topics": [
+      "ai/workflow"
+    ],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": [
+      "ai-workflow-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "AI assistant đề xuất một prop của `FlatList` mà bạn chưa từng thấy. Cách kiểm tra đáng tin nhất xem prop đó có thật trong app của bạn là gì?",
+      "en": "An AI assistant suggests a `FlatList` prop you have never seen. What is the most reliable way to check that it exists in your app?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Xem type definition hoặc docs của đúng bản RN đã cài",
+          "en": "Check the type definitions or docs of your installed RN version"
+        }
+      },
+      {
+        "text": {
+          "vi": "Hỏi lại AI assistant xem nó có chắc prop đó tồn tại không",
+          "en": "Ask the AI assistant again whether it is sure the prop exists"
+        },
+        "misconception": {
+          "id": "aiwf-ask-model-to-confirm",
+          "text": {
+            "vi": "Nghĩ rằng hỏi lại model là một cách kiểm chứng. Model trả lời bằng cùng cơ chế đã sinh ra prop đó, nên nó dễ khẳng định lại một cách tự tin; bằng chứng phải đến từ nguồn bên ngoài model.",
+            "en": "Believing that asking the model again verifies anything. It answers with the same mechanism that produced the prop, so it readily confirms it with confidence; evidence has to come from outside the model."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Chạy app thử; không có red screen nghĩa là prop có thật",
+          "en": "Run the app; no red screen means the prop is real"
+        },
+        "misconception": {
+          "id": "aiwf-no-error-means-valid-prop",
+          "text": {
+            "vi": "Nghĩ rằng prop không tồn tại sẽ gây lỗi lúc chạy. Component RN bỏ qua prop lạ một cách lặng lẽ; chỉ TypeScript mới báo, và chỉ khi file có kiểm tra kiểu.",
+            "en": "Believing an unknown prop fails at runtime. RN components silently ignore unknown props; only TypeScript reports it, and only when the file is type-checked."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Tra trang docs mới nhất, vì prop của RN không bao giờ bị bỏ",
+          "en": "Read the latest docs page, since RN never removes props"
+        },
+        "misconception": {
+          "id": "aiwf-latest-docs-match",
+          "text": {
+            "vi": "Nghĩ rằng docs mới nhất khớp với app của bạn. Prop được thêm, đổi và bỏ qua các phiên bản; thứ quyết định là phiên bản RN trong `package.json` của bạn.",
+            "en": "Believing the latest docs match your app. Props are added, changed and removed across versions; what counts is the RN version in your `package.json`."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0
+    ],
+    "explanation": {
+      "vi": "Nguồn sự thật là thư viện bạn đang chạy: file `.d.ts` trong `node_modules/react-native` (nhảy tới định nghĩa trong editor) hoặc docs của đúng phiên bản trong `package.json`. Bẫy chính là \"chạy thử thấy không lỗi\": RN bỏ qua prop lạ, nên một prop bịa ra không làm gì cả và không báo gì cả.",
+      "en": "The source of truth is the library you actually run: the `.d.ts` files in `node_modules/react-native` (jump to definition in your editor) or the docs for the exact version in `package.json`. The main trap is \"I ran it and nothing broke\": RN ignores unknown props, so an invented prop does nothing and reports nothing."
+    }
+  },
+  {
+    "id": "ai-workflow-003",
+    "type": "mcq",
+    "topics": [
+      "ai/workflow"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 75,
+    "lessons": [
+      "ai-workflow-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Vì sao một AI assistant có thể viết ra một API hay prop không tồn tại, với giọng hoàn toàn tự tin?",
+      "en": "Why can an AI assistant write an API or prop that does not exist, in a completely confident tone?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Nó sinh code nghe hợp lý theo mẫu đã học, không kiểm với thư viện bạn cài",
+          "en": "It predicts plausible code from patterns, without checking your installed library"
+        }
+      },
+      {
+        "text": {
+          "vi": "Nó chỉ bịa khi prompt có lỗi chính tả hoặc mơ hồ",
+          "en": "It only invents things when the prompt has typos or is vague"
+        },
+        "misconception": {
+          "id": "aiwf-good-prompt-no-hallucination",
+          "text": {
+            "vi": "Nghĩ rằng prompt tốt loại bỏ được API bịa. Prompt rõ giúp giảm, nhưng model vẫn có thể sinh ra tên nghe hợp lý; bạn vẫn phải kiểm chứng.",
+            "en": "Believing a good prompt eliminates invented APIs. A clear prompt helps, but the model can still produce plausible-sounding names; you still have to verify."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Nó đọc `node_modules` của bạn, nên prop lạ nghĩa là dependency đã cũ",
+          "en": "It reads your `node_modules`, so an odd prop means a dependency is outdated"
+        },
+        "misconception": {
+          "id": "aiwf-tool-knows-installed-version",
+          "text": {
+            "vi": "Nghĩ rằng assistant tự biết phiên bản bạn đã cài. Trừ khi bạn hoặc công cụ đưa đúng file vào context, nó trả lời theo dữ liệu huấn luyện, không theo project của bạn.",
+            "en": "Believing the assistant knows your installed versions. Unless you or the tool put the right files into context, it answers from training data, not from your project."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Nó cố ý dùng API thử nghiệm sắp ra mắt để code bền hơn",
+          "en": "It deliberately uses upcoming experimental APIs to future-proof code"
+        },
+        "misconception": {
+          "id": "aiwf-invented-means-upcoming",
+          "text": {
+            "vi": "Nghĩ rằng API lạ là API sắp ra mắt. Model không biết lộ trình của thư viện; tên lạ thường là tên bịa, ghép từ các tên có thật.",
+            "en": "Believing an unfamiliar API is an upcoming one. The model does not know a library's roadmap; an unfamiliar name is usually invented, stitched together from real ones."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0
+    ],
+    "explanation": {
+      "vi": "Model ngôn ngữ dự đoán đoạn code có khả năng xuất hiện nhất, nên nó ghép các mẫu quen thuộc thành tên nghe rất hợp lý, kể cả trộn prop của thư viện này sang thư viện khác. Nó không chạy compiler hay đọc phiên bản bạn cài, trừ khi các file đó được đưa vào context. Giọng tự tin không phải là bằng chứng: hãy kiểm tra bằng TypeScript, type definition và docs đúng phiên bản.",
+      "en": "A language model predicts the most likely code, so it combines familiar patterns into very plausible names, including mixing one library's props into another. It does not run a compiler or read your installed version unless those files are in its context. A confident tone is not evidence: check with TypeScript, the type definitions and the docs for your version."
+    }
+  },
+  {
+    "id": "ai-workflow-004",
+    "type": "mcq",
+    "topics": [
+      "ai/workflow"
+    ],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": [
+      "ai-workflow-core"
+    ],
+    "multi": true,
+    "prompt": {
+      "vi": "AI assistant viết 15 test Jest cho một reducer giỏ hàng chưa có test, và tất cả pass ngay lần chạy đầu. Trước khi tin bộ test này, bạn nên làm những việc nào?",
+      "en": "An AI assistant writes 15 Jest tests for an untested cart reducer, and all of them pass on the first run. What should you do before trusting them?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Cố ý làm hỏng reducer và xác nhận có test fail",
+          "en": "Break the reducer on purpose and confirm a test fails"
+        }
+      },
+      {
+        "text": {
+          "vi": "So giá trị mong đợi với yêu cầu, không với output hiện tại",
+          "en": "Check expected values against requirements, not current output"
+        }
+      },
+      {
+        "text": {
+          "vi": "Kiểm tra test không mock chính module đang được test",
+          "en": "Check the tests do not mock the module under test"
+        }
+      },
+      {
+        "text": {
+          "vi": "Chấp nhận luôn, vì pass ngay lần đầu là dấu hiệu tốt",
+          "en": "Accept them, since passing on the first run is a good sign"
+        },
+        "misconception": {
+          "id": "aiwf-first-pass-proves-tests",
+          "text": {
+            "vi": "Nghĩ rằng test pass ngay chứng tỏ test tốt. Test viết dựa trên code hiện tại sẽ pass theo định nghĩa, kể cả khi nó khoá luôn bug vào làm hành vi mong đợi.",
+            "en": "Believing tests that pass at once must be good. Tests written from the current code pass by construction, even when they lock a bug in as expected behaviour."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Nâng ngưỡng coverage lên 100% để chứng minh test đủ tốt",
+          "en": "Raise the coverage threshold to 100% to prove they are good"
+        },
+        "misconception": {
+          "id": "aiwf-coverage-proves-tests",
+          "text": {
+            "vi": "Nghĩ rằng coverage đo chất lượng test. Coverage chỉ đo dòng nào đã chạy; một test không có assertion có ý nghĩa vẫn đạt 100%.",
+            "en": "Believing coverage measures test quality. Coverage only measures which lines ran; a test with no meaningful assertion can still reach 100%."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0,
+      1,
+      2
+    ],
+    "explanation": {
+      "vi": "Khi AI viết test từ code đang có, nó thường chép hành vi hiện tại vào `expect`, nên bug cũng thành \"đúng\". Ba việc kiểm chứng: làm hỏng code (đổi dấu, bỏ một nhánh) để chắc có test fail; đối chiếu giá trị mong đợi với yêu cầu sản phẩm; và xem test có mock luôn thứ đang được test không, vì như vậy test không kiểm tra gì. Coverage và việc pass ngay không chứng minh được điều nào trong số đó.",
+      "en": "When AI writes tests from existing code, it tends to copy current behaviour into `expect`, so bugs become \"correct\". Three checks: break the code (flip a sign, drop a branch) to make sure a test fails; compare expected values with the product requirements; and see whether the tests mock the very thing under test, which makes them test nothing. Coverage and a first-run pass prove none of this."
+    }
+  },
+  {
+    "id": "ai-workflow-005",
+    "type": "mcq",
+    "topics": [
+      "ai/workflow"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": [
+      "ai-workflow-core"
+    ],
+    "multi": true,
+    "prompt": {
+      "vi": "Bạn dùng AI assistant để hỗ trợ nâng RN lên một phiên bản mới ra vài tháng trước. Những nhận định nào là đúng?",
+      "en": "You use an AI assistant to help upgrade RN to a version released a few months ago. Which statements are true?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Dữ liệu huấn luyện có thể cũ hơn bản RN đích, nên nó có thể không biết các thay đổi",
+          "en": "Its training data may predate the target RN version, so it may not know the changes"
+        }
+      },
+      {
+        "text": {
+          "vi": "Nên đưa changelog chính thức và diff của Upgrade Helper vào làm context",
+          "en": "You should give it the official changelog and the Upgrade Helper diff as context"
+        }
+      },
+      {
+        "text": {
+          "vi": "Bản tóm tắt changelog của nó phải được đối chiếu lại với changelog gốc",
+          "en": "Its summary of the changelog must be checked against the original changelog"
+        }
+      },
+      {
+        "text": {
+          "vi": "Nếu nó sửa code mà build vẫn qua, các thay đổi đã khớp với bản RN đích",
+          "en": "If its edits still build, the changes already match the target RN version"
+        },
+        "misconception": {
+          "id": "aiwf-build-passes-means-correct",
+          "text": {
+            "vi": "Nghĩ rằng build qua là đủ. Nhiều thay đổi khi nâng RN là hành vi lúc chạy hoặc cấu hình native; build xanh không cho biết app chạy đúng trên cả hai nền tảng.",
+            "en": "Believing a passing build is enough. Many upgrade changes are runtime behaviour or native configuration; a green build says nothing about the app working on both platforms."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Có AI thì không cần Upgrade Helper, vì nó đã thuộc diff giữa các bản",
+          "en": "With AI you can skip Upgrade Helper, since it already knows the diffs"
+        },
+        "misconception": {
+          "id": "aiwf-model-memorised-diffs",
+          "text": {
+            "vi": "Nghĩ rằng model nhớ chính xác diff giữa các bản RN. Nó nhớ mờ, có thể trộn các phiên bản, và không biết các bản ra sau dữ liệu huấn luyện.",
+            "en": "Believing the model remembers exact diffs between RN versions. Its memory is fuzzy, it can mix versions, and it knows nothing about releases after its training data."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0,
+      1,
+      2
+    ],
+    "explanation": {
+      "vi": "Model có mốc dữ liệu huấn luyện; bản RN ra sau mốc đó thì nó chỉ đoán theo các bản cũ. Cách dùng đúng là đưa tài liệu gốc vào context (changelog, diff template của Upgrade Helper, ghi chú breaking change của từng thư viện), để AI giúp đọc và áp dụng, rồi bạn đối chiếu lại với nguồn gốc. Sau đó vẫn phải chạy test và thử trên máy thật ở cả iOS và Android; build qua chưa phải là xong.",
+      "en": "A model has a training data cutoff; for an RN release after it, it can only guess from older versions. The right use is to put the primary sources in context (the changelog, the Upgrade Helper template diff, each library's breaking-change notes), let the AI help read and apply them, then check its work against those sources. You still run the tests and try real devices on iOS and Android; a passing build is not done."
+    }
+  },
+  {
+    "id": "ai-workflow-006",
+    "type": "spot-bug",
+    "topics": [
+      "ai/workflow",
+      "performance/lists"
+    ],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 105,
+    "lessons": [
+      "ai-workflow-core"
+    ],
+    "prompt": {
+      "vi": "Bạn nhờ AI assistant \"làm danh sách 5.000 đơn hàng này cuộn mượt hơn\", và nó trả về đoạn code dưới đây. Dòng nào là lỗi điển hình của code do AI sinh ra?",
+      "en": "You ask an AI assistant to \"make this 5,000-order list scroll more smoothly\", and it returns the code below. Which line is a classic AI-generated mistake?"
+    },
+    "code": "import { FlatList, Text } from 'react-native';\n\ntype Row = { id: string; title: string };\nconst ROW_HEIGHT = 72;\n\nexport function OrderList({ rows }: { rows: Row[] }) {\n  return (\n    <FlatList\n      data={rows}\n      keyExtractor={(item) => item.id}\n      renderItem={({ item }) => <Text style={{ height: ROW_HEIGHT }}>{item.title}</Text>}\n      getItemLayout={(_, index) => ({ length: ROW_HEIGHT, offset: ROW_HEIGHT * index, index })}\n      estimatedItemSize={ROW_HEIGHT}\n      initialNumToRender={12}\n      windowSize={7}\n    />\n  );\n}",
+    "answerLine": 13,
+    "causeOptions": [
+      {
+        "text": {
+          "vi": "`estimatedItemSize` là prop của FlashList; `FlatList` không có prop này",
+          "en": "`estimatedItemSize` is a FlashList prop; `FlatList` has no such prop"
+        }
+      },
+      {
+        "text": {
+          "vi": "`getItemLayout` phải trả về `offset` từ chiều cao đo được, không tính bằng phép nhân",
+          "en": "`getItemLayout` must return a measured `offset`, not one computed by multiplying"
+        },
+        "misconception": {
+          "id": "aiwf-getitemlayout-needs-measure",
+          "text": {
+            "vi": "Nghĩ rằng `getItemLayout` cần số đo thật. Khi mọi hàng có chiều cao cố định, `offset = height * index` chính là cách dùng chuẩn và giúp bỏ bước đo.",
+            "en": "Believing `getItemLayout` needs measured values. When every row has a fixed height, `offset = height * index` is the standard use and lets the list skip measuring."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`windowSize={7}` quá nhỏ, nên danh sách luôn hiện vùng trắng khi cuộn",
+          "en": "`windowSize={7}` is too small, so the list always shows blanks while scrolling"
+        },
+        "misconception": {
+          "id": "aiwf-small-windowsize-blank",
+          "text": {
+            "vi": "Nghĩ rằng `windowSize` nhỏ hơn mặc định là sai. Giảm `windowSize` là một đánh đổi hợp lệ giữa bộ nhớ và vùng trắng khi cuộn rất nhanh, không phải lỗi.",
+            "en": "Believing a `windowSize` below the default is a bug. Lowering it is a valid trade-off between memory and blank areas during very fast scrolls, not a mistake."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`renderItem` viết inline nên `FlatList` không render được hàng nào",
+          "en": "An inline `renderItem` means `FlatList` cannot render any rows"
+        },
+        "misconception": {
+          "id": "aiwf-inline-renderitem-breaks",
+          "text": {
+            "vi": "Nghĩ rằng `renderItem` inline làm hỏng danh sách. Nó chỉ tạo hàm mới mỗi lần render cha; danh sách vẫn render đúng, và tối ưu bằng `useCallback` là chuyện hiệu năng, không phải đúng sai.",
+            "en": "Believing an inline `renderItem` breaks the list. It only creates a new function on each parent render; the list still renders correctly, and wrapping it in `useCallback` is a performance concern, not correctness."
+          }
+        }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "Dòng 13 trộn API của hai thư viện: `estimatedItemSize` thuộc FlashList, không có trong `FlatListProps`. Trong file TypeScript, compiler báo lỗi prop không tồn tại; trong file JS, `FlatList` bỏ qua nó một cách lặng lẽ và nó không làm gì. Các dòng còn lại là cách tối ưu chuẩn cho hàng cao cố định: `getItemLayout`, `initialNumToRender`, `windowSize`. Bài học là đọc từng prop AI thêm vào và đối chiếu với type definition, nhất là khi tên nghe rất hợp lý.",
+      "en": "Line 13 mixes two libraries' APIs: `estimatedItemSize` belongs to FlashList and is not in `FlatListProps`. In a TypeScript file the compiler reports a non-existent prop; in a JS file `FlatList` silently ignores it and it does nothing. The other lines are the standard optimisations for fixed-height rows: `getItemLayout`, `initialNumToRender`, `windowSize`. The lesson is to read every prop the AI adds and check it against the type definitions, especially when the name sounds very plausible."
+    }
+  },
+  {
+    "id": "ai-workflow-007",
+    "type": "spot-bug",
+    "topics": [
+      "ai/workflow"
+    ],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 105,
+    "lessons": [
+      "ai-workflow-core"
+    ],
+    "prompt": {
+      "vi": "AI assistant viết hook dưới đây để nhớ người dùng đã xem màn onboarding chưa. App của bạn chạy RN 0.79. Dòng nào sẽ hỏng?",
+      "en": "An AI assistant writes the hook below to remember whether the user has seen onboarding. Your app runs RN 0.79. Which line breaks?"
+    },
+    "code": "import { useEffect, useState } from 'react';\nimport { AsyncStorage } from 'react-native';\n\nconst KEY = 'onboarding:done';\n\nexport function useOnboardingDone(): boolean | null {\n  const [done, setDone] = useState<boolean | null>(null);\n\n  useEffect(() => {\n    let cancelled = false;\n    AsyncStorage.getItem(KEY)\n      .then((value) => !cancelled && setDone(value === '1'))\n      .catch(() => !cancelled && setDone(false));\n    return () => {\n      cancelled = true;\n    };\n  }, []);\n\n  return done;\n}",
+    "answerLine": 2,
+    "causeOptions": [
+      {
+        "text": {
+          "vi": "`AsyncStorage` không còn được export từ `react-native`",
+          "en": "`AsyncStorage` is no longer exported from `react-native`"
+        }
+      },
+      {
+        "text": {
+          "vi": "`getItem` là hàm đồng bộ, nên gọi `.then` trên kết quả sẽ ném lỗi",
+          "en": "`getItem` is synchronous, so calling `.then` on its result throws"
+        },
+        "misconception": {
+          "id": "aiwf-asyncstorage-sync",
+          "text": {
+            "vi": "Nghĩ rằng `getItem` đồng bộ. API của AsyncStorage trả về Promise; đó chính là lý do hook cần state `null` cho lúc đang đọc.",
+            "en": "Believing `getItem` is synchronous. The AsyncStorage API returns a Promise; that is exactly why the hook needs a `null` state while it reads."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Cờ `cancelled` gây rò rỉ bộ nhớ vì cleanup giữ closure sống mãi",
+          "en": "The `cancelled` flag leaks memory because the cleanup keeps the closure alive"
+        },
+        "misconception": {
+          "id": "aiwf-cancel-flag-leaks",
+          "text": {
+            "vi": "Nghĩ rằng cờ huỷ trong cleanup gây rò rỉ. Closure được giải phóng khi effect bị huỷ; cờ này là cách chuẩn để bỏ qua kết quả về muộn sau khi unmount.",
+            "en": "Believing a cancel flag in cleanup leaks. The closure is released once the effect is torn down; the flag is the standard way to ignore a late result after unmount."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Dependency array rỗng làm effect chạy lại sau mỗi lần render",
+          "en": "An empty dependency array makes the effect run after every render"
+        },
+        "misconception": {
+          "id": "aiwf-empty-deps-every-render",
+          "text": {
+            "vi": "Nhầm dependency array rỗng với việc không truyền array. `[]` nghĩa là chỉ chạy sau lần mount đầu; bỏ hẳn array mới làm effect chạy sau mỗi render.",
+            "en": "Confusing an empty dependency array with no array. `[]` means run once after the first mount; omitting the array is what runs it after every render."
+          }
+        }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "Dòng 2 là một API đã lỗi thời mà model còn nhớ từ code cũ trên mạng: `AsyncStorage` đã được tách khỏi core trong đợt Lean Core và không còn được export từ `react-native` từ lâu. Với TypeScript, import này báo lỗi ngay; trong JS, `AsyncStorage` là `undefined` và `getItem` ném lỗi lúc chạy. Sửa bằng cách cài `@react-native-async-storage/async-storage` và import default từ đó. Phần còn lại của hook (Promise, cờ huỷ, `[]`) đúng.",
+      "en": "Line 2 is an outdated API the model remembers from old code online: `AsyncStorage` was split out of core during Lean Core and has not been exported from `react-native` for a long time. With TypeScript the import fails immediately; in JS `AsyncStorage` is `undefined` and `getItem` throws at runtime. Fix it by installing `@react-native-async-storage/async-storage` and using its default import. The rest of the hook (the Promise, the cancel flag, `[]`) is correct."
+    }
+  },
+  {
+    "id": "ai-workflow-008",
+    "type": "spot-bug",
+    "topics": [
+      "ai/workflow"
+    ],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 135,
+    "lessons": [
+      "ai-workflow-core"
+    ],
+    "prompt": {
+      "vi": "Bạn nhờ AI assistant thêm nút hoàn tiền vào app Expo. Code dưới đây build được và chạy đúng trên staging. Dòng nào tuyệt đối không được ship?",
+      "en": "You ask an AI assistant to add a refund button to an Expo app. The code below builds and works on staging. Which line must never ship?"
+    },
+    "code": "type RefundResult = { id: string; status: 'pending' | 'succeeded' };\n\nexport async function requestRefund(orderId: string, signal?: AbortSignal): Promise<RefundResult> {\n  const res = await fetch('https://api.payments.example.com/v1/refunds', {\n    method: 'POST',\n    signal,\n    headers: {\n      'Content-Type': 'application/json',\n      Authorization: `Bearer ${process.env.EXPO_PUBLIC_PAYMENTS_SECRET_KEY}`,\n    },\n    body: JSON.stringify({ order: orderId }),\n  });\n  if (!res.ok) {\n    throw new Error(`Refund failed with status ${res.status}`);\n  }\n  return (await res.json()) as RefundResult;\n}",
+    "answerLine": 9,
+    "causeOptions": [
+      {
+        "text": {
+          "vi": "Secret key bị inline vào JS bundle và ai cài app cũng đọc được",
+          "en": "The secret key is inlined into the JS bundle, readable by anyone with the app"
+        }
+      },
+      {
+        "text": {
+          "vi": "`fetch` trong RN không hỗ trợ `signal`, nên huỷ request sẽ làm crash",
+          "en": "`fetch` in RN does not support `signal`, so cancelling will crash"
+        },
+        "misconception": {
+          "id": "aiwf-rn-fetch-no-abort",
+          "text": {
+            "vi": "Nghĩ rằng `fetch` của RN không hỗ trợ `AbortController`. RN hỗ trợ `signal` từ lâu; huỷ request sẽ reject promise với `AbortError`.",
+            "en": "Believing RN's `fetch` lacks `AbortController` support. RN has supported `signal` for a long time; aborting rejects the promise with an `AbortError`."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Ép kiểu `as RefundResult` làm request thất bại nếu server trả field thừa",
+          "en": "The `as RefundResult` cast fails the request if the server returns extra fields"
+        },
+        "misconception": {
+          "id": "aiwf-as-cast-runtime-check",
+          "text": {
+            "vi": "Nghĩ rằng `as` kiểm tra dữ liệu lúc chạy. `as` chỉ tồn tại lúc compile và bị xoá khỏi output; nó không làm gì với field thừa hay thiếu.",
+            "en": "Believing `as` checks data at runtime. `as` exists only at compile time and is erased from the output; it does nothing about extra or missing fields."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Không kiểm tra `res.ok` thì lỗi 4xx sẽ bị coi là thành công",
+          "en": "Without a `res.ok` check, a 4xx would be treated as success"
+        },
+        "misconception": {
+          "id": "aiwf-misread-existing-check",
+          "text": {
+            "vi": "Đọc lướt code AI sinh ra. Đoạn code đã kiểm tra `res.ok` và ném lỗi; review code do AI viết cần đọc từng dòng như code của đồng nghiệp.",
+            "en": "Skimming AI-generated code. The code already checks `res.ok` and throws; reviewing AI-written code means reading every line, as you would a colleague's."
+          }
+        }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "Dòng 9 trông như đọc từ biến môi trường nên có vẻ an toàn, nhưng biến `EXPO_PUBLIC_` được inline vào JS bundle lúc build: ai giải nén app cũng đọc được key. Với secret key của cổng thanh toán, điều đó nghĩa là bất kỳ ai cũng gọi được API hoàn tiền. Sửa: app gọi backend của bạn bằng session của người dùng, và chỉ backend giữ secret key và kiểm tra quyền. Key đã nằm trong một bản build staging thì coi như đã lộ: hãy thay nó.",
+      "en": "Line 9 looks safe because it reads an environment variable, but `EXPO_PUBLIC_` variables are inlined into the JS bundle at build time: anyone who unpacks the app can read the key. For a payment provider's secret key, that means anyone can call the refund API. Fix: the app calls your backend with the user's session, and only the backend holds the secret key and checks permissions. A key that has been in a staging build is already exposed: rotate it."
+    }
+  },
+  {
+    "id": "ai-workflow-009",
+    "type": "open",
+    "topics": [
+      "ai/workflow",
+      "testing/unit"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 300,
+    "lessons": [
+      "ai-workflow-core"
+    ],
+    "prompt": {
+      "vi": "Kể một lần bạn dùng AI để viết test cho một phần code cũ chưa có test. Bạn đã kiểm chứng bộ test đó thế nào?",
+      "en": "Tell me about a time you used AI to write tests for old code that had none. How did you verify those tests?"
+    },
+    "keyPoints": [
+      {
+        "vi": "Nêu bối cảnh và lý do: code nào, vì sao cần test trước (ví dụ chuẩn bị refactor)",
+        "en": "Give the context and the reason: which code, and why tests were needed first (for example before a refactor)"
+      },
+      {
+        "vi": "Prompt cụ thể: đưa file và quy tắc nghiệp vụ, yêu cầu liệt kê các case trước, không sửa code đang test",
+        "en": "A specific prompt: provide the file and business rules, ask for the list of cases first, forbid changes to the code under test"
+      },
+      {
+        "vi": "Đối chiếu từng giá trị mong đợi với yêu cầu, không với output hiện tại",
+        "en": "Check each expected value against requirements, not current output"
+      },
+      {
+        "vi": "Cố ý làm hỏng code để chứng minh test bắt được lỗi",
+        "en": "Break the code on purpose to prove the tests catch failures"
+      },
+      {
+        "vi": "Xử lý các test khoá bug vào làm hành vi đúng: hỏi lại người nắm yêu cầu",
+        "en": "Handle tests that lock in a bug as correct behaviour: confirm with whoever owns the requirement"
+      },
+      {
+        "vi": "Nêu kết quả đo được và phần nào là mình làm, phần nào AI làm",
+        "en": "State a measurable result and which part you did versus the AI"
+      }
+    ],
+    "modelAnswer": {
+      "vi": "Mình cần refactor module tính tổng giỏ hàng, có giảm giá và làm tròn tiền, nhưng nó chưa có test nào. Mình đưa cho AI file đó cùng tài liệu quy tắc giảm giá, và yêu cầu nó liệt kê các case trước, chưa viết code, và không được sửa module. Mình duyệt danh sách, thêm hai case nó bỏ sót, rồi mới cho nó viết test bằng Jest. Khi đọc từng `expect`, mình thấy ba test lấy luôn output hiện tại làm đáp án, trong đó một test khoá lỗi làm tròn khi cộng hai mã giảm giá. Mình hỏi PM, sửa lại đáp án theo yêu cầu, và đánh dấu bug đó. Sau đó mình cố ý đổi vài phép tính để chắc có test fail. Kết quả là khoảng 30 test, và trong lúc refactor chúng bắt được một regression trước khi merge.",
+      "en": "I had to refactor our cart total module, with discounts and currency rounding, and it had no tests. I gave the AI the file plus our discount rules doc, and asked it to list cases first, with no code yet and no changes to the module. I reviewed the list, added two cases it missed, and only then had it write Jest tests. Reading each `expect`, I found three tests that used current output as the answer, one of them locking in a rounding bug when two coupons stack. I checked with the PM, fixed the expectations to match the requirement, and filed the bug. Then I broke a few calculations on purpose to make sure tests failed. We ended up with about 30 tests, and during the refactor they caught a regression before merge."
+    },
+    "followUps": [
+      {
+        "vi": "Nếu AI đề xuất sửa luôn module để test dễ viết hơn, bạn làm gì?",
+        "en": "What do you do if the AI proposes changing the module to make it easier to test?"
+      },
+      {
+        "vi": "Bạn có commit những test AI viết mà bạn không hiểu hết không?",
+        "en": "Would you commit AI-written tests you do not fully understand?"
+      }
+    ]
+  },
+  {
+    "id": "ai-workflow-010",
+    "type": "open",
+    "topics": [
+      "ai/workflow",
+      "native/build"
+    ],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 330,
+    "lessons": [
+      "ai-workflow-core"
+    ],
+    "prompt": {
+      "vi": "Kể một lần bạn dùng AI để debug một lỗi khó trong app RN. Bạn đưa cho nó những gì, và làm sao bạn biết gợi ý của nó đúng?",
+      "en": "Tell me about a time you used AI to debug a hard bug in an RN app. What did you give it, and how did you know its suggestions were right?"
+    },
+    "keyPoints": [
+      {
+        "vi": "Bối cảnh rõ: triệu chứng, chỉ xảy ra ở đâu (release, nền tảng, phiên bản), cái gì vừa thay đổi",
+        "en": "Clear context: the symptom, where it happens (release, platform, version), what changed recently"
+      },
+      {
+        "vi": "Đưa dữ liệu thật đã làm sạch: stack đã symbolicate, phiên bản thư viện, đoạn config liên quan; xoá token và dữ liệu người dùng",
+        "en": "Real, cleaned data: a symbolicated stack, library versions, the relevant config; strip tokens and user data"
+      },
+      {
+        "vi": "Dùng AI để đưa ra giả thuyết, không phải kết luận; kiểm từng giả thuyết bằng cách tái hiện",
+        "en": "Use the AI for hypotheses, not conclusions; test each one by reproducing it"
+      },
+      {
+        "vi": "Bắt được ít nhất một gợi ý sai (flag hay API không có thật) bằng cách đối chiếu docs",
+        "en": "Catch at least one wrong suggestion (a flag or API that does not exist) by checking the docs"
+      },
+      {
+        "vi": "Xác nhận bản sửa trên đúng loại build đã lỗi và có biện pháp chống tái phát",
+        "en": "Confirm the fix on the same kind of build that failed and guard against recurrence"
+      }
+    ],
+    "modelAnswer": {
+      "vi": "Sau khi nâng một thư viện native, app Android crash lúc mở một màn, nhưng chỉ trên release build. Mình đưa cho AI stack đã symbolicate, phiên bản RN và thư viện, đoạn `build.gradle` liên quan, và nói rõ debug build chạy bình thường; mình đã xoá token và email người dùng khỏi log trước khi dán. Nó đưa ba giả thuyết. Giả thuyết đầu kèm một Gradle flag mà mình tra docs thì không có thật, nên mình bỏ. Giả thuyết thứ hai là R8 đã xoá một class mà thư viện gọi qua reflection, khớp với `ClassNotFoundException` trong stack. Mình tái hiện trên release build, đọc `mapping.txt` để xác nhận class bị xoá, rồi thêm keep rule vào `proguard-rules.pro`. Release build hết crash. Mình thêm một bước smoke test trên release build vào CI để lần sau bắt sớm.",
+      "en": "After upgrading a native library, our Android app crashed when opening one screen, but only in release builds. I gave the AI the symbolicated stack, the RN and library versions, the relevant `build.gradle` section, and told it debug builds were fine; I stripped tokens and user emails from the log before pasting. It offered three hypotheses. The first came with a Gradle flag that I could not find in any docs, so I dropped it. The second was that R8 had removed a class the library loads by reflection, which matched the `ClassNotFoundException` in the stack. I reproduced it on a release build, checked `mapping.txt` to confirm the class was gone, and added a keep rule to `proguard-rules.pro`. The release build stopped crashing. I added a release-build smoke test to CI to catch this earlier next time."
+    },
+    "followUps": [
+      {
+        "vi": "Nếu log có dữ liệu khách hàng mà bạn cần AI đọc, bạn xử lý thế nào?",
+        "en": "If the log contains customer data the AI needs to see, how do you handle it?"
+      },
+      {
+        "vi": "Lúc nào bạn dừng hỏi AI và tự đọc source của thư viện?",
+        "en": "When do you stop asking the AI and read the library source yourself?"
+      }
+    ]
+  },
+  {
+    "id": "ai-workflow-011",
+    "type": "open",
+    "topics": [
+      "ai/workflow"
+    ],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 330,
+    "lessons": [
+      "ai-workflow-core"
+    ],
+    "prompt": {
+      "vi": "Kể một lần bạn dùng AI cho một migration lớn trong codebase RN. Bạn chia việc và kiểm soát rủi ro thế nào, và có chỗ nào bạn quyết định không dùng AI không?",
+      "en": "Tell me about a time you used AI for a large migration in an RN codebase. How did you split the work and control the risk, and was there anywhere you chose not to use it?"
+    },
+    "keyPoints": [
+      {
+        "vi": "Viết rõ mẫu chuyển đổi bằng một ví dụ làm tay, rồi mới cho AI áp dụng",
+        "en": "Define the conversion pattern with one hand-made example before the AI applies it"
+      },
+      {
+        "vi": "Chia thành các batch nhỏ, mỗi batch một PR review được",
+        "en": "Split into small batches, one reviewable PR each"
+      },
+      {
+        "vi": "Kiểm chứng từng batch: đọc diff, chạy type check và test, thử màn hình bị ảnh hưởng",
+        "en": "Verify each batch: read the diff, run type checks and tests, try the affected screens"
+      },
+      {
+        "vi": "Chỉ ra một lỗi AI hay mắc trong migration đó và cách bắt được",
+        "en": "Name a mistake the AI made in that migration and how it was caught"
+      },
+      {
+        "vi": "Nêu chỗ không dùng AI và lý do (code nhạy cảm, quy định của công ty, việc mà tự làm nhanh hơn)",
+        "en": "Say where AI was not used and why (sensitive code, company policy, work faster done by hand)"
+      },
+      {
+        "vi": "Nói rõ kết quả và phần việc của mình",
+        "en": "State the result and your own part in it"
+      }
+    ],
+    "modelAnswer": {
+      "vi": "Bọn mình chuyển khoảng 60 class component sang function component với hooks trước khi bật React Compiler. Mình tự chuyển hai màn hình làm mẫu, rồi đưa mẫu đó cho AI cùng quy tắc: giữ nguyên hành vi, không đổi props, `componentDidUpdate` thành `useEffect` với dependency đầy đủ. Mỗi PR chỉ khoảng năm màn hình. Mình đọc từng diff, chạy `tsc`, test và thử tay các màn đó. Lỗi hay gặp nhất là nó bỏ mất điều kiện so sánh `prevProps` khi chuyển sang `useEffect`, làm request bị gọi lại liên tục; mình bắt được trong review và bằng cách xem log network khi thử tay. Mình không dùng AI cho phần thanh toán, vì công ty không cho đưa code đó vào công cụ bên ngoài, và mình tự làm phần đó. Sau năm tuần migration xong, không có sự cố nào trên production.",
+      "en": "We moved about 60 class components to function components with hooks before turning on React Compiler. I converted two screens by hand as the reference, then gave the AI that reference plus rules: keep behaviour identical, no prop changes, `componentDidUpdate` becomes `useEffect` with complete dependencies. Each PR covered about five screens. I read every diff, ran `tsc` and the tests, and tried those screens by hand. Its most common mistake was dropping the `prevProps` comparison when moving to `useEffect`, so a request fired over and over; I caught it in review and by watching network logs while testing. I did not use AI for the payment flow, because company policy keeps that code out of external tools, so I did it myself. The migration took five weeks with no production incidents."
+    },
+    "followUps": [
+      {
+        "vi": "Người phỏng vấn hỏi \"vậy phần nào là bạn làm?\" Bạn trả lời thế nào cho trung thực?",
+        "en": "The interviewer asks \"so which part did you do?\" How do you answer honestly?"
+      },
+      {
+        "vi": "Khi nào bạn chọn codemod thay vì AI cho một migration?",
+        "en": "When would you choose a codemod over AI for a migration?"
+      }
+    ]
+  },
+  {
+    "id": "ai-workflow-012",
+    "type": "mcq",
+    "topics": [
+      "ai/workflow"
+    ],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": [
+      "ai-workflow-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Bạn muốn dán một đoạn log crash vào một AI assistant bên ngoài để nhờ đọc. Log có access token và email của người dùng. Bạn nên làm gì trước?",
+      "en": "You want to paste a crash log into an external AI assistant for help reading it. The log contains an access token and user emails. What should you do first?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Xoá token và dữ liệu cá nhân, và chỉ dùng công cụ công ty cho phép",
+          "en": "Remove the token and personal data, and use only company-approved tools"
+        }
+      },
+      {
+        "text": {
+          "vi": "Dán nguyên văn, vì công cụ tự xoá dữ liệu sau mỗi phiên chat",
+          "en": "Paste it as is, since the tool deletes data after each chat session"
+        },
+        "misconception": {
+          "id": "aiwf-tool-forgets-data",
+          "text": {
+            "vi": "Nghĩ rằng dữ liệu biến mất sau phiên chat. Dữ liệu đã gửi đi nằm trên server của bên thứ ba theo chính sách lưu trữ của họ; bạn không kiểm soát được nữa.",
+            "en": "Believing data disappears after the chat session. Once sent, it sits on a third party's servers under their retention policy; you no longer control it."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Dùng chế độ chat ẩn danh của công cụ để dữ liệu không bị gửi đi",
+          "en": "Use the tool's incognito chat mode so the data is not sent anywhere"
+        },
+        "misconception": {
+          "id": "aiwf-private-mode-safe",
+          "text": {
+            "vi": "Nghĩ rằng chế độ riêng tư giữ dữ liệu trên máy. Model chạy trên server, nên mọi thứ bạn dán vẫn được gửi đi; chế độ đó chỉ đổi cách lưu lịch sử.",
+            "en": "Believing a private mode keeps data on your machine. The model runs on a server, so everything you paste is still sent; the mode only changes how history is kept."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Mã hoá base64 đoạn log để AI đọc được nhưng người khác thì không",
+          "en": "Base64-encode the log so the AI can read it but people cannot"
+        },
+        "misconception": {
+          "id": "aiwf-base64-hides-secrets",
+          "text": {
+            "vi": "Nghĩ rằng base64 là mã hoá bảo mật. Base64 chỉ là cách mã hoá ký tự, ai cũng giải được trong một dòng lệnh.",
+            "en": "Believing base64 is encryption. It is only a character encoding that anyone can decode in one command."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0
+    ],
+    "explanation": {
+      "vi": "Thứ gì dán vào công cụ bên ngoài là đã rời khỏi tầm kiểm soát của bạn. Token có thể bị dùng lại, email là dữ liệu cá nhân, và cả hai đều không cần để đọc một stack trace. Hãy thay bằng giá trị giả, và tuân theo quy định của công ty về công cụ nào được dùng cho code và dữ liệu nào. Nếu token thật đã lỡ bị dán, coi như nó đã lộ và thu hồi nó.",
+      "en": "Anything you paste into an external tool has left your control. A token can be replayed, an email is personal data, and neither is needed to read a stack trace. Replace them with placeholders, and follow company policy on which tools may see which code and data. If a real token was pasted by mistake, treat it as exposed and revoke it."
+    }
+  }
+]

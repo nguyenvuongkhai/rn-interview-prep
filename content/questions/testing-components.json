@@ -1,0 +1,809 @@
+[
+  {
+    "id": "testing-components-001",
+    "type": "mcq",
+    "topics": [
+      "testing/components"
+    ],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": [
+      "testing-components-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Sau khi người dùng đóng banner \"Offline\", bạn muốn assert rằng banner đã biến mất khỏi màn hình (việc đóng diễn ra đồng bộ). Assertion nào đúng?",
+      "en": "After the user dismisses the \"Offline\" banner, you want to assert it is gone from the screen (dismissing is synchronous). Which assertion is right?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "`expect(screen.queryByText('Offline')).toBeNull()`",
+          "en": "`expect(screen.queryByText('Offline')).toBeNull()`"
+        }
+      },
+      {
+        "text": {
+          "vi": "`expect(screen.getByText('Offline')).toBeNull()`",
+          "en": "`expect(screen.getByText('Offline')).toBeNull()`"
+        },
+        "misconception": {
+          "id": "tcomp-getby-returns-null",
+          "text": {
+            "vi": "Nghĩ rằng `getBy` trả về null khi không tìm thấy. `getBy` ném lỗi ngay khi không có phần tử nào khớp, nên test fail trước khi tới assertion. Để kiểm tra sự vắng mặt, dùng `queryBy`.",
+            "en": "Believing `getBy` returns null when nothing matches. `getBy` throws as soon as no element matches, so the test fails before the assertion runs. To check absence, use `queryBy`."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`expect(screen.findByText('Offline')).toBeNull()`",
+          "en": "`expect(screen.findByText('Offline')).toBeNull()`"
+        },
+        "misconception": {
+          "id": "tcomp-findby-sync",
+          "text": {
+            "vi": "Quên rằng `findBy` bất đồng bộ. `findBy` trả về một promise, và một promise không bao giờ là null, nên assertion này luôn fail. `findBy` dùng để chờ một phần tử xuất hiện, không phải để kiểm tra nó biến mất.",
+            "en": "Forgetting that `findBy` is async. `findBy` returns a promise, and a promise is never null, so this assertion always fails. `findBy` waits for an element to appear; it does not check that one is gone."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`expect(screen.queryAllByText('Offline')).toBeNull()`",
+          "en": "`expect(screen.queryAllByText('Offline')).toBeNull()`"
+        },
+        "misconception": {
+          "id": "tcomp-queryall-null",
+          "text": {
+            "vi": "Nghĩ rằng `queryAllBy` trả về null khi không có kết quả. Nó trả về mảng rỗng, nên `toBeNull()` luôn fail; với `queryAllBy` hãy kiểm tra `toHaveLength(0)`.",
+            "en": "Believing `queryAllBy` returns null when nothing matches. It returns an empty array, so `toBeNull()` always fails; with `queryAllBy`, check `toHaveLength(0)`."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0
+    ],
+    "explanation": {
+      "vi": "`queryBy` trả về phần tử hoặc `null` và không ném lỗi khi không tìm thấy, nên nó là query để assert sự vắng mặt (nó vẫn ném lỗi nếu có nhiều hơn một phần tử khớp). `getBy` ném lỗi khi không thấy, `findBy` trả về promise và chờ phần tử xuất hiện, còn `queryAllBy` trả về mảng. Nếu banner biến mất sau một thao tác bất đồng bộ, dùng `waitForElementToBeRemoved` hoặc `waitFor` bọc assertion với `queryBy`.",
+      "en": "`queryBy` returns the element or `null` and does not throw when nothing matches, so it is the query for asserting absence (it still throws if more than one element matches). `getBy` throws when nothing is found, `findBy` returns a promise that waits for an element to appear, and `queryAllBy` returns an array. If the banner disappears after async work, use `waitForElementToBeRemoved` or wrap the `queryBy` assertion in `waitFor`."
+    }
+  },
+  {
+    "id": "testing-components-002",
+    "type": "mcq",
+    "topics": [
+      "testing/components"
+    ],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": [
+      "testing-components-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Một đồng đội gắn `testID` cho mọi phần tử và chỉ dùng `getByTestId`. Vì sao React Native Testing Library khuyên ưu tiên query theo role, label hoặc text?",
+      "en": "A teammate puts a `testID` on every element and only uses `getByTestId`. Why does React Native Testing Library recommend querying by role, label or text first?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Chúng tìm phần tử như người dùng và screen reader, nên test bền qua refactor",
+          "en": "They find elements as users and screen readers do, so tests survive refactors"
+        }
+      },
+      {
+        "text": {
+          "vi": "`getByTestId` chậm hơn nhiều vì nó phải duyệt toàn bộ cây component",
+          "en": "`getByTestId` is much slower because it has to walk the whole component tree"
+        },
+        "misconception": {
+          "id": "tcomp-testid-slow",
+          "text": {
+            "vi": "Nghĩ rằng lý do là hiệu năng. Mọi query đều duyệt cây đã render; khác biệt nằm ở việc test kiểm tra điều gì, không phải tốc độ.",
+            "en": "Believing the reason is performance. Every query walks the rendered tree; the difference is what the test checks, not speed."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`testID` bị loại bỏ khi chạy trong Jest, nên `getByTestId` không ổn định",
+          "en": "`testID` is stripped when running under Jest, so `getByTestId` is unreliable"
+        },
+        "misconception": {
+          "id": "tcomp-testid-stripped",
+          "text": {
+            "vi": "Nghĩ rằng `testID` không tồn tại trong môi trường test. `testID` là prop thật, có trong cây render của Jest và query bằng nó hoạt động ổn định; vấn đề là nó không nói gì về thứ người dùng thấy.",
+            "en": "Believing `testID` does not exist in the test environment. `testID` is a real prop present in Jest's render tree and querying by it works reliably; the problem is it says nothing about what the user sees."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`getByTestId` không tìm được phần tử nằm bên trong một `FlatList`",
+          "en": "`getByTestId` cannot find elements that are rendered inside a `FlatList`"
+        },
+        "misconception": {
+          "id": "tcomp-testid-flatlist",
+          "text": {
+            "vi": "Nghĩ rằng `FlatList` che phần tử con khỏi query. Trong test, `FlatList` render các item của lô đầu tiên như component thường, và mọi loại query đều tìm được chúng.",
+            "en": "Believing a `FlatList` hides its children from queries. In tests a `FlatList` renders its first batch of items like normal components, and every kind of query can find them."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0
+    ],
+    "explanation": {
+      "vi": "Query theo role, label và text dựa trên thứ người dùng thấy hoặc nghe qua screen reader. Test vì thế kiểm tra luôn accessibility: nếu `getByRole('button', { name: 'Pay' })` không tìm thấy nút, rất có thể screen reader cũng không nhận ra nó. Test cũng không phụ thuộc cấu trúc bên trong, nên đổi `TouchableOpacity` sang `Pressable` hay tách component không làm test vỡ. `testID` vẫn hữu ích khi phần tử không có text hay role rõ ràng, nhưng nên là lựa chọn cuối.",
+      "en": "Role, label and text queries rely on what the user sees or hears through a screen reader. The test therefore checks accessibility too: if `getByRole('button', { name: 'Pay' })` cannot find the button, a screen reader likely cannot either. It also does not depend on internal structure, so swapping `TouchableOpacity` for `Pressable` or splitting a component does not break it. `testID` is still useful when an element has no meaningful text or role, but it should be the last resort."
+    }
+  },
+  {
+    "id": "testing-components-003",
+    "type": "mcq",
+    "topics": [
+      "testing/components"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 75,
+    "lessons": [
+      "testing-components-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Với React Native Testing Library v12 trở lên, `await user.type(input, 'abc')` (với `user = userEvent.setup()`) làm gì mà `fireEvent.changeText(input, 'abc')` không làm?",
+      "en": "In React Native Testing Library v12 and later, what does `await user.type(input, 'abc')` (with `user = userEvent.setup()`) do that `fireEvent.changeText(input, 'abc')` does not?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Phát chuỗi sự kiện như người dùng thật: focus, key press và đổi text từng ký tự, blur",
+          "en": "Emits a real user's sequence: focus, key press and text change per character, blur"
+        }
+      },
+      {
+        "text": {
+          "vi": "Gõ vào một `TextInput` native thật do simulator iOS hoặc Android render",
+          "en": "Types into a real native `TextInput` rendered by the iOS or Android simulator"
+        },
+        "misconception": {
+          "id": "tcomp-userevent-native",
+          "text": {
+            "vi": "Nghĩ rằng userEvent chạy trên native. Jest chạy trong Node, không có view native nào; userEvent chỉ gọi các prop handler của host component theo trình tự giống thật hơn.",
+            "en": "Believing userEvent runs on native. Jest runs in Node with no native views; userEvent only calls host component handler props in a more realistic order."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Không khác gì; đó chỉ là tên gọi khác để giống Testing Library bản web",
+          "en": "Nothing different; it is only an alias kept to match the web Testing Library"
+        },
+        "misconception": {
+          "id": "tcomp-userevent-alias",
+          "text": {
+            "vi": "Nghĩ rằng userEvent là alias của fireEvent. `fireEvent.changeText` chỉ gọi đúng một handler `onChangeText` với cả chuỗi; userEvent mô phỏng cả chuỗi sự kiện và bỏ qua phần tử không tương tác được.",
+            "en": "Believing userEvent is an alias for fireEvent. `fireEvent.changeText` calls a single `onChangeText` handler with the whole string; userEvent simulates the full event sequence and skips elements that cannot be interacted with."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Gán thẳng prop `value` của input, bỏ qua `onChangeText` của component",
+          "en": "Sets the input's `value` prop directly, bypassing the component's `onChangeText`"
+        },
+        "misconception": {
+          "id": "tcomp-userevent-sets-value",
+          "text": {
+            "vi": "Nghĩ rằng userEvent ghi đè prop. Không query hay event nào của RNTL sửa prop của component; text chỉ đổi khi handler của bạn cập nhật state.",
+            "en": "Believing userEvent overwrites props. No RNTL query or event changes a component's props; the text only changes when your handler updates state."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0
+    ],
+    "explanation": {
+      "vi": "`fireEvent.changeText` gọi đúng một handler với cả chuỗi. `user.type` mô phỏng người dùng: press và focus vào input, với từng ký tự phát key press và thay đổi text, cuối cùng là end editing và blur. Nó cũng không gõ vào input có `editable={false}`. Nhờ vậy test bắt được bug mà `fireEvent` bỏ sót, ví dụ logic trong `onFocus`/`onBlur`, hoặc validate theo từng ký tự. userEvent bất đồng bộ, nên luôn phải `await`.",
+      "en": "`fireEvent.changeText` calls a single handler with the whole string. `user.type` simulates a user: it presses and focuses the input, emits a key press and a text change for each character, then ends editing and blurs. It also does not type into an input with `editable={false}`. That lets tests catch bugs `fireEvent` misses, such as logic in `onFocus`/`onBlur` or per-character validation. userEvent is async, so always `await` it."
+    }
+  },
+  {
+    "id": "testing-components-004",
+    "type": "mcq",
+    "topics": [
+      "testing/components"
+    ],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": [
+      "testing-components-core"
+    ],
+    "multi": true,
+    "prompt": {
+      "vi": "Sau một refactor vô hại (đổi `TouchableOpacity` sang `Pressable`, tách một component thành hai), hàng chục component test fail dù màn hình vẫn chạy đúng. Những cách viết test nào nhiều khả năng gây ra việc này? Chọn tất cả đáp án đúng.",
+      "en": "After a harmless refactor (swapping `TouchableOpacity` for `Pressable`, splitting one component into two), dozens of component tests fail although the screen still works. Which test practices most likely caused this? Choose all that apply."
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Snapshot cả màn hình bằng `toMatchSnapshot()` là assertion chính",
+          "en": "Using a whole-screen `toMatchSnapshot()` as the main assertion"
+        }
+      },
+      {
+        "text": {
+          "vi": "Query bằng `testID` trên các wrapper mà refactor đã bỏ",
+          "en": "Finding elements by `testID` on wrappers the refactor removed"
+        }
+      },
+      {
+        "text": {
+          "vi": "Assert số lần một component con được render qua một mock",
+          "en": "Asserting how many times a child rendered, through a mock"
+        }
+      },
+      {
+        "text": {
+          "vi": "Tìm nút thanh toán bằng `getByRole('button', { name: 'Pay' })`",
+          "en": "Finding the button with `getByRole('button', { name: 'Pay' })`"
+        },
+        "misconception": {
+          "id": "tcomp-role-query-brittle",
+          "text": {
+            "vi": "Nghĩ rằng query theo role dễ vỡ khi refactor. Role và tên truy cập là thứ người dùng nhận biết; miễn là nút vẫn có role button và nhãn \"Pay\", query vẫn tìm thấy nó dù component bên dưới đổi.",
+            "en": "Believing role queries break on refactors. Role and accessible name are what the user perceives; as long as the button keeps its button role and the \"Pay\" label, the query still finds it whatever the underlying component."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Assert dòng tổng tiền mà người dùng thấy sau khi bấm nút",
+          "en": "Asserting the total that appears after pressing the button"
+        },
+        "misconception": {
+          "id": "tcomp-visible-text-brittle",
+          "text": {
+            "vi": "Nghĩ rằng assert text hiển thị là chi tiết cài đặt. Text người dùng thấy chính là hành vi; nó chỉ đổi khi hành vi đổi, và đó là lúc test nên fail.",
+            "en": "Believing visible text is an implementation detail. The text the user sees is the behaviour; it only changes when behaviour changes, which is exactly when the test should fail."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0,
+      1,
+      2
+    ],
+    "explanation": {
+      "vi": "Snapshot cả màn hình ghi lại mọi host view và prop, nên đổi `TouchableOpacity` sang `Pressable` hay thêm một `View` bọc ngoài là snapshot đổi, dù người dùng không thấy gì khác. `testID` trên wrapper và việc đếm số lần render gắn test vào cấu trúc bên trong. Query theo role và assert trên text hiển thị chỉ phụ thuộc vào thứ người dùng thấy, nên chúng sống sót qua refactor. Khi test vỡ mà hành vi không đổi, đó là test kiểm tra chi tiết cài đặt.",
+      "en": "A whole-screen snapshot records every host view and prop, so swapping `TouchableOpacity` for `Pressable` or adding a wrapping `View` changes it although the user sees nothing new. A `testID` on a wrapper and counting renders tie the test to internal structure. Role queries and assertions on visible text depend only on what the user sees, so they survive the refactor. When a test breaks while behaviour stays the same, it was testing implementation details."
+    }
+  },
+  {
+    "id": "testing-components-005",
+    "type": "mcq",
+    "topics": [
+      "testing/components"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": [
+      "testing-components-core"
+    ],
+    "multi": true,
+    "prompt": {
+      "vi": "Một test pass nhưng in ra cảnh báo `An update to OrderList inside a test was not wrapped in act(...)`. Những phát biểu nào đúng? Chọn tất cả đáp án đúng.",
+      "en": "A test passes but prints `An update to OrderList inside a test was not wrapped in act(...)`. Which statements are true? Choose all that apply."
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Có cập nhật state mà test không chờ, thường sau khi promise resolve",
+          "en": "A state update the test did not wait for, often after a promise resolved"
+        }
+      },
+      {
+        "text": {
+          "vi": "Chờ UI kết quả bằng `findBy` hoặc `waitFor` thường làm cảnh báo biến mất",
+          "en": "Awaiting the resulting UI with `findBy` or `waitFor` usually removes the warning"
+        }
+      },
+      {
+        "text": {
+          "vi": "`render`, `fireEvent` và userEvent của RNTL đã tự bọc trong `act`",
+          "en": "RNTL's `render`, `fireEvent` and userEvent already wrap their work in `act`"
+        }
+      },
+      {
+        "text": {
+          "vi": "Cách sửa đúng là bọc từng dòng trong test bằng một lời gọi `act()`",
+          "en": "The proper fix is to wrap every line of the test in `act()`"
+        },
+        "misconception": {
+          "id": "tcomp-act-wrap-everything",
+          "text": {
+            "vi": "Nghĩ rằng bọc thêm `act` là cách sửa. RNTL đã gọi `act` cho bạn; bọc thêm chỉ che cảnh báo mà không làm test chờ cập nhật bất đồng bộ. Cách sửa là chờ kết quả mà người dùng sẽ thấy.",
+            "en": "Believing more `act` calls are the fix. RNTL already calls `act` for you; extra wrapping only hides the warning without making the test wait for the async update. The fix is to await the result the user would see."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Cảnh báo chỉ là hình thức, vì các assertion đã thấy UI cuối cùng",
+          "en": "The warning is cosmetic, since the assertions already saw the final UI"
+        },
+        "misconception": {
+          "id": "tcomp-act-cosmetic",
+          "text": {
+            "vi": "Nghĩ rằng cảnh báo act vô hại. Cập nhật xảy ra sau khi assertion chạy, nên test có thể đã kiểm tra một trạng thái trung gian, và cập nhật muộn có thể rơi sang test kế tiếp, gây flaky.",
+            "en": "Believing the act warning is harmless. The update happened after the assertions ran, so the test may have checked an intermediate state, and the late update can spill into the next test and cause flakiness."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0,
+      1,
+      2
+    ],
+    "explanation": {
+      "vi": "`act` bảo đảm mọi cập nhật và effect đã được xử lý trước khi assertion chạy. RNTL đã bọc `render`, `fireEvent` và userEvent trong `act`, nên cảnh báo này nghĩa là có cập nhật xảy ra ngoài các lời gọi đó, thường là khi một fetch đã mock resolve sau khi test chạy xong. Cách sửa là chờ đúng thứ người dùng sẽ thấy, ví dụ `await screen.findByText('3 orders')`. Bọc thêm `act` chỉ che triệu chứng; bỏ qua cảnh báo thì test có thể đang kiểm tra trạng thái trung gian.",
+      "en": "`act` makes sure every update and effect has been processed before assertions run. RNTL already wraps `render`, `fireEvent` and userEvent in `act`, so this warning means an update happened outside those calls, usually when a mocked fetch resolved after the test finished. The fix is to await what the user would see, for example `await screen.findByText('3 orders')`. Extra `act` wrapping only hides the symptom; ignoring the warning means the test may be checking an intermediate state."
+    }
+  },
+  {
+    "id": "testing-components-006",
+    "type": "spot-bug",
+    "topics": [
+      "testing/components"
+    ],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 120,
+    "lessons": [
+      "testing-components-core"
+    ],
+    "prompt": {
+      "vi": "`EditNameForm` gọi `await saveName(name)` trong `onPress` của nút Save, rồi set state để hiện chữ \"Saved\". Test này thỉnh thoảng fail với lỗi `Unable to find an element with text: Saved` và in cảnh báo act. Dòng nào gây lỗi?",
+      "en": "`EditNameForm` calls `await saveName(name)` in the Save button's `onPress`, then sets state to show \"Saved\". This test sometimes fails with `Unable to find an element with text: Saved` and prints an act warning. Which line is the bug?"
+    },
+    "code": "import { render, screen, userEvent } from '@testing-library/react-native';\nimport { EditNameForm } from './EditNameForm';\nimport { saveName } from './api';\n\njest.mock('./api');\n\ntest('shows a confirmation after saving', async () => {\n  jest.mocked(saveName).mockResolvedValue({ ok: true });\n  const user = userEvent.setup();\n  render(<EditNameForm initialName=\"An\" />);\n\n  await user.type(screen.getByLabelText('Name'), ' Nguyen');\n  await user.press(screen.getByRole('button', { name: 'Save' }));\n\n  expect(screen.getByText('Saved')).toBeOnTheScreen();\n});",
+    "answerLine": 15,
+    "causeOptions": [
+      {
+        "text": {
+          "vi": "Assert ngay bằng `getByText`, không chờ cập nhật state sau khi `saveName` resolve",
+          "en": "It asserts at once with `getByText`, not waiting for the update after `saveName` resolves"
+        }
+      },
+      {
+        "text": {
+          "vi": "Nên dùng `queryByText`, vì `getByText` ném lỗi khi chưa tìm thấy",
+          "en": "It should use `queryByText`, because `getByText` throws when nothing is found yet"
+        },
+        "misconception": {
+          "id": "tcomp-queryby-waits",
+          "text": {
+            "vi": "Nghĩ rằng `queryBy` chờ phần tử. `queryBy` cũng kiểm tra đúng một lần như `getBy`, chỉ khác là trả về null thay vì ném lỗi; muốn chờ thì dùng `findBy` hoặc `waitFor`.",
+            "en": "Believing `queryBy` waits for elements. `queryBy` checks once, just like `getBy`, but returns null instead of throwing; to wait, use `findBy` or `waitFor`."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`user.type` không gọi `onChangeText`, nên form vẫn giữ tên cũ",
+          "en": "`user.type` never calls `onChangeText`, so the form keeps the old name"
+        },
+        "misconception": {
+          "id": "tcomp-userevent-sets-value",
+          "text": {
+            "vi": "Nghĩ rằng userEvent ghi đè prop. Không query hay event nào của RNTL sửa prop của component; text chỉ đổi khi handler của bạn cập nhật state.",
+            "en": "Believing userEvent overwrites props. No RNTL query or event changes a component's props; the text only changes when your handler updates state."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`jest.mock('./api')` phải nằm trước các dòng `import` thì mới có tác dụng",
+          "en": "`jest.mock('./api')` must come before the `import` lines to take effect"
+        },
+        "misconception": {
+          "id": "tcomp-jest-mock-order",
+          "text": {
+            "vi": "Nghĩ rằng vị trí của `jest.mock` trong file quan trọng. babel-jest hoist lời gọi `jest.mock` lên trên các import, nên module đã được mock trước khi file test import nó.",
+            "en": "Believing the position of `jest.mock` in the file matters. babel-jest hoists `jest.mock` calls above the imports, so the module is mocked before the test file imports it."
+          }
+        }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "`await user.press` chờ chuỗi sự kiện press, không chờ promise mà handler của bạn tạo ra. `setState` sau `await saveName(...)` có thể chạy sau dòng 15, nên `getByText` lúc thì thấy, lúc thì không, và cập nhật muộn sinh ra cảnh báo act. Sửa bằng `expect(await screen.findByText('Saved')).toBeOnTheScreen()`: `findBy` thử lại cho tới khi tìm thấy hoặc hết timeout (mặc định 1000 ms). Đổi sang `queryByText` không giúp gì, vì nó cũng chỉ kiểm tra một lần.",
+      "en": "`await user.press` waits for the press event sequence, not for the promise your handler starts. The `setState` after `await saveName(...)` can run after line 15, so `getByText` sometimes sees the text and sometimes not, and the late update triggers the act warning. Fix it with `expect(await screen.findByText('Saved')).toBeOnTheScreen()`: `findBy` retries until it finds the element or times out (1000 ms by default). Switching to `queryByText` does not help, because it also checks only once."
+    }
+  },
+  {
+    "id": "testing-components-007",
+    "type": "spot-bug",
+    "topics": [
+      "testing/components"
+    ],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 135,
+    "lessons": [
+      "testing-components-core"
+    ],
+    "prompt": {
+      "vi": "`OrdersScreen` dùng `useQuery` của TanStack Query để gọi `fetchOrders`. Test lỗi này timeout ở `findByText`, và một test khác trong cùng file thỉnh thoảng thấy đơn hàng của test trước. Dòng nào gây lỗi?",
+      "en": "`OrdersScreen` uses TanStack Query's `useQuery` to call `fetchOrders`. This error test times out in `findByText`, and another test in the same file sometimes sees orders from a previous test. Which line is the bug?"
+    },
+    "code": "import { QueryClient, QueryClientProvider } from '@tanstack/react-query';\nimport { render, screen } from '@testing-library/react-native';\nimport { OrdersScreen } from './OrdersScreen';\nimport { fetchOrders } from './api';\njest.mock('./api');\n\nconst queryClient = new QueryClient();\n\nfunction renderScreen() {\n  return render(\n    <QueryClientProvider client={queryClient}>\n      <OrdersScreen />\n    </QueryClientProvider>,\n  );\n}\ntest('shows an error when loading fails', async () => {\n  jest.mocked(fetchOrders).mockRejectedValue(new Error('500'));\n  renderScreen();\n  expect(await screen.findByText('Could not load orders')).toBeOnTheScreen();\n});",
+    "answerLine": 7,
+    "causeOptions": [
+      {
+        "text": {
+          "vi": "Một client dùng chung cho mọi test, với retry mặc định và cache sống qua nhiều test",
+          "en": "One client is shared by every test, with default retries and a cache that outlives each test"
+        }
+      },
+      {
+        "text": {
+          "vi": "`findByText` chỉ hoạt động khi đã bật `jest.useFakeTimers()`",
+          "en": "`findByText` only works once `jest.useFakeTimers()` has been enabled"
+        },
+        "misconception": {
+          "id": "tcomp-findby-needs-fake-timers",
+          "text": {
+            "vi": "Nghĩ rằng `findBy` cần fake timers. `findBy` và `waitFor` thăm dò với timer thật theo mặc định; chúng cũng chạy được với fake timers của Jest, nhưng không bắt buộc.",
+            "en": "Believing `findBy` needs fake timers. `findBy` and `waitFor` poll with real timers by default; they also work with Jest's fake timers, but do not require them."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`mockRejectedValue` làm `fetchOrders` ném lỗi đồng bộ, nên query không bao giờ chạy",
+          "en": "`mockRejectedValue` makes `fetchOrders` throw synchronously, so the query never runs"
+        },
+        "misconception": {
+          "id": "tcomp-mockrejected-sync",
+          "text": {
+            "vi": "Hiểu sai `mockRejectedValue`. Nó làm mock trả về một promise bị reject, đúng như một API thật thất bại; không có lỗi đồng bộ nào.",
+            "en": "Misreading `mockRejectedValue`. It makes the mock return a rejected promise, just like a real API failure; nothing is thrown synchronously."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`findByText` chỉ tìm text đã có ở lần render đầu tiên",
+          "en": "`findByText` only searches text that existed on the first render"
+        },
+        "misconception": {
+          "id": "tcomp-findby-initial-only",
+          "text": {
+            "vi": "Nghĩ rằng `findBy` chỉ nhìn lần render đầu. `findBy` thử lại query cho tới khi tìm thấy hoặc hết timeout, nên nó tìm được text xuất hiện sau một thao tác bất đồng bộ.",
+            "en": "Believing `findBy` only looks at the first render. `findBy` retries the query until it succeeds or times out, so it finds text that appears after async work."
+          }
+        }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "Mặc định TanStack Query retry query lỗi 3 lần với backoff tăng dần, nên trạng thái lỗi chỉ hiện sau vài giây, lâu hơn timeout 1000 ms của `findByText`. Client tạo ở cấp module còn giữ cache giữa các test, nên dữ liệu của test này rơi sang test khác. Sửa bằng cách tạo client mới trong `renderScreen` cho mỗi test, với `new QueryClient({ defaultOptions: { queries: { retry: false } } })`. Đây là cách tài liệu testing của TanStack Query khuyên dùng.",
+      "en": "By default TanStack Query retries a failed query 3 times with increasing backoff, so the error state only appears after several seconds, longer than `findByText`'s 1000 ms timeout. A module-level client also keeps its cache between tests, so one test's data leaks into another. Fix it by creating a new client inside `renderScreen` for each test, with `new QueryClient({ defaultOptions: { queries: { retry: false } } })`. This is what TanStack Query's testing docs recommend."
+    }
+  },
+  {
+    "id": "testing-components-008",
+    "type": "spot-bug",
+    "topics": [
+      "testing/components"
+    ],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 150,
+    "lessons": [
+      "testing-components-core"
+    ],
+    "prompt": {
+      "vi": "`ProfileScreen` dùng `useNavigation` để chuyển màn và `useFocusEffect` để tải lại profile mỗi khi màn hình được focus. Test này fail ngay khi render, với `TypeError` báo `useFocusEffect` is not a function. Dòng nào gây lỗi?",
+      "en": "`ProfileScreen` uses `useNavigation` to navigate and `useFocusEffect` to reload the profile whenever the screen gains focus. This test fails during render with a `TypeError` saying `useFocusEffect` is not a function. Which line is the bug?"
+    },
+    "code": "import { render, screen, userEvent } from '@testing-library/react-native';\nimport { ProfileScreen } from './ProfileScreen';\n\nconst mockNavigate = jest.fn();\n\njest.mock('@react-navigation/native', () => ({ useNavigation: () => ({ navigate: mockNavigate }) }));\n\ntest('opens settings from the profile screen', async () => {\n  const user = userEvent.setup();\n  render(<ProfileScreen />);\n\n  await user.press(screen.getByRole('button', { name: 'Settings' }));\n\n  expect(mockNavigate).toHaveBeenCalledWith('Settings');\n});",
+    "answerLine": 6,
+    "causeOptions": [
+      {
+        "text": {
+          "vi": "Factory thay cả module, nên các export khác như `useFocusEffect` thành undefined",
+          "en": "The factory replaces the whole module, so other exports like `useFocusEffect` are undefined"
+        }
+      },
+      {
+        "text": {
+          "vi": "Factory của `jest.mock` không được dùng biến bên ngoài như `mockNavigate`",
+          "en": "A `jest.mock` factory may not reference outside variables such as `mockNavigate`"
+        },
+        "misconception": {
+          "id": "tcomp-mock-factory-no-vars",
+          "text": {
+            "vi": "Nghĩ rằng factory không được dùng biến ngoài. Jest cho phép biến có tên bắt đầu bằng `mock`, và factory chỉ chạy khi module được import, nên `mockNavigate` dùng được.",
+            "en": "Believing a factory cannot use outside variables. Jest allows variables whose names start with `mock`, and the factory only runs when the module is imported, so `mockNavigate` is fine."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`jest.mock` nằm sau các dòng `import`, nên `ProfileScreen` đã nạp module thật",
+          "en": "`jest.mock` sits after the `import` lines, so `ProfileScreen` already loaded the real module"
+        },
+        "misconception": {
+          "id": "tcomp-jest-mock-order",
+          "text": {
+            "vi": "Nghĩ rằng vị trí của `jest.mock` trong file quan trọng. babel-jest hoist lời gọi `jest.mock` lên trên các import, nên module đã được mock trước khi file test import nó.",
+            "en": "Believing the position of `jest.mock` in the file matters. babel-jest hoists `jest.mock` calls above the imports, so the module is mocked before the test file imports it."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "`useFocusEffect` chỉ chạy trên thiết bị thật, nên không thể test trong Jest",
+          "en": "`useFocusEffect` only runs on a real device, so it cannot be tested under Jest"
+        },
+        "misconception": {
+          "id": "tcomp-focus-needs-device",
+          "text": {
+            "vi": "Nghĩ rằng hook focus cần native. `useFocusEffect` là code JS của React Navigation; nó chạy trong Jest khi màn hình nằm trong một `NavigationContainer` thật.",
+            "en": "Believing focus hooks need native code. `useFocusEffect` is React Navigation JS code; it runs under Jest when the screen sits inside a real `NavigationContainer`."
+          }
+        }
+      }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "Factory của `jest.mock` trả về object nào thì module chỉ có đúng các export đó, nên `useFocusEffect` thành undefined. Thêm `...jest.requireActual('@react-navigation/native')` chưa đủ: `useFocusEffect` thật lấy navigation qua code nội bộ của thư viện, không qua bản mock, nên sẽ báo không tìm thấy navigation object. Bạn có thể mock thêm `useFocusEffect`, nhưng cách bền hơn là render màn hình trong một `NavigationContainer` thật với một stack nhỏ, rồi assert rằng màn Settings hiện ra. Test như vậy kiểm tra hành vi, không phụ thuộc màn hình gọi hook nào.",
+      "en": "Whatever object a `jest.mock` factory returns becomes the module's only exports, so `useFocusEffect` is undefined. Adding `...jest.requireActual('@react-navigation/native')` is not enough: the real `useFocusEffect` gets navigation through the library's internal code, not your mock, so it then complains that there is no navigation object. You can mock `useFocusEffect` too, but the sturdier fix is to render the screen inside a real `NavigationContainer` with a small stack and assert that the Settings screen appears. That tests behaviour and does not depend on which hooks the screen calls."
+    }
+  },
+  {
+    "id": "testing-components-009",
+    "type": "open",
+    "topics": [
+      "testing/components"
+    ],
+    "kind": "hard-issue",
+    "difficulty": 3,
+    "estSeconds": 330,
+    "lessons": [
+      "testing-components-core"
+    ],
+    "prompt": {
+      "vi": "Một component test pass ổn định trên máy bạn nhưng fail khoảng 1 trên 10 lần trong CI, mỗi lần một lỗi hơi khác. Team đang tính tăng timeout hoặc cho CI tự chạy lại test fail. Kể lại cách bạn xử lý.",
+      "en": "A component test passes reliably on your machine but fails about 1 in 10 runs in CI, each time with a slightly different error. The team wants to raise the timeout or let CI retry failed tests. Walk me through how you handled it."
+    },
+    "keyPoints": [
+      {
+        "vi": "Tái hiện trước: chạy test lặp nhiều lần, chạy cả file và chạy chung với các test khác, thử `--runInBand` để thấy khác biệt",
+        "en": "Reproduce first: run the test in a loop, alone and with the rest of the suite, and try `--runInBand` to see what changes"
+      },
+      {
+        "vi": "Xem cảnh báo act và các assertion không chờ: `getBy` ngay sau thao tác async, `waitFor` thiếu `await`",
+        "en": "Look at act warnings and assertions that do not wait: `getBy` right after async work, `waitFor` without `await`"
+      },
+      {
+        "vi": "Tìm state dùng chung giữa các test: `QueryClient` hay store cấp module, mock không được reset, timer giả không được trả về timer thật",
+        "en": "Hunt for state shared between tests: a module-level `QueryClient` or store, mocks that are never reset, fake timers never restored"
+      },
+      {
+        "vi": "Bỏ các chỗ chờ theo thời gian cố định; chờ thứ người dùng thấy bằng `findBy` hoặc `waitFor`",
+        "en": "Remove fixed-time waits; wait for what the user sees with `findBy` or `waitFor`"
+      },
+      {
+        "vi": "Không chấp nhận tăng timeout hay retry làm cách sửa, vì chúng che race thật có thể cũng có trong app",
+        "en": "Reject timeout bumps and retries as the fix, because they hide a real race that may exist in the app too"
+      },
+      {
+        "vi": "Xác nhận bản sửa bằng cách chạy lặp lại nhiều lần trong CI trước khi đóng",
+        "en": "Confirm the fix by running it many times in CI before closing"
+      }
+    ],
+    "modelAnswer": {
+      "vi": "Mình không tăng timeout ngay, vì test flaky thường đang báo một race thật. Đầu tiên mình tái hiện: chạy test lặp vài chục lần, chạy riêng và chạy cùng cả suite. Nếu chỉ fail khi chạy cùng test khác thì gần như chắc chắn có state dùng chung, ví dụ `QueryClient` tạo ở cấp module còn giữ cache, hoặc mock không được reset. Lần đó mình thấy cả cảnh báo act: test dùng `getByText` ngay sau khi bấm nút, trong khi kết quả đến sau một promise. Trên CI máy chậm hơn nên promise thường resolve muộn hơn assertion. Mình đổi sang `findByText`, tạo client mới cho mỗi test với `retry: false`, rồi chạy job CI 50 lần liên tiếp đều pass mới đóng ticket.",
+      "en": "I did not raise the timeout right away, because a flaky test usually points at a real race. First I reproduced it: ran the test a few dozen times, alone and with the full suite. If it only fails alongside other tests, there is almost certainly shared state, such as a module-level `QueryClient` keeping its cache, or mocks that are never reset. That time I also saw an act warning: the test used `getByText` right after a press, while the result arrived after a promise. CI machines are slower, so the promise often resolved after the assertion. I switched to `findByText`, created a fresh client per test with `retry: false`, and only closed the ticket after 50 CI runs in a row passed."
+    },
+    "followUps": [
+      {
+        "vi": "Khi nào thì dùng fake timers trong component test là hợp lý, và bạn phải dọn dẹp gì sau đó?",
+        "en": "When are fake timers reasonable in a component test, and what do you have to clean up afterwards?"
+      },
+      {
+        "vi": "Bạn có cho phép CI tự chạy lại test fail không? Trong điều kiện nào?",
+        "en": "Would you ever allow CI to retry failed tests? Under what conditions?"
+      }
+    ]
+  },
+  {
+    "id": "testing-components-010",
+    "type": "open",
+    "topics": [
+      "testing/components",
+      "state/redux"
+    ],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 300,
+    "lessons": [
+      "testing-components-core"
+    ],
+    "prompt": {
+      "vi": "Bạn cần viết component test cho màn hình giỏ hàng dùng Redux Toolkit cho state giỏ hàng và TanStack Query để tải giá. Bạn dựng môi trường test như thế nào, và mock ở đâu?",
+      "en": "You need component tests for a cart screen that uses Redux Toolkit for cart state and TanStack Query to load prices. How do you set up the test environment, and where do you mock?"
+    },
+    "keyPoints": [
+      {
+        "vi": "Viết helper `renderWithProviders` bọc màn hình trong các provider thật mà app dùng",
+        "en": "Write a `renderWithProviders` helper that wraps the screen in the real providers the app uses"
+      },
+      {
+        "vi": "Tạo store thật bằng `configureStore` với reducer thật và `preloadedState`, mới cho mỗi test",
+        "en": "Create a real store with `configureStore`, the real reducers and `preloadedState`, fresh for each test"
+      },
+      {
+        "vi": "Tạo `QueryClient` mới cho mỗi test, tắt retry",
+        "en": "Create a new `QueryClient` per test with retries turned off"
+      },
+      {
+        "vi": "Mock ở ranh giới mạng (module API hoặc HTTP), không mock `useSelector`, `useDispatch` hay hook của chính app",
+        "en": "Mock at the network boundary (the API module or HTTP), not `useSelector`, `useDispatch` or the app's own hooks"
+      },
+      {
+        "vi": "Assert trên UI người dùng thấy sau thao tác, và chỉ kiểm tra store khi đó là hành vi cần chứng minh",
+        "en": "Assert on the UI the user sees after interacting, and only inspect the store when that is the behaviour to prove"
+      }
+    ],
+    "modelAnswer": {
+      "vi": "Mình viết một helper `renderWithProviders` nhận `preloadedState`. Bên trong nó tạo store bằng `configureStore` với đúng reducer của app, và một `QueryClient` mới với `retry: false`, rồi bọc màn hình trong `Provider` và `QueryClientProvider`. Mỗi test có store và client riêng nên không rò state. Mình không mock `useSelector` hay `useDispatch`, vì như vậy test chỉ chứng minh component gọi hook, còn reducer và selector thật không được kiểm tra. Thứ mình mock là ranh giới mạng: module API trả về giá cố định, hoặc một HTTP mock như MSW. Sau đó test làm như người dùng: bấm tăng số lượng, rồi `findByText` tổng tiền mới. Helper trả về cả store để khi cần có thể kiểm tra action đã đổi state đúng.",
+      "en": "I write a `renderWithProviders` helper that takes `preloadedState`. Inside, it creates a store with `configureStore` and the app's real reducers, plus a new `QueryClient` with `retry: false`, and wraps the screen in `Provider` and `QueryClientProvider`. Each test gets its own store and client, so no state leaks. I do not mock `useSelector` or `useDispatch`, because then the test only proves the component calls hooks, while the real reducers and selectors go untested. What I mock is the network boundary: the API module returning fixed prices, or an HTTP mock such as MSW. Then the test acts like a user: press the increase button, then `findByText` the new total. The helper also returns the store, so I can check state when that matters."
+    },
+    "followUps": [
+      {
+        "vi": "Nếu một reducer có bug, test nào trong cách dựng của bạn sẽ bắt được nó?",
+        "en": "If a reducer has a bug, which of your tests would catch it?"
+      },
+      {
+        "vi": "Bạn xử lý màn hình cần navigation thật như thế nào trong cùng helper?",
+        "en": "How would you handle screens that also need real navigation in the same helper?"
+      }
+    ]
+  },
+  {
+    "id": "testing-components-011",
+    "type": "open",
+    "topics": [
+      "testing/components"
+    ],
+    "kind": "hard-issue",
+    "difficulty": 2,
+    "estSeconds": 300,
+    "lessons": [
+      "testing-components-core"
+    ],
+    "prompt": {
+      "vi": "Một đồng đội tách `CheckoutScreen` thành ba component nhỏ và đổi `TouchableOpacity` sang `Pressable`. App chạy y như cũ, nhưng 40 component test fail, phần lớn là snapshot và `getByTestId`. Bạn xử lý PR này và bộ test thế nào?",
+      "en": "A teammate split `CheckoutScreen` into three smaller components and swapped `TouchableOpacity` for `Pressable`. The app behaves exactly as before, but 40 component tests fail, mostly snapshots and `getByTestId`. How do you handle the PR and the test suite?"
+    },
+    "keyPoints": [
+      {
+        "vi": "Nhận ra test vỡ mà hành vi không đổi là test kiểm tra chi tiết cài đặt, không phải bug",
+        "en": "Recognise that tests breaking while behaviour is unchanged are testing implementation details, not finding a bug"
+      },
+      {
+        "vi": "Không cập nhật hàng loạt snapshot bằng `-u` mà không đọc diff",
+        "en": "Do not bulk-update snapshots with `-u` without reading the diff"
+      },
+      {
+        "vi": "Thay snapshot lớn bằng assertion rõ ràng về thứ người dùng thấy sau mỗi thao tác",
+        "en": "Replace large snapshots with explicit assertions about what the user sees after each action"
+      },
+      {
+        "vi": "Chuyển query sang role, label và text; thêm `accessibilityRole` và `accessibilityLabel` khi thiếu, có lợi cho cả người dùng screen reader",
+        "en": "Move queries to role, label and text; add `accessibilityRole` and `accessibilityLabel` where missing, which also helps screen reader users"
+      },
+      {
+        "vi": "Giữ `testID` cho trường hợp không có text hay role, và giữ snapshot chỉ cho output nhỏ, ổn định",
+        "en": "Keep `testID` for elements with no text or role, and snapshots only for small, stable output"
+      }
+    ],
+    "modelAnswer": {
+      "vi": "Đầu tiên mình xác nhận hành vi thật sự không đổi, bằng cách chạy app và đọc diff snapshot. Diff toàn là tên host component và các `View` bọc ngoài, nên đây không phải bug mà là test gắn vào cấu trúc. Mình không chạy `-u` cho xong, vì làm vậy thì lần sau snapshot cũng sẽ bị cập nhật mù. Mình viết lại các test chính theo luồng người dùng: nhập địa chỉ, bấm nút theo `getByRole('button', { name: 'Place order' })`, rồi assert tổng tiền và thông báo hiện ra. Ở những chỗ query theo role không tìm thấy nút, mình thêm `accessibilityRole` vào component, nên screen reader cũng được lợi. Sau đó refactor kiểu này không còn làm vỡ test, và test chỉ fail khi hành vi đổi.",
+      "en": "First I confirmed behaviour really was unchanged, by running the app and reading the snapshot diffs. They were all host component names and wrapping `View`s, so this was not a bug but tests tied to structure. I did not just run `-u`, because then the next snapshot update would be blind too. I rewrote the main tests around user flows: enter the address, press `getByRole('button', { name: 'Place order' })`, then assert the total and the confirmation that appear. Where a role query could not find a button, I added `accessibilityRole` to the component, which helps screen reader users too. After that, refactors like this stopped breaking tests, and tests only fail when behaviour changes."
+    },
+    "followUps": [
+      {
+        "vi": "Có trường hợp nào snapshot test vẫn đáng giữ không?",
+        "en": "Are there cases where a snapshot test is still worth keeping?"
+      }
+    ]
+  },
+  {
+    "id": "testing-components-012",
+    "type": "mcq",
+    "topics": [
+      "testing/components"
+    ],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": [
+      "testing-components-core"
+    ],
+    "multi": false,
+    "prompt": {
+      "vi": "Một màn hình import `@react-native-async-storage/async-storage`. Trên app thật mọi thứ chạy tốt, nhưng trong Jest, `render` ném lỗi vì native module của thư viện là null. Cách sửa đúng là gì?",
+      "en": "A screen imports `@react-native-async-storage/async-storage`. It works in the app, but under Jest `render` throws because the library's native module is null. What is the right fix?"
+    },
+    "options": [
+      {
+        "text": {
+          "vi": "Mock thư viện trong file setup của Jest, dùng mock mà thư viện cung cấp nếu có",
+          "en": "Mock the library in Jest's setup file, using the mock it ships if it has one"
+        }
+      },
+      {
+        "text": {
+          "vi": "Thêm thư viện vào `transformIgnorePatterns` để Babel transpile nó",
+          "en": "Add the library to `transformIgnorePatterns` so that Babel transpiles it"
+        },
+        "misconception": {
+          "id": "tcomp-transform-fixes-native",
+          "text": {
+            "vi": "Nhầm lỗi native module với lỗi cú pháp. `transformIgnorePatterns` quyết định package nào trong `node_modules` được transpile, dùng cho lỗi như `Unexpected token`; nó không tạo ra native module.",
+            "en": "Confusing a missing native module with a syntax error. `transformIgnorePatterns` decides which `node_modules` packages get transpiled, for errors such as `Unexpected token`; it cannot create a native module."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Chạy Jest với simulator đang mở để test kết nối được native module",
+          "en": "Run Jest with a simulator open so tests can reach the native module"
+        },
+        "misconception": {
+          "id": "tcomp-jest-runs-native",
+          "text": {
+            "vi": "Nghĩ rằng Jest có thể dùng native code. Jest chạy JavaScript trong Node, không có iOS hay Android runtime; mọi native module phải được mock.",
+            "en": "Believing Jest can use native code. Jest runs JavaScript in Node with no iOS or Android runtime; every native module has to be mocked."
+          }
+        }
+      },
+      {
+        "text": {
+          "vi": "Chạy `pod install` và build lại app để autolinking đăng ký module",
+          "en": "Run `pod install` and rebuild the app so autolinking registers the module"
+        },
+        "misconception": {
+          "id": "tcomp-autolink-jest",
+          "text": {
+            "vi": "Nghĩ rằng autolinking ảnh hưởng tới Jest. Autolinking chỉ thay đổi bản build native; Jest không bao giờ nạp binary của app.",
+            "en": "Believing autolinking affects Jest. Autolinking only changes the native build; Jest never loads the app binary."
+          }
+        }
+      }
+    ],
+    "answer": [
+      0
+    ],
+    "explanation": {
+      "vi": "Jest chạy trong Node, nên mọi thư viện có native code phải được mock. Nhiều thư viện cung cấp sẵn mock: AsyncStorage có `@react-native-async-storage/async-storage/jest/async-storage-mock`, dùng với `jest.mock` trong file setup để mọi test đều có. Nếu thư viện không có mock, tự viết mock nhỏ chỉ gồm các hàm app dùng. `transformIgnorePatterns` là cách sửa cho lỗi cú pháp khi package chưa được transpile, một lỗi khác hẳn.",
+      "en": "Jest runs in Node, so every library with native code has to be mocked. Many libraries ship a mock: AsyncStorage provides `@react-native-async-storage/async-storage/jest/async-storage-mock`, which you pass to `jest.mock` in the setup file so every test gets it. If a library has no mock, write a small one with only the functions the app uses. `transformIgnorePatterns` fixes syntax errors from untranspiled packages, which is a different problem."
+    }
+  }
+]

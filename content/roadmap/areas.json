@@ -1,0 +1,14 @@
+[
+  {"id": "language", "title": {"vi": "Ngôn ngữ", "en": "Language"}},
+  {"id": "ui", "title": {"vi": "UI và render", "en": "UI and rendering"}},
+  {"id": "state", "title": {"vi": "State và dữ liệu", "en": "State and data flow"}},
+  {"id": "architecture", "title": {"vi": "Kiến trúc", "en": "Architecture"}},
+  {"id": "concurrency", "title": {"vi": "Bất đồng bộ và luồng", "en": "Async and threading"}},
+  {"id": "memory", "title": {"vi": "Bộ nhớ", "en": "Memory"}},
+  {"id": "performance", "title": {"vi": "Hiệu năng", "en": "Performance"}},
+  {"id": "native", "title": {"vi": "Native và nền tảng", "en": "Native and platform"}},
+  {"id": "data", "title": {"vi": "Mạng và lưu trữ", "en": "Networking and storage"}},
+  {"id": "quality", "title": {"vi": "Test và debug", "en": "Testing and debugging"}},
+  {"id": "release", "title": {"vi": "Phát hành và vận hành", "en": "Release and operations"}},
+  {"id": "teamwork", "title": {"vi": "Làm việc nhóm và AI", "en": "Teamwork and AI"}}
+]

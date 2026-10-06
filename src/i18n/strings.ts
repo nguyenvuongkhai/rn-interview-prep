@@ -125,6 +125,11 @@ export const UI = {
   progress: { vi: 'Tiến độ', en: 'Progress' },
   settings: { vi: 'Cài đặt', en: 'Settings' },
   libraryTitle: { vi: 'Thư viện chủ đề', en: 'Topic library' },
+  labsTitle: { vi: 'Lab: kiểm chứng bằng công cụ thật', en: 'Labs: prove it with real tools' },
+  labsSub: {
+    vi: 'Mỗi lab là một ca thật: dựng lại lỗi, đo, đọc tín hiệu, sửa, rồi đo lại để chứng minh. Ví dụ: memo có thật sự giảm render không, màn hình có bị memory leak không.',
+    en: 'Each lab is a real case: reproduce the bug, measure, read the signal, fix it, then measure again to prove it. For example: did memo really cut renders, does this screen leak memory.',
+  },
   practiseTopic: { vi: 'Luyện chủ đề này', en: 'Practise this topic' },
   itemCount: { vi: '{q} câu hỏi · {c} challenge', en: '{q} questions · {c} challenges' },
   lessonLink: { vi: 'Bài học: {kind} · {m} phút', en: 'Lesson: {kind} · {m} min' },

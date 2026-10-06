@@ -32,6 +32,12 @@ export function LibraryScreen({ service, content }: { service: SessionService; c
     };
   }, [service]);
 
+  const labs = content.lessons.filter((l) => l.kind === 'lab');
+  const topicTitle = (id: string) => {
+    const topic = content.topics.find((x) => x.id === id);
+    return topic ? pick(topic.title) : id;
+  };
+
   async function practise(topicId: string) {
     setBusy(true);
     setFailed(false);
@@ -49,6 +55,22 @@ export function LibraryScreen({ service, content }: { service: SessionService; c
       <h1 className="display">{t('libraryTitle')}</h1>
       {failed ? <p role="alert" className="muted down">{t('saveFailed')}</p> : null}
       {loadFailed ? <p role="alert" className="muted down">{t('loadFailed')}</p> : null}
+      {labs.length > 0 ? (
+        <section className="stack">
+          <div className="stack" style={{ gap: 'var(--space-1)' }}>
+            <h2 className="title">{t('labsTitle')}</h2>
+            <p className="muted" style={{ margin: 0 }}>{t('labsSub')}</p>
+          </div>
+          <div className="topics">
+            {labs.map((l) => (
+              <a key={l.id} className="panel stack" style={{ gap: 'var(--space-2)' }} href={href({ name: 'lesson', lessonId: l.id })}>
+                <span style={{ fontWeight: 600 }}>{splitTitle(pick(l.body)).title ?? l.id}</span>
+                <span className="muted">{topicTitle(l.topic)} · {t('minutes', { m: l.readMinutes })}</span>
+              </a>
+            ))}
+          </div>
+        </section>
+      ) : null}
       {topicGroups(content.topics, mastery).map((group) => (
         <section key={group.root.id} className="stack">
           <h2 className="title">{pick(group.root.title)}</h2>

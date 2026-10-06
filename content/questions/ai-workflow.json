@@ -383,8 +383,8 @@
     "causeOptions": [
       {
         "text": {
-          "vi": "`estimatedItemSize` là prop của FlashList; `FlatList` không có prop này",
-          "en": "`estimatedItemSize` is a FlashList prop; `FlatList` has no such prop"
+          "vi": "`estimatedItemSize` là prop của FlashList v1 (v2 đã bỏ), không phải prop của `FlatList`",
+          "en": "`estimatedItemSize` is a FlashList v1 prop (dropped in v2), not a `FlatList` prop"
         }
       },
       {
@@ -429,8 +429,8 @@
     ],
     "answerCause": 0,
     "explanation": {
-      "vi": "Dòng 13 trộn API của hai thư viện: `estimatedItemSize` thuộc FlashList, không có trong `FlatListProps`. Trong file TypeScript, compiler báo lỗi prop không tồn tại; trong file JS, `FlatList` bỏ qua nó một cách lặng lẽ và nó không làm gì. Các dòng còn lại là cách tối ưu chuẩn cho hàng cao cố định: `getItemLayout`, `initialNumToRender`, `windowSize`. Bài học là đọc từng prop AI thêm vào và đối chiếu với type definition, nhất là khi tên nghe rất hợp lý.",
-      "en": "Line 13 mixes two libraries' APIs: `estimatedItemSize` belongs to FlashList and is not in `FlatListProps`. In a TypeScript file the compiler reports a non-existent prop; in a JS file `FlatList` silently ignores it and it does nothing. The other lines are the standard optimisations for fixed-height rows: `getItemLayout`, `initialNumToRender`, `windowSize`. The lesson is to read every prop the AI adds and check it against the type definitions, especially when the name sounds very plausible."
+      "vi": "Dòng 13 trộn API của hai thư viện: `estimatedItemSize` là prop của FlashList v1 (v2 đã bỏ) và không có trong `FlatListProps`. Trong file TypeScript, compiler báo lỗi prop không tồn tại; trong file JS, `FlatList` bỏ qua nó một cách lặng lẽ và nó không làm gì. Các dòng còn lại là cách tối ưu chuẩn cho hàng cao cố định: `getItemLayout`, `initialNumToRender`, `windowSize`. Bài học là đọc từng prop AI thêm vào và đối chiếu với type definition, nhất là khi tên nghe rất hợp lý.",
+      "en": "Line 13 mixes two libraries' APIs: `estimatedItemSize` is a FlashList v1 prop (v2 dropped it) and is not in `FlatListProps`. In a TypeScript file the compiler reports a non-existent prop; in a JS file `FlatList` silently ignores it and it does nothing. The other lines are the standard optimisations for fixed-height rows: `getItemLayout`, `initialNumToRender`, `windowSize`. The lesson is to read every prop the AI adds and check it against the type definitions, especially when the name sounds very plausible."
     }
   },
   {
@@ -500,8 +500,8 @@
     ],
     "answerCause": 0,
     "explanation": {
-      "vi": "Dòng 2 là một API đã lỗi thời mà model còn nhớ từ code cũ trên mạng: `AsyncStorage` đã được tách khỏi core trong đợt Lean Core và không còn được export từ `react-native` từ lâu. Với TypeScript, import này báo lỗi ngay; trong JS, `AsyncStorage` là `undefined` và `getItem` ném lỗi lúc chạy. Sửa bằng cách cài `@react-native-async-storage/async-storage` và import default từ đó. Phần còn lại của hook (Promise, cờ huỷ, `[]`) đúng.",
-      "en": "Line 2 is an outdated API the model remembers from old code online: `AsyncStorage` was split out of core during Lean Core and has not been exported from `react-native` for a long time. With TypeScript the import fails immediately; in JS `AsyncStorage` is `undefined` and `getItem` throws at runtime. Fix it by installing `@react-native-async-storage/async-storage` and using its default import. The rest of the hook (the Promise, the cancel flag, `[]`) is correct."
+      "vi": "Dòng 2 là một API đã lỗi thời mà model còn nhớ từ code cũ trên mạng: `AsyncStorage` đã được tách khỏi core trong đợt Lean Core và bị xoá khỏi `react-native` ở RN 0.71. Với TypeScript, import này báo lỗi ngay. Trên dev build, đọc nó ném lỗi 'AsyncStorage has been removed from react-native core'; trên release build nó là `undefined`, nên `getItem` ném TypeError. Sửa bằng cách cài `@react-native-async-storage/async-storage` và import default từ đó. Phần còn lại của hook (Promise, cờ huỷ, `[]`) đúng.",
+      "en": "Line 2 is an outdated API the model remembers from old code online: `AsyncStorage` was split out of core during Lean Core and was removed from `react-native` in RN 0.71. With TypeScript the import fails immediately. In a dev build, reading it throws 'AsyncStorage has been removed from react-native core'; in a release build it is `undefined`, so `getItem` throws a TypeError. Fix it by installing `@react-native-async-storage/async-storage` and using its default import. The rest of the hook (the Promise, the cancel flag, `[]`) is correct."
     }
   },
   {

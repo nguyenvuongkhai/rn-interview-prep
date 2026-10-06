@@ -573,8 +573,8 @@
     ],
     "answerCause": 0,
     "explanation": {
-      "vi": "`launchApp` không có tham số chỉ mở app, giữ nguyên dữ liệu đã lưu như token đăng nhập. Lần chạy đầu trên máy mới thì không có token nên flow pass; từ lần thứ hai app vào thẳng Home. Sửa dòng 3 thành `- launchApp:` với `clearState: true` ở dòng thụt vào bên dưới, để mỗi flow bắt đầu từ trạng thái chưa đăng nhập. Nguyên tắc chung: mỗi flow hoặc test phải tự dựng state nó cần, không dựa vào việc máy đã sạch hay chưa.",
-      "en": "`launchApp` with no options just opens the app and keeps stored data such as the sign-in token. The first run on a new device has no token, so the flow passes; from the second run the app goes straight to Home. Change line 3 to `- launchApp:` with `clearState: true` indented beneath it, so every flow starts signed out. The general rule: each flow or test sets up the state it needs and never relies on whether the device happens to be clean."
+      "vi": "`launchApp` không có tham số chỉ mở app, giữ nguyên dữ liệu đã lưu như token đăng nhập. Lần chạy đầu trên máy mới thì không có token nên flow pass; từ lần thứ hai app vào thẳng Home. Sửa dòng 3 thành `- launchApp:` với `clearState: true` ở dòng thụt vào bên dưới, để mỗi flow bắt đầu từ trạng thái chưa đăng nhập. Nguyên tắc chung: mỗi flow hoặc test phải tự dựng state nó cần, không dựa vào việc máy đã sạch hay chưa. Nếu app giữ token trong iOS Keychain, hãy thêm cả `clearKeychain: true`, vì `clearState` không đụng tới Keychain.",
+      "en": "`launchApp` with no options just opens the app and keeps stored data such as the sign-in token. The first run on a new device has no token, so the flow passes; from the second run the app goes straight to Home. Change line 3 to `- launchApp:` with `clearState: true` indented beneath it, so every flow starts signed out. The general rule: each flow or test sets up the state it needs and never relies on whether the device happens to be clean. If the app keeps its token in the iOS Keychain, add `clearKeychain: true` as well, because `clearState` does not touch the Keychain."
     }
   },
   {

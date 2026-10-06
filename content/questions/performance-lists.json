@@ -436,7 +436,8 @@
     "difficulty": 2,
     "estSeconds": 105,
     "lessons": [
-      "performance-lists-core"
+      "performance-lists-core",
+      "performance-lists-lab"
     ],
     "prompt": {
       "vi": "Màn hình có 3.000 sản phẩm mất vài giây mới mở được, và Profiler cho thấy mọi `ProductRow` đều được mount. Dòng nào gây lỗi, và vì sao?",
@@ -649,7 +650,8 @@
     "difficulty": 2,
     "estSeconds": 270,
     "lessons": [
-      "performance-lists-core"
+      "performance-lists-core",
+      "performance-lists-lab"
     ],
     "prompt": {
       "vi": "Team đề xuất thay mọi FlatList trong app bằng FlashList. Bạn quyết định thế nào, và khi chuyển thì bạn kiểm tra những gì?",
@@ -759,7 +761,8 @@
     "difficulty": 3,
     "estSeconds": 330,
     "lessons": [
-      "performance-lists-core"
+      "performance-lists-core",
+      "performance-lists-lab"
     ],
     "prompt": {
       "vi": "Một feed ảnh làm app bị hệ điều hành kill vì hết bộ nhớ trên các máy Android cấu hình thấp sau vài phút cuộn. Trên iPhone thì ổn. Bạn điều tra và sửa thế nào?",

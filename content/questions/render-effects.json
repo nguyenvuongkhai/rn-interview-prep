@@ -516,7 +516,8 @@
     "difficulty": 2,
     "estSeconds": 105,
     "lessons": [
-      "render-effects-core"
+      "render-effects-core",
+      "render-effects-lab"
     ],
     "prompt": {
       "vi": "Sau vài lần mở rồi đóng màn hình chat, mỗi lần bàn phím hiện lên app gọi `setBottom` nhiều lần, và khi dev có warning về giá trị effect trả về. Dòng nào gây lỗi, và vì sao?",
@@ -658,7 +659,8 @@
     "difficulty": 3,
     "estSeconds": 135,
     "lessons": [
-      "render-effects-core"
+      "render-effects-core",
+      "render-effects-lab"
     ],
     "prompt": {
       "vi": "Log backend cho thấy endpoint trạng thái đơn hàng vẫn bị poll mỗi 3 giây rất lâu sau khi người dùng đã tới `Receipt` và đi tiếp sang các màn hình khác. Polling chỉ dừng khi người dùng thoát hẳn khỏi luồng thanh toán. Dòng nào gây lỗi, và vì sao?",
@@ -782,7 +784,8 @@
     "difficulty": 3,
     "estSeconds": 330,
     "lessons": [
-      "render-effects-core"
+      "render-effects-core",
+      "render-effects-lab"
     ],
     "prompt": {
       "vi": "Bạn bọc một video SDK native kiểu imperative trong hook `useVideoPlayer(source, { muted })`. SDK có `createPlayer(source)`, `player.setMuted(value)`, `player.release()` và `player.addListener('progress', cb)` trả về một subscription. Có ba lỗi: đổi `muted` làm video phát lại từ đầu; khi dev, âm thanh phát hai lần ngay lúc mở màn hình; và ở production, crash \"player released\" xuất hiện khi một sự kiện progress tới muộn sau khi rời màn hình. Bạn thiết kế lại hook thế nào?",

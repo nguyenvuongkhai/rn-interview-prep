@@ -29,6 +29,10 @@ test('saves the new name', async () => {
 });
 ```
 
+`toBeOnTheScreen()` là matcher có sẵn của RNTL ở các bản gần đây (từ v12.4); project cũ lấy nó từ `@testing-library/jest-native`.
+
+Các ví dụ dùng API của RNTL v12–v13. Ở RNTL v14 (React 19 và RN 0.78 trở lên), `render`, `fireEvent` và `act` là async: viết `await render(...)` và `await fireEvent.press(...)`.
+
 ### act và bất đồng bộ
 `act` bảo đảm cập nhật và effect đã được xử lý xong trước khi assertion chạy. RNTL đã bọc `render`, `fireEvent` và userEvent trong `act`. Cảnh báo "not wrapped in act(...)" nghĩa là có cập nhật xảy ra ngoài các lời gọi đó, thường là một promise resolve sau khi test đã đi tiếp. Sửa bằng cách chờ kết quả hiển thị, không phải bọc thêm `act`.
 

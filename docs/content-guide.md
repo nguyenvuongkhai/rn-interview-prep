@@ -150,7 +150,7 @@ Lab dạy vế "làm sao bạn biết nó đã hiệu quả?" của câu hỏi p
 | `## Nói trong phỏng vấn` | `## Say it in the interview` |
 | `## Liên quan` | `## Related` |
 
-- **Độ dài:** 700–1200 từ mỗi bản; `readMinutes` từ 8 tới 15.
+- **Độ dài:** 700–1200 từ văn xuôi mỗi bản, không tính code và prompt trong fence; `readMinutes` từ 8 tới 15.
 - **Các bước** dùng bullet `-`. Parser không hỗ trợ danh sách đánh số.
 - **Code** là TSX/TS trong fence ```` ```ts ````, đủ nhỏ để dán vào một app thử.
 - **Con số** trong "Đọc tín hiệu" và "Đo lại" là ví dụ minh hoạ: ghi rõ là ví dụ, và nói người đọc sẽ thấy con số khác trên máy của họ.

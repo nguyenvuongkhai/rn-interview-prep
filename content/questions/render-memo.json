@@ -72,7 +72,7 @@
     "kind": "pitfall",
     "difficulty": 2,
     "estSeconds": 90,
-    "lessons": ["render-memo-pitfalls"],
+    "lessons": ["render-memo-pitfalls", "render-memo-lab"],
     "prompt": {
       "vi": "Mỗi lần chọn một dòng, toàn bộ các `Row` đều re-render dù đã bọc `React.memo`. Dòng nào gây ra lỗi, và vì sao?",
       "en": "Every time a row is selected, every `Row` re-renders even though it is wrapped in `React.memo`. Which line causes it, and why?"
@@ -107,7 +107,7 @@
     "kind": "hard-issue",
     "difficulty": 3,
     "estSeconds": 300,
-    "lessons": ["render-memo-pitfalls"],
+    "lessons": ["render-memo-pitfalls", "render-memo-lab"],
     "prompt": {
       "vi": "Một danh sách chat 500 item bị giật khi chọn một tin nhắn. `Row` đã bọc `React.memo` và callback đã ổn định, nhưng Profiler cho thấy mọi `Row` re-render vì prop `item` thay đổi. `data` là `messages.map((m) => ({ ...m, isSelected: m.id === selectedId }))`. Bạn điều tra và sửa thế nào?",
       "en": "A 500-item chat list stutters when a message is selected. `Row` is wrapped in `React.memo` and its callbacks are stable, yet the profiler shows every `Row` re-rendering because its `item` prop changed. `data` is `messages.map((m) => ({ ...m, isSelected: m.id === selectedId }))`. How do you investigate and fix it?"
@@ -342,7 +342,7 @@
     "kind": "advanced",
     "difficulty": 2,
     "estSeconds": 270,
-    "lessons": ["render-memo-core"],
+    "lessons": ["render-memo-core", "render-memo-lab"],
     "prompt": {
       "vi": "Một đồng nghiệp mở PR bọc mọi component bằng `React.memo` và mọi handler bằng `useCallback`, \"để tăng hiệu năng\". Team cũng đang cân nhắc bật React Compiler. Bạn review PR này thế nào, và đề xuất chính sách memoization ra sao?",
       "en": "A teammate opens a PR that wraps every component in `React.memo` and every handler in `useCallback`, \"for performance\". The team is also considering React Compiler. How do you review it, and what memoization policy would you propose?"

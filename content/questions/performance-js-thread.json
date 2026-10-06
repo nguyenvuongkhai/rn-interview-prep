@@ -513,7 +513,8 @@
     "difficulty": 3,
     "estSeconds": 135,
     "lessons": [
-      "performance-js-thread-core"
+      "performance-js-thread-core",
+      "performance-js-thread-lab"
     ],
     "prompt": {
       "vi": "Màn hình import xử lý 30.000 dòng và `onProgress` cập nhật một thanh tiến trình. Thanh đứng ở 0 và tap không có tác dụng gì cho tới khi import xong, rồi nhảy thẳng lên 100%. Code đã cố chia việc thành từng chunk. Dòng nào gây lỗi, và vì sao?",
@@ -584,7 +585,8 @@
     "difficulty": 3,
     "estSeconds": 330,
     "lessons": [
-      "performance-js-thread-core"
+      "performance-js-thread-core",
+      "performance-js-thread-lab"
     ],
     "prompt": {
       "vi": "Trên máy Android cấu hình thấp, gõ vào ô soạn tin của màn hình chat bị trễ: chữ hiện lên chậm khi đang mở một cuộc trò chuyện dài. Kể lại cách bạn tìm ra nguyên nhân và sửa nó.",
@@ -694,7 +696,8 @@
     "difficulty": 3,
     "estSeconds": 330,
     "lessons": [
-      "performance-js-thread-core"
+      "performance-js-thread-core",
+      "performance-js-thread-lab"
     ],
     "prompt": {
       "vi": "Lúc mở app, một tiến trình sync tải về 6 MB JSON, parse rồi normalise vào store. Trên máy Android tầm trung, app đơ 1–2 giây và tap bị bỏ qua. Kể lại các phương án bạn cân nhắc và bạn đã chọn gì.",

@@ -29,6 +29,10 @@ test('saves the new name', async () => {
 });
 ```
 
+`toBeOnTheScreen()` is a built-in RNTL matcher in recent versions (from v12.4); older projects get it from `@testing-library/jest-native`.
+
+The examples use the RNTL v12–v13 API. In RNTL v14 (React 19 and RN 0.78 or later), `render`, `fireEvent` and `act` are async: write `await render(...)` and `await fireEvent.press(...)`.
+
 ### act and async
 `act` makes sure updates and effects are flushed before assertions run. RNTL already wraps `render`, `fireEvent` and userEvent in it. The warning "not wrapped in act(...)" means an update happened outside those calls, usually a promise resolving after the test moved on. Fix it by awaiting the visible result, not by adding more `act`.
 

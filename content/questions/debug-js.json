@@ -372,7 +372,8 @@
     "difficulty": 2,
     "estSeconds": 120,
     "lessons": [
-      "debug-js-core"
+      "debug-js-core",
+      "debug-js-lab"
     ],
     "prompt": {
       "vi": "Log của release build cho mọi đơn hàng thất bại đều có `\"error\":{}`, nên team không biết lỗi là gì. Dòng nào gây ra điều này, và vì sao?",
@@ -443,7 +444,8 @@
     "difficulty": 2,
     "estSeconds": 120,
     "lessons": [
-      "debug-js-core"
+      "debug-js-core",
+      "debug-js-lab"
     ],
     "prompt": {
       "vi": "Trong console của React Native DevTools, bạn mở rộng object được log ở `cart before merge` và thấy 3 item, vậy mà event `merge_into_empty_cart` vẫn được gửi. Đồng nghiệp kết luận câu `if` bị sai. Dòng nào giải thích điều bạn thấy trong console?",
@@ -693,7 +695,8 @@
     "difficulty": 3,
     "estSeconds": 300,
     "lessons": [
-      "debug-js-core"
+      "debug-js-core",
+      "debug-js-lab"
     ],
     "prompt": {
       "vi": "Trên dev build, `user.address` là `undefined` chỉ trên điện thoại Android thật của bạn, còn trên simulator thì đúng. Kể lại cách bạn dùng React Native DevTools và React DevTools để tìm ra nguyên nhân.",

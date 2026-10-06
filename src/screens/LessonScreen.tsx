@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { href, navigate } from '../app/router';
 import type { SessionService } from '../app/sessionService';
+import { splitTitle } from '../content/labs';
 import type { Content } from '../content/load';
 import { useLang } from '../i18n/LangProvider';
 import type { UiKey } from '../i18n/strings';
 import { NotFound } from '../ui/Chrome';
-import { Button } from '../ui/components';
+import { Button, Rich } from '../ui/components';
 import { Markdown } from '../ui/Markdown';
 
 export function LessonScreen({ service, content, lessonId }: { service: SessionService; content: Content; lessonId: string }) {
@@ -19,6 +20,7 @@ export function LessonScreen({ service, content, lessonId }: { service: SessionS
   const topicId = lesson.topic;
   const topic = content.topics.find((x) => x.id === topicId);
   const hasItems = content.items.some((i) => i.topics[0] === topicId);
+  const { title, rest } = splitTitle(pick(lesson.body));
 
   const practise = async () => {
     setBusy(true);
@@ -37,9 +39,9 @@ export function LessonScreen({ service, content, lessonId }: { service: SessionS
       <a href={href({ name: 'library' })}>{t('backLibrary')}</a>
       <div className="stack" style={{ gap: 'var(--space-2)' }}>
         <span className="label">{t(`kind_${lesson.kind}` as UiKey)} · {t('minutes', { m: lesson.readMinutes })}</span>
-        <h1 className="display">{topic ? pick(topic.title) : topicId}</h1>
+        <h1 className="display"><Rich text={title ?? (topic ? pick(topic.title) : topicId)} /></h1>
       </div>
-      <Markdown source={pick(lesson.body)} />
+      <Markdown source={rest} />
       {hasItems ? (
         <div className="row">
           <Button variant="primary" disabled={busy} onClick={() => void practise()}>{t('practiseTopic')}</Button>

@@ -126,7 +126,10 @@ function latestScoreByItem(attempts: Attempt[]): Map<string, number> {
 
 function planFor(topicId: string, items: Item[], lessons: LessonMeta[], latest: Map<string, number>): PlanStep[] {
   const steps: PlanStep[] = [];
-  const lesson = lessons.filter((l) => l.topic === topicId).sort((a, b) => a.id.localeCompare(b.id))[0];
+  // a lab is a hands-on follow-up, so a gap starts with the topic's ordinary lesson
+  const lesson = lessons
+    .filter((l) => l.topic === topicId)
+    .sort((a, b) => Number(a.kind === 'lab') - Number(b.kind === 'lab') || a.id.localeCompare(b.id))[0];
   if (lesson) steps.push({ kind: 'read', lessonId: lesson.id, minutes: lesson.readMinutes });
 
   // unattempted (-1) first, then lowest latest score

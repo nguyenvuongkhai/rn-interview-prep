@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { topicGroups } from '../app/progress';
 import { href, navigate } from '../app/router';
 import type { SessionService } from '../app/sessionService';
+import { splitTitle } from '../content/labs';
 import type { Content } from '../content/load';
 import type { Mastery } from '../core/mastery';
 import { useLang } from '../i18n/LangProvider';
@@ -65,11 +66,16 @@ export function LibraryScreen({ service, content }: { service: SessionService; c
                   </div>
                   <MasteryBar value={m?.value ?? null} level={m?.level ?? 'insufficient'} />
                   <span className="muted">{t('itemCount', { q: items.length - challenges, c: challenges })}</span>
-                  {lessons.map((l) => (
-                    <a key={l.id} href={href({ name: 'lesson', lessonId: l.id })}>
-                      {t('lessonLink', { kind: t(`kind_${l.kind}` as UiKey), m: l.readMinutes })}
-                    </a>
-                  ))}
+                  {lessons.map((l) => {
+                    const title = l.kind === 'lab' ? splitTitle(pick(l.body)).title : undefined;
+                    return (
+                      <a key={l.id} href={href({ name: 'lesson', lessonId: l.id })}>
+                        {title
+                          ? t('labLink', { title, m: l.readMinutes })
+                          : t('lessonLink', { kind: t(`kind_${l.kind}` as UiKey), m: l.readMinutes })}
+                      </a>
+                    );
+                  })}
                   {items.length > 0 ? (
                     <Button className="btn-small" disabled={busy} onClick={() => void practise(topic.id)}>{t('practiseTopic')}</Button>
                   ) : null}

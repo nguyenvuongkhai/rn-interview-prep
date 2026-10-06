@@ -27,6 +27,16 @@
   {"id": "typescript/types", "title": {"vi": "Kiểu, union và narrowing", "en": "Types, unions and narrowing"}, "parent": "typescript", "weight": 3, "group": "typescript"},
   {"id": "typescript/generics", "title": {"vi": "Generics và utility type", "en": "Generics and utility types"}, "parent": "typescript", "weight": 2, "group": "typescript"},
   {"id": "typescript/react", "title": {"vi": "TypeScript trong React Native", "en": "TypeScript in React Native"}, "parent": "typescript", "weight": 3, "group": "typescript"},
+  {"id": "testing", "title": {"vi": "Testing", "en": "Testing"}, "parent": null, "weight": 3, "group": "testing"},
+  {"id": "testing/unit", "title": {"vi": "Unit test với Jest", "en": "Unit testing with Jest"}, "parent": "testing", "weight": 3, "group": "testing"},
+  {"id": "testing/components", "title": {"vi": "Test component với React Native Testing Library", "en": "Component tests with React Native Testing Library"}, "parent": "testing", "weight": 3, "group": "testing"},
+  {"id": "testing/e2e", "title": {"vi": "E2E test và chiến lược test", "en": "E2E tests and test strategy"}, "parent": "testing", "weight": 2, "group": "testing"},
+  {"id": "debug", "title": {"vi": "Debug", "en": "Debugging"}, "parent": null, "weight": 3, "group": "debug"},
+  {"id": "debug/js", "title": {"vi": "Debug phía JavaScript", "en": "Debugging JavaScript"}, "parent": "debug", "weight": 3, "group": "debug"},
+  {"id": "debug/native", "title": {"vi": "Debug phía native", "en": "Debugging native code"}, "parent": "debug", "weight": 2, "group": "debug"},
+  {"id": "ai", "title": {"vi": "Lập trình cùng AI", "en": "AI-assisted development"}, "parent": null, "weight": 2, "group": "ai"},
+  {"id": "ai/workflow", "title": {"vi": "Làm việc với AI assistant", "en": "Working with AI assistants"}, "parent": "ai", "weight": 2, "group": "ai"},
+  {"id": "ai/prompting", "title": {"vi": "Viết prompt cho việc lập trình", "en": "Prompting for coding work"}, "parent": "ai", "weight": 2, "group": "ai"},
   {"id": "workflow", "title": {"vi": "Git và quy trình nhóm", "en": "Git and team workflow"}, "parent": null, "weight": 1, "group": "workflow"},
   {"id": "workflow/git-agile", "title": {"vi": "Git branching, hotfix và Agile", "en": "Git branching, hotfixes and Agile"}, "parent": "workflow", "weight": 1, "group": "workflow"}
 ]

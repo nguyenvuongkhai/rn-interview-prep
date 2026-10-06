@@ -170,6 +170,7 @@ export function TestScreen({ service, content, sessionId }: { service: SessionSe
             onReveal={() => setDraft({ ...draft, revealed: true })}
             onHits={(hits) => setDraft({ ...draft, hits })}
             text={text}
+            content={content}
           />
         ) : null}
         {item.type === 'challenge' ? (

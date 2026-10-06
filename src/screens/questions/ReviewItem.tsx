@@ -5,6 +5,7 @@ import type { Item, Option } from '../../core/schema';
 import type { Attempt } from '../../core/types';
 import { useLang } from '../../i18n/LangProvider';
 import { Rich } from '../../ui/components';
+import { VerifyLinks } from './VerifyLinks';
 
 /** A wrong answer replayed with its answer key: the code, every option, and what the user picked. */
 export function ReviewItem({ item, attempt, content, service }: { item: Item; attempt: Attempt; content: Content; service: SessionService }) {
@@ -66,6 +67,7 @@ export function ReviewItem({ item, attempt, content, service }: { item: Item; at
           </div>
           {options(item.causeOptions, [item.answerCause], picked?.cause !== undefined ? [picked.cause] : undefined)}
           <p className="muted"><Rich text={pick(item.explanation)} /></p>
+          <VerifyLinks lessonIds={item.lessons} content={content} />
         </div>
       );
     case 'open':
@@ -84,6 +86,7 @@ export function ReviewItem({ item, attempt, content, service }: { item: Item; at
           </ul>
           <span className="label">{t('modelAnswer')}</span>
           <p className="muted"><Rich text={pick(item.modelAnswer)} /></p>
+          <VerifyLinks lessonIds={item.lessons} content={content} />
         </div>
       );
     case 'challenge':

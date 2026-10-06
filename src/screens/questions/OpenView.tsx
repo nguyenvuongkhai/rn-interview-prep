@@ -1,16 +1,19 @@
 import { useState } from 'react';
 import { toggleIn } from '../../app/draft';
+import type { Content } from '../../content/load';
 import type { Localized, Open } from '../../core/schema';
 import { useLang } from '../../i18n/LangProvider';
 import { Button, Rich } from '../../ui/components';
+import { VerifyLinks } from './VerifyLinks';
 
-export function OpenView({ item, hits, revealed, onReveal, onHits, text }: {
+export function OpenView({ item, hits, revealed, onReveal, onHits, text, content }: {
   item: Open;
   hits: number[];
   revealed: boolean;
   onReveal: () => void;
   onHits: (hits: number[]) => void;
   text: (l: Localized) => string;
+  content: Content;
 }) {
   const { t } = useLang();
   const [answer, setAnswer] = useState('');
@@ -26,6 +29,7 @@ export function OpenView({ item, hits, revealed, onReveal, onHits, text }: {
         <div className="card stack">
           <span className="label">{t('modelAnswer')}</span>
           <p style={{ margin: 0 }}><Rich text={text(item.modelAnswer)} /></p>
+          <VerifyLinks lessonIds={item.lessons} content={content} />
           <span className="label">{t('tickPoints')}</span>
           {item.keyPoints.map((k, i) => (
             <label key={i} className="check">

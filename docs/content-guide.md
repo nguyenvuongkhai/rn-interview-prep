@@ -130,3 +130,37 @@ Ba nhóm này bù phần kinh nghiệm khó tự có trong thời gian ngắn, n
 - **Câu hỏi:** `content/questions/<topic-slug>.json`, với slug là id chủ đề thay `/` bằng `-`. Ví dụ `release/ios` → `release-ios.json`, item id `release-ios-001`.
 - **Bài học:** `content/lessons/<root>/<leaf>-core.{vi,en}.md` (và `-pitfalls` nếu có). Ví dụ `content/lessons/release/ios-core.vi.md`, lesson id `release-ios-core`.
 - **Challenge:** `content/challenges/<id>/` với id kebab-case, không trùng challenge có sẵn (`debounce`, `map-limit`).
+
+## Lab
+
+Lab dạy vế "làm sao bạn biết nó đã hiệu quả?" của câu hỏi phỏng vấn. Mỗi lab là một ca thật, đi từ triệu chứng tới con số chứng minh bản sửa có tác dụng. Người đọc chưa có nhiều kinh nghiệm thực tế, nên mọi bước phải cụ thể: code chạy được, bấm gì trong công cụ, và tín hiệu đọc được nghĩa là gì.
+
+- **File:** `content/lessons/<root>/<leaf>-lab.{vi,en}.md`, lesson id `<root>-<leaf>-lab`, frontmatter `kind: lab`. Frontmatter của 2 file vẫn phải giống hệt nhau.
+- **Dòng đầu của thân bài** là tiêu đề dạng `# <tiêu đề>`, khác nhau theo ngôn ngữ. Không bắt đầu tiêu đề bằng chữ "Lab", vì app tự thêm.
+- **Khung cố định** (sau dòng tiêu đề):
+
+| Tiếng Việt | Tiếng Anh |
+|---|---|
+| `## Tình huống` | `## The case` |
+| `## Dựng lại lỗi` | `## Reproduce it` |
+| `## Đo` | `## Measure` |
+| `## Đọc tín hiệu` | `## Read the signal` |
+| `## Sửa` | `## Fix` |
+| `## Đo lại` | `## Measure again` |
+| `## Nói trong phỏng vấn` | `## Say it in the interview` |
+| `## Liên quan` | `## Related` |
+
+- **Độ dài:** 700–1200 từ mỗi bản; `readMinutes` từ 8 tới 15.
+- **Các bước** dùng bullet `-`. Parser không hỗ trợ danh sách đánh số.
+- **Code** là TSX/TS trong fence ```` ```ts ````, đủ nhỏ để dán vào một app thử.
+- **Con số** trong "Đọc tín hiệu" và "Đo lại" là ví dụ minh hoạ: ghi rõ là ví dụ, và nói người đọc sẽ thấy con số khác trên máy của họ.
+- **Độ chính xác của công cụ:**
+  - Không bịa menu, nút hay flag. Không chắc vị trí chính xác trong giao diện thì mô tả theo chức năng ("mở tab Memory, chụp heap snapshot").
+  - Bước nào phụ thuộc phiên bản thì ghi rõ, ví dụ "React Native DevTools là debugger mặc định từ RN 0.76".
+  - Luôn đo trên release hoặc profile build; dev build chậm hơn nhiều và cho kết luận sai.
+- **Gắn lab vào câu hỏi:** thêm lab id vào `lessons` của các câu `open` và `spot-bug` mà lab trả lời vế "làm sao biết". App hiện link "Cách kiểm chứng" cạnh đáp án mẫu của câu `open`, và cạnh phần giải thích của câu `open`/`spot-bug` khi xem lại ở màn Result.
+
+## Nhóm testing, debug và ai
+
+- **testing và debug:** ưu tiên tình huống thật (một test bị flaky, một bug chỉ có trên release build), giống quy tắc của các nhóm vận hành. Code test viết theo Jest và React Native Testing Library; không bịa matcher hay API.
+- **ai:** viết theo cách làm, không gắn với một sản phẩm cụ thể (Copilot, Cursor, Claude Code…), vì tính năng của các công cụ đổi rất nhanh. Câu `open` viết như interviewer hỏi "kể một lần bạn dùng AI để…", và `modelAnswer` là một ca thật có bối cảnh, prompt, cách kiểm chứng và kết quả. Đáp án đúng luôn đặt trách nhiệm kiểm chứng ở người dev.

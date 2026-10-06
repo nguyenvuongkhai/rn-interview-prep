@@ -100,4 +100,16 @@ describe('topGaps', () => {
     const mastery = masteryByTopic(topics, attempts, indexById(items), NOW);
     expect(topGaps({ topics, mastery, items, lessons: [], attempts })).toEqual([]);
   });
+
+  it('suggests the core lesson before a lab of the same topic', () => {
+    const items = [mcq('memo-a'), mcq('memo-b'), mcq('memo-c')];
+    const lessons = [
+      { id: 'a-memo-lab', topic: 'render/memo', kind: 'lab' as const, readMinutes: 12 },
+      { id: 'b-memo-core', topic: 'render/memo', kind: 'core' as const, readMinutes: 6 },
+    ];
+    const attempts = ['memo-a', 'memo-b', 'memo-c'].map((id) => attempt(id, { score: 0 }));
+    const mastery = masteryByTopic(topics, attempts, indexById(items), NOW);
+    const [gap] = topGaps({ topics, mastery, items, lessons, attempts });
+    expect(gap.plan[0]).toEqual({ kind: 'read', lessonId: 'b-memo-core', minutes: 6 });
+  });
 });

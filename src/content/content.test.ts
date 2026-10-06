@@ -1,12 +1,20 @@
 import { describe, expect, it } from 'vitest';
 import { execute } from '../runner/execute';
 import { content } from './index';
+import { splitTitle } from './labs';
 
 describe('repository content', () => {
   it('loads without integrity issues', () => {
     expect(content.topics.length).toBeGreaterThan(0);
     expect(content.items.map((i) => i.id)).toContain('render-memo-001');
     expect(content.lessons.map((l) => l.id)).toContain('render-memo-pitfalls');
+  });
+
+  it('every lab opens with a title in both languages', () => {
+    for (const l of content.lessons.filter((x) => x.kind === 'lab')) {
+      expect(splitTitle(l.body.vi).title, `${l.id} vi`).toBeTruthy();
+      expect(splitTitle(l.body.en).title, `${l.id} en`).toBeTruthy();
+    }
   });
 
   it('has both languages for every lesson body', () => {

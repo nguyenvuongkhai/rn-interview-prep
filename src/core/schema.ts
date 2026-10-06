@@ -2,6 +2,8 @@ import { z } from 'zod';
 
 export const localized = z.strictObject({ vi: z.string().min(1), en: z.string().min(1) });
 export const kind = z.enum(['core', 'advanced', 'pitfall', 'hard-issue']);
+/** Lessons add one kind items never use: a hands-on lab. */
+export const lessonKind = z.enum(['core', 'advanced', 'pitfall', 'hard-issue', 'lab']);
 const oneToThree = z.union([z.literal(1), z.literal(2), z.literal(3)]);
 export const difficulty = oneToThree;
 
@@ -94,13 +96,14 @@ export const topicsFile = z.array(topic);
 export const lessonMeta = z.strictObject({
   id,
   topic: topicId,
-  kind,
+  kind: lessonKind,
   readMinutes: z.coerce.number().int().positive(),
 });
 
 export type Localized = z.infer<typeof localized>;
 export type Option = z.infer<typeof option>;
 export type Kind = z.infer<typeof kind>;
+export type LessonKind = z.infer<typeof lessonKind>;
 export type Difficulty = z.infer<typeof difficulty>;
 export type Question = z.infer<typeof question>;
 export type Mcq = Extract<Question, { type: 'mcq' }>;

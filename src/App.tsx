@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { ROADMAP_SETTING, readChecked, toggleChecked } from './app/roadmap';
 import { useRoute } from './app/router';
 import { createSessionService, type SessionService } from './app/sessionService';
 import { content } from './content';
@@ -8,6 +9,7 @@ import { LessonScreen } from './screens/LessonScreen';
 import { LibraryScreen } from './screens/LibraryScreen';
 import { ProgressScreen } from './screens/ProgressScreen';
 import { ResultScreen } from './screens/ResultScreen';
+import { RoadmapScreen } from './screens/RoadmapScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { TestScreen } from './screens/TestScreen';
 import { TodayScreen } from './screens/TodayScreen';
@@ -22,6 +24,7 @@ interface Booted {
   persistent: boolean;
   lang: Lang;
   theme: ThemePref;
+  roadmap: string[];
   service: SessionService;
 }
 
@@ -31,15 +34,19 @@ export function App() {
 
   useEffect(() => {
     let live = true;
-    const ready = (repo: Repo, persistent: boolean, lang: Lang, theme: ThemePref) => {
-      if (live) setBoot({ repo, persistent, lang, theme, service: createSessionService(repo, content) });
+    const ready = (repo: Repo, persistent: boolean, lang: Lang, theme: ThemePref, roadmap: string[]) => {
+      if (live) setBoot({ repo, persistent, lang, theme, roadmap, service: createSessionService(repo, content) });
     };
     void openRepo()
       .then(async ({ repo, persistent }) => {
-        const [lang, theme] = await Promise.all([repo.getSetting<unknown>('lang'), repo.getSetting<unknown>('theme')]);
-        ready(repo, persistent, lang === 'en' ? 'en' : 'vi', isThemePref(theme) ? theme : 'dark');
+        const [lang, theme, roadmap] = await Promise.all([
+          repo.getSetting<unknown>('lang'),
+          repo.getSetting<unknown>('theme'),
+          repo.getSetting<unknown>(ROADMAP_SETTING),
+        ]);
+        ready(repo, persistent, lang === 'en' ? 'en' : 'vi', isThemePref(theme) ? theme : 'dark', readChecked(roadmap));
       })
-      .catch(() => ready(createMemoryRepo(), false, 'vi', 'dark'));
+      .catch(() => ready(createMemoryRepo(), false, 'vi', 'dark', []));
     return () => {
       live = false;
     };
@@ -57,6 +64,17 @@ export function App() {
     },
     [boot],
   );
+  const toggleRoadmap = useCallback(
+    (id: string) => {
+      if (!boot) return;
+      const before = boot.roadmap;
+      const roadmap = toggleChecked(before, id);
+      setBoot({ ...boot, roadmap });
+      // roll the tick back when it could not be stored, so the screen never shows an unsaved state
+      boot.repo.setSetting(ROADMAP_SETTING, roadmap).catch(() => setBoot((b) => (b ? { ...b, roadmap: before } : b)));
+    },
+    [boot],
+  );
 
   if (!boot) return null;
   const { service } = boot;
@@ -70,6 +88,7 @@ export function App() {
         {route.name === 'test' ? <TestScreen key={route.sessionId} service={service} content={content} sessionId={route.sessionId} /> : null}
         {route.name === 'result' ? <ResultScreen key={route.sessionId} service={service} content={content} sessionId={route.sessionId} /> : null}
         {route.name === 'library' ? <LibraryScreen service={service} content={content} /> : null}
+        {route.name === 'roadmap' ? <RoadmapScreen service={service} content={content} checked={boot.roadmap} onChecked={toggleRoadmap} /> : null}
         {route.name === 'lesson' ? <LessonScreen key={route.lessonId} service={service} content={content} lessonId={route.lessonId} /> : null}
         {route.name === 'progress' ? <ProgressScreen service={service} content={content} /> : null}
         {route.name === 'settings' ? <SettingsScreen service={service} persistent={boot.persistent} /> : null}

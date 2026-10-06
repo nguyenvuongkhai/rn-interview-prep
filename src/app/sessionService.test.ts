@@ -11,6 +11,7 @@ const content: Content = {
   items: [...Array.from({ length: 12 }, (_, i) => mcq(`q${i}`)), open('o1'), challenge('ch1')],
   lessons: [],
   challenges: {},
+  roadmap: { areas: [], items: [] },
 };
 
 function setup() {

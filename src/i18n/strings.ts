@@ -176,6 +176,26 @@ export const UI = {
   cancel: { vi: 'Huỷ', en: 'Cancel' },
   importFailed: { vi: 'Không đọc được file: {reason}', en: 'Could not read the file: {reason}' },
   exported: { vi: 'Đã tải bản sao lưu.', en: 'Backup downloaded.' },
+  roadmap: { vi: 'Lộ trình', en: 'Roadmap' },
+  roadmapTitle: { vi: 'Lộ trình kiến thức', en: 'Knowledge roadmap' },
+  roadmapSub: {
+    vi: 'Những gì cần nắm ở mức Middle và Senior. Tick một mục khi bạn trả lời được các câu tự kiểm tra mà không cần xem lại.',
+    en: 'What to know at Middle and Senior level. Tick an item when you can answer its self-check questions without looking anything up.',
+  },
+  roadmapTrack: { vi: 'Nền tảng', en: 'Track' },
+  roadmapLevel: { vi: 'Cấp độ', en: 'Level' },
+  track_rn: { vi: 'React Native', en: 'React Native' },
+  track_ios: { vi: 'iOS', en: 'iOS' },
+  track_android: { vi: 'Android', en: 'Android' },
+  level_middle: { vi: 'Middle', en: 'Middle' },
+  level_senior: { vi: 'Senior', en: 'Senior' },
+  roadmapProgress: { vi: 'Đã nắm {done}/{total}', en: '{done} of {total} known' },
+  mustKnow: { vi: 'Cần biết', en: 'What to know' },
+  checkYourself: { vi: 'Tự kiểm tra', en: 'Check yourself' },
+  practiceHere: { vi: 'Luyện trong app', en: 'Practise here' },
+  noPractice: { vi: 'Chưa có bài luyện trong app cho mục này.', en: 'No practice for this item in the app yet.' },
+  roadmapEmpty: { vi: 'Chưa có mục nào cho nền tảng và cấp độ này.', en: 'No roadmap items for this track and level yet.' },
+  markKnown: { vi: 'Đã nắm', en: 'I know this' },
 } satisfies Record<string, Localized>;
 
 export type UiKey = keyof typeof UI;

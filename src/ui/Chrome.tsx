@@ -4,9 +4,10 @@ import type { UiKey } from '../i18n/strings';
 import { Button } from './components';
 import { otherLang } from './format';
 
-const NAV: { name: 'today' | 'library' | 'progress' | 'settings'; label: UiKey }[] = [
+const NAV: { name: 'today' | 'library' | 'roadmap' | 'progress' | 'settings'; label: UiKey }[] = [
   { name: 'today', label: 'today' },
   { name: 'library', label: 'library' },
+  { name: 'roadmap', label: 'roadmap' },
   { name: 'progress', label: 'progress' },
   { name: 'settings', label: 'settings' },
 ];

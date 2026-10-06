@@ -3,16 +3,20 @@ import {
   challengeMeta,
   lessonMeta,
   questionFile,
+  roadmapAreasFile,
+  roadmapFile,
   topicsFile,
   type Item,
   type Lesson,
   type LessonMeta,
   type Localized,
+  type RoadmapArea,
+  type RoadmapItem,
   type Topic,
 } from '../core/schema';
 import type { Lang } from '../core/types';
 import { parseFrontmatter } from './frontmatter';
-import { checkIntegrity } from './integrity';
+import { checkIntegrity, checkRoadmap } from './integrity';
 
 export interface RawContent {
   topics: unknown;
@@ -24,6 +28,10 @@ export interface RawContent {
   challengeTexts: Record<string, string>;
   /** path → raw markdown */
   lessonFiles: Record<string, string>;
+  /** parsed content/roadmap/areas.json; absent when there is no roadmap */
+  roadmapAreas?: unknown;
+  /** path → parsed roadmap item array */
+  roadmapFiles?: Record<string, unknown>;
 }
 
 export interface Content {
@@ -31,6 +39,7 @@ export interface Content {
   items: Item[];
   lessons: Lesson[];
   challenges: Record<string, ChallengeFiles>;
+  roadmap: { areas: RoadmapArea[]; items: RoadmapItem[] };
 }
 
 export interface ChallengeFiles {
@@ -125,7 +134,22 @@ export function loadContent(raw: RawContent): Content {
     lessons.push({ ...vi.meta, body: { vi: vi.body, en: en.body } });
   }
 
+  const areas: RoadmapArea[] =
+    raw.roadmapAreas === undefined ? [] : (parse(roadmapAreasFile, raw.roadmapAreas, '/content/roadmap/areas.json') ?? []);
+  const roadmapItems: RoadmapItem[] = [];
+  for (const [path, value] of byPath(raw.roadmapFiles ?? {})) {
+    const parsed = parse(roadmapFile, value, path) ?? [];
+    const named = /\/roadmap\/([a-z]+)-([a-z]+)\.json$/.exec(path);
+    if (named) {
+      for (const item of parsed) {
+        if (item.track !== named[1] || item.level !== named[2]) issues.push(`${path}: item "${item.id}" is ${item.track}-${item.level}`);
+      }
+    }
+    roadmapItems.push(...parsed);
+  }
+
   issues.push(...checkIntegrity(topics, items, lessons));
+  issues.push(...checkRoadmap(areas, roadmapItems, topics, lessons));
   if (issues.length > 0) throw new ContentError(issues);
-  return { topics, items, lessons, challenges };
+  return { topics, items, lessons, challenges, roadmap: { areas, items: roadmapItems } };
 }

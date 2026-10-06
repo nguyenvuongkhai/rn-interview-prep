@@ -34,6 +34,13 @@ describe('backup', () => {
     expect(() => parseBackup(JSON.stringify(bad))).toThrow('settings.0.value');
   });
 
+  it('keeps roadmap ticks and rejects a value that is not a list of ids', () => {
+    const withRoadmap: Snapshot = { ...snapshot, settings: [...snapshot.settings, { key: 'roadmap', value: ['rn-middle-01'] }] };
+    expect(parseBackup(JSON.stringify(toBackup(withRoadmap, NOW)))).toEqual(withRoadmap);
+    const bad = toBackup({ ...snapshot, settings: [{ key: 'roadmap', value: 'rn-middle-01' }] }, NOW);
+    expect(() => parseBackup(JSON.stringify(bad))).toThrow('settings.0.value');
+  });
+
   it('names the file after the local date', () => {
     expect(backupFileName(new Date(2026, 9, 1, 9).getTime())).toBe('rn-interview-prep-2026-10-01.json');
   });

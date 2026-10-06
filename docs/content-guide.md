@@ -164,3 +164,22 @@ Lab dạy vế "làm sao bạn biết nó đã hiệu quả?" của câu hỏi p
 
 - **testing và debug:** ưu tiên tình huống thật (một test bị flaky, một bug chỉ có trên release build), giống quy tắc của các nhóm vận hành. Code test viết theo Jest và React Native Testing Library; không bịa matcher hay API.
 - **ai:** viết theo cách làm, không gắn với một sản phẩm cụ thể (Copilot, Cursor, Claude Code…), vì tính năng của các công cụ đổi rất nhanh. Câu `open` viết như interviewer hỏi "kể một lần bạn dùng AI để…", và `modelAnswer` là một ca thật có bối cảnh, prompt, cách kiểm chứng và kết quả. Đáp án đúng luôn đặt trách nhiệm kiểm chứng ở người dev.
+
+## Roadmap
+
+Roadmap trả lời câu hỏi "ở mức Middle hay Senior tôi phải biết những gì?" cho ba track: React Native, iOS, Android. Mỗi mục là một khối kiến thức, không phải một câu hỏi.
+
+- **File:** `content/roadmap/<track>-<level>.json`, với track là `rn`, `ios`, `android` và level là `middle`, `senior`. Mỗi file là một mảng mục.
+- **Id:** `<track>-<level>-NN`, ví dụ `rn-senior-07`.
+- **Trường:**
+  - `area`: id có trong `content/roadmap/areas.json`.
+  - `title`: tên khối kiến thức, ngắn.
+  - `know`: 2–4 câu nói phải hiểu điều gì và vì sao nó quan trọng ở level này.
+  - `check`: 2–4 câu hỏi tự kiểm tra, trả lời được bằng lời trong 1–2 phút.
+  - `topics`, `lessons`: link tới nội dung có sẵn trong app. Bỏ trống nếu không có.
+- **Số lượng:** 15–20 mục cho mỗi file, rải đều trên các area phù hợp với track.
+- **Middle và Senior:**
+  - Middle là tự làm tốt một tính năng: hiểu cơ chế, dùng đúng công cụ, debug được.
+  - Senior là chịu trách nhiệm cả app và đội: trade-off, kiến trúc, hiệu năng đo được, phát hành an toàn, review, dẫn dắt. Không lặp lại mục của Middle ở Senior; Senior nói về chiều sâu và quyết định.
+- **Độ chính xác:** như content khác. Không bịa API, ghi rõ phiên bản khi phụ thuộc phiên bản, viết theo cơ chế.
+- **Văn phong:** câu ngắn, thẳng; không chữ đậm hay nghiêng; bản vi giữ thuật ngữ tiếng Anh.

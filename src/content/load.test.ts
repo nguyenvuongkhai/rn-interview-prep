@@ -127,4 +127,39 @@ describe('loadContent', () => {
     }));
     expect(issues).toContain('/content/challenges/other/meta.json: id "deb" must match its folder "other"');
   });
+
+  it('loads roadmap items and reports broken references', () => {
+    const areas = [{ id: 'state', title: L('State') }];
+    const item = (over: object = {}) => ({
+      id: 'rn-m-1', track: 'rn', level: 'middle', area: 'state', title: L('t'), know: L('k'),
+      check: [L('a'), L('b')], topics: ['render/memo'], lessons: ['l-memo'], ...over,
+    });
+    const ok = loadContent(raw({ roadmapAreas: areas, roadmapFiles: { '/content/roadmap/rn-middle.json': [item()] } }));
+    expect(ok.roadmap.items.map((i) => i.id)).toEqual(['rn-m-1']);
+    expect(ok.roadmap.areas).toEqual(areas);
+    expect(issuesOf(raw({
+      roadmapAreas: areas,
+      roadmapFiles: { '/content/roadmap/rn-middle.json': [item({ area: 'nope', topics: ['x/y'], lessons: ['zz'] }), item()] },
+    }))).toEqual([
+      'roadmap item "rn-m-1": unknown area "nope"',
+      'roadmap item "rn-m-1": unknown topic "x/y"',
+      'roadmap item "rn-m-1": unknown lesson "zz"',
+      'duplicate roadmap item "rn-m-1"',
+    ]);
+  });
+
+  it('reports a roadmap item filed under the wrong track or level', () => {
+    const areas = [{ id: 'state', title: L('State') }];
+    const wrong = {
+      id: 'rn-m-1', track: 'ios', level: 'middle', area: 'state', title: L('t'), know: L('k'),
+      check: [L('a'), L('b')], topics: [], lessons: [],
+    };
+    expect(issuesOf(raw({ roadmapAreas: areas, roadmapFiles: { '/content/roadmap/rn-middle.json': [wrong] } }))).toEqual([
+      '/content/roadmap/rn-middle.json: item "rn-m-1" is ios-middle',
+    ]);
+  });
+
+  it('treats a missing roadmap as empty', () => {
+    expect(loadContent(raw()).roadmap).toEqual({ areas: [], items: [] });
+  });
 });

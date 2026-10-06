@@ -1,4 +1,4 @@
-import type { Item, Lesson, Topic } from '../core/schema';
+import type { Item, Lesson, RoadmapArea, RoadmapItem, Topic } from '../core/schema';
 
 /** Cross-file checks the per-file schemas cannot see. Returns human-readable issues. */
 export function checkIntegrity(topics: Topic[], items: Item[], lessons: Lesson[]): string[] {
@@ -38,6 +38,30 @@ export function checkIntegrity(topics: Topic[], items: Item[], lessons: Lesson[]
   }
   for (const lesson of lessons) {
     if (!topicIds.has(lesson.topic)) issues.push(`lesson "${lesson.id}": unknown topic "${lesson.topic}"`);
+  }
+  return issues;
+}
+
+/** Roadmap references must point at real areas, topics and lessons. */
+export function checkRoadmap(areas: RoadmapArea[], items: RoadmapItem[], topics: Topic[], lessons: Lesson[]): string[] {
+  const issues: string[] = [];
+  const areaIds = new Set<string>();
+  for (const a of areas) {
+    if (areaIds.has(a.id)) issues.push(`duplicate roadmap area "${a.id}"`);
+    areaIds.add(a.id);
+  }
+  const topicIds = new Set(topics.map((t) => t.id));
+  const lessonIds = new Set(lessons.map((l) => l.id));
+  const seen = new Set<string>();
+  for (const item of items) {
+    if (seen.has(item.id)) {
+      issues.push(`duplicate roadmap item "${item.id}"`);
+      continue;
+    }
+    seen.add(item.id);
+    if (!areaIds.has(item.area)) issues.push(`roadmap item "${item.id}": unknown area "${item.area}"`);
+    for (const t of item.topics) if (!topicIds.has(t)) issues.push(`roadmap item "${item.id}": unknown topic "${t}"`);
+    for (const l of item.lessons) if (!lessonIds.has(l)) issues.push(`roadmap item "${item.id}": unknown lesson "${l}"`);
   }
   return issues;
 }

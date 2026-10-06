@@ -100,6 +100,25 @@ export const lessonMeta = z.strictObject({
   readMinutes: z.coerce.number().int().positive(),
 });
 
+export const roadmapTrack = z.enum(['rn', 'ios', 'android']);
+export const roadmapLevel = z.enum(['middle', 'senior']);
+export const roadmapArea = z.strictObject({ id, title: localized });
+export const roadmapAreasFile = z.array(roadmapArea);
+export const roadmapItem = z.strictObject({
+  id,
+  track: roadmapTrack,
+  level: roadmapLevel,
+  area: id,
+  title: localized,
+  /** what you must know, 2–4 sentences */
+  know: localized,
+  /** questions to ask yourself */
+  check: z.array(localized).min(2).max(4),
+  topics: z.array(topicId).default([]),
+  lessons: z.array(id).default([]),
+});
+export const roadmapFile = z.array(roadmapItem);
+
 export type Localized = z.infer<typeof localized>;
 export type Option = z.infer<typeof option>;
 export type Kind = z.infer<typeof kind>;
@@ -114,3 +133,7 @@ export type Item = Question | ChallengeMeta;
 export type Topic = z.infer<typeof topic>;
 export type LessonMeta = z.infer<typeof lessonMeta>;
 export type Lesson = LessonMeta & { body: Localized };
+export type RoadmapTrack = z.infer<typeof roadmapTrack>;
+export type RoadmapLevel = z.infer<typeof roadmapLevel>;
+export type RoadmapArea = z.infer<typeof roadmapArea>;
+export type RoadmapItem = z.infer<typeof roadmapItem>;

@@ -13,6 +13,11 @@ const lessonFiles = import.meta.glob<string>('/content/lessons/**/*.md', {
   query: '?raw',
   import: 'default',
 });
+const roadmapAreas = import.meta.glob('/content/roadmap/areas.json', { eager: true, import: 'default' });
+const roadmapFiles = import.meta.glob(['/content/roadmap/*.json', '!/content/roadmap/areas.json'], {
+  eager: true,
+  import: 'default',
+});
 
 /** Validated at import time: a broken content file fails `npm run check` and the build. */
 export const content = loadContent({
@@ -21,4 +26,6 @@ export const content = loadContent({
   challengeFiles,
   challengeTexts,
   lessonFiles,
+  roadmapAreas: roadmapAreas['/content/roadmap/areas.json'],
+  roadmapFiles,
 });

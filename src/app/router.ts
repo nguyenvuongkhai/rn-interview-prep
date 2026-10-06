@@ -6,6 +6,7 @@ export type Route =
   | { name: 'result'; sessionId: string }
   | { name: 'library' }
   | { name: 'lesson'; lessonId: string }
+  | { name: 'roadmap' }
   | { name: 'progress' }
   | { name: 'settings' };
 
@@ -31,6 +32,7 @@ export function parseRoute(hash: string): Route {
     case 'lesson':
       return id ? { name, lessonId: id } : TODAY;
     case 'library':
+    case 'roadmap':
     case 'progress':
     case 'settings':
       return { name };

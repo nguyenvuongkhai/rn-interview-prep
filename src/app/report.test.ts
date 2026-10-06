@@ -9,6 +9,7 @@ const content: Content = {
   items: [mcq('q1'), mcq('q2'), mcq('q3'), mcq('q4')],
   lessons: [],
   challenges: {},
+  roadmap: { areas: [], items: [] },
 };
 
 describe('buildReport', () => {

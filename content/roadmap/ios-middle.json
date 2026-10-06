@@ -1,0 +1,357 @@
+[
+  {
+    "id": "ios-middle-01",
+    "track": "ios",
+    "level": "middle",
+    "area": "language",
+    "title": {"vi": "Optional và unwrap an toàn", "en": "Optionals and safe unwrapping"},
+    "know": {
+      "vi": "Optional là enum có hai case `.none` và `.some(Wrapped)`, nên compiler bắt bạn xử lý trường hợp không có giá trị. Dùng `if let`, `guard let`, optional chaining và `??` cho luồng bình thường. Force unwrap `!` trên giá trị `nil` làm app crash ngay, nên chỉ dùng khi `nil` là lỗi lập trình. Implicitly unwrapped optional (`String!`) thường gặp ở `@IBOutlet` và có cùng rủi ro đó.",
+      "en": "An optional is an enum with two cases, `.none` and `.some(Wrapped)`, so the compiler makes you handle the missing value. Use `if let`, `guard let`, optional chaining and `??` for normal flow. A force unwrap `!` on `nil` crashes the app at once, so keep it for cases where `nil` is a programming error. An implicitly unwrapped optional (`String!`), common on `@IBOutlet`, carries the same risk."
+    },
+    "check": [
+      {"vi": "Khi nào bạn chọn `guard let` thay vì `if let`?", "en": "When do you pick `guard let` over `if let`?"},
+      {"vi": "Optional chaining `user?.address?.city` trả về kiểu gì, và chuyện gì xảy ra nếu một mắt xích là `nil`?", "en": "What type does `user?.address?.city` return, and what happens if one link is `nil`?"},
+      {"vi": "Vì sao `@IBOutlet` thường khai báo là `UILabel!`, và khi nào nó vẫn crash?", "en": "Why is an `@IBOutlet` usually declared as `UILabel!`, and when does it still crash?"}
+    ],
+    "topics": [],
+    "lessons": []
+  },
+  {
+    "id": "ios-middle-02",
+    "track": "ios",
+    "level": "middle",
+    "area": "language",
+    "title": {"vi": "Value type và reference type", "en": "Value types and reference types"},
+    "know": {
+      "vi": "`struct` và `enum` là value type: gán hoặc truyền đi là có một bản copy độc lập. `class` là reference type: nhiều biến cùng trỏ tới một instance, sửa ở đâu cũng thấy ở mọi nơi. Array, Dictionary và String của standard library dùng copy-on-write, nên copy rẻ cho tới khi có người ghi. Một `let` struct không cho gọi method `mutating`, còn một `let` class vẫn cho sửa property.",
+      "en": "`struct` and `enum` are value types: assigning or passing one gives an independent copy. `class` is a reference type: several variables point at one instance, and a change through one is visible through all. The standard library's Array, Dictionary and String use copy-on-write, so a copy is cheap until someone writes. A `let` struct cannot call `mutating` methods, while a `let` class still lets you change its properties."
+    },
+    "check": [
+      {"vi": "Bạn mặc định chọn struct hay class cho một model từ API, và vì sao?", "en": "Do you default to a struct or a class for an API model, and why?"},
+      {"vi": "Copy-on-write giúp gì khi truyền một mảng lớn vào hàm?", "en": "How does copy-on-write help when you pass a large array into a function?"},
+      {"vi": "Khi nào bạn buộc phải dùng class?", "en": "When do you have to use a class?"}
+    ],
+    "topics": [],
+    "lessons": []
+  },
+  {
+    "id": "ios-middle-03",
+    "track": "ios",
+    "level": "middle",
+    "area": "language",
+    "title": {"vi": "Protocol, extension và generic cơ bản", "en": "Protocols, extensions and basic generics"},
+    "know": {
+      "vi": "Protocol mô tả một contract; extension của protocol có thể cung cấp implementation mặc định. Method chỉ có trong extension mà không khai báo trong protocol thì được dispatch tĩnh theo kiểu khai báo của biến, nên có thể không gọi bản override bạn mong đợi. Generic với ràng buộc (`func load<T: Decodable>`) giữ type safety mà không lặp code. Từ Swift 5.6, bạn có thể đánh dấu rõ kiểu existential là `any Protocol`, khác với `some Protocol` là một kiểu cụ thể được ẩn đi.",
+      "en": "A protocol describes a contract; a protocol extension can supply a default implementation. A method that lives only in the extension and is not a protocol requirement is dispatched statically by the variable's declared type, so it may not call the override you expect. Generics with constraints (`func load<T: Decodable>`) keep type safety without repeating code. Since Swift 5.6 you can mark an existential explicitly as `any Protocol`, which differs from `some Protocol`, a hidden but concrete type."
+    },
+    "check": [
+      {"vi": "Vì sao một method trong protocol extension có thể không gọi bản implementation của type cụ thể?", "en": "Why might a method in a protocol extension not call the concrete type's implementation?"},
+      {"vi": "Bạn dùng protocol thế nào để thay network layer bằng bản fake khi test?", "en": "How do you use a protocol to swap the network layer for a fake in tests?"},
+      {"vi": "`some View` và `any View` khác nhau ở đâu?", "en": "How do `some View` and `any View` differ?"}
+    ],
+    "topics": [],
+    "lessons": []
+  },
+  {
+    "id": "ios-middle-04",
+    "track": "ios",
+    "level": "middle",
+    "area": "language",
+    "title": {"vi": "Closure và capture list", "en": "Closures and capture lists"},
+    "know": {
+      "vi": "Closure capture biến theo tham chiếu, nên nó thấy giá trị mới nhất của biến chứ không phải giá trị lúc tạo. Capture list `[x]` chụp giá trị tại lúc tạo; `[weak self]` hay `[unowned self]` đổi cách giữ `self`. Closure là tham số mặc định non-escaping; `@escaping` nghĩa là nó có thể chạy sau khi hàm return, như completion handler, và đó là chỗ dễ sinh retain cycle.",
+      "en": "A closure captures variables by reference, so it sees the variable's latest value, not the value at creation. A capture list `[x]` takes the value at creation time; `[weak self]` or `[unowned self]` changes how `self` is held. Closure parameters are non-escaping by default; `@escaping` means the closure may run after the function returns, as a completion handler does, and that is where retain cycles start."
+    },
+    "check": [
+      {"vi": "Vì sao compiler bắt bạn viết `self.` rõ ràng trong closure `@escaping`?", "en": "Why does the compiler make you write `self.` explicitly inside an `@escaping` closure?"},
+      {"vi": "Sau `guard let self else { return }` trong closure `[weak self]`, closure giữ `self` mạnh trong bao lâu?", "en": "After `guard let self else { return }` in a `[weak self]` closure, how long is `self` held strongly?"},
+      {"vi": "Cho một ví dụ closure không cần `[weak self]`.", "en": "Give an example of a closure that does not need `[weak self]`."}
+    ],
+    "topics": [],
+    "lessons": []
+  },
+  {
+    "id": "ios-middle-05",
+    "track": "ios",
+    "level": "middle",
+    "area": "language",
+    "title": {"vi": "Xử lý lỗi trong Swift", "en": "Error handling in Swift"},
+    "know": {
+      "vi": "Hàm `throws` buộc người gọi dùng `try` trong `do`/`catch`, hoặc truyền lỗi lên tiếp. `try?` đổi lỗi thành `nil` và làm mất thông tin lỗi; `try!` crash nếu có lỗi. Định nghĩa lỗi của bạn bằng một enum conform `Error` để UI có thể phân biệt lỗi mạng, lỗi decode và lỗi server. `Result<Success, Failure>` vẫn hữu ích cho completion handler trong code chưa chuyển sang async/await.",
+      "en": "A `throws` function makes the caller use `try` inside `do`/`catch`, or rethrow. `try?` turns an error into `nil` and loses the details; `try!` crashes on error. Define your own errors as an enum conforming to `Error` so the UI can tell a network failure from a decoding failure and a server error. `Result<Success, Failure>` is still useful for completion handlers in code not yet moved to async/await."
+    },
+    "check": [
+      {"vi": "Khi nào `try?` là lựa chọn đúng, và khi nào nó che mất bug?", "en": "When is `try?` the right choice, and when does it hide a bug?"},
+      {"vi": "Bạn map một `DecodingError` thành thông báo cho người dùng thế nào?", "en": "How do you turn a `DecodingError` into a message for the user?"}
+    ],
+    "topics": [],
+    "lessons": []
+  },
+  {
+    "id": "ios-middle-06",
+    "track": "ios",
+    "level": "middle",
+    "area": "ui",
+    "title": {"vi": "Vòng đời UIViewController và cell reuse", "en": "UIViewController lifecycle and cell reuse"},
+    "know": {
+      "vi": "`viewDidLoad` chạy một lần khi view được load; `viewWillAppear` và `viewDidAppear` chạy mỗi lần màn hình hiện ra; `viewWillDisappear` hợp để dừng việc đang chạy. Frame cuối cùng chỉ chắc chắn sau `viewDidLayoutSubviews`, không phải trong `viewDidLoad`. `UITableView` và `UICollectionView` tái sử dụng cell qua `dequeueReusableCell(withIdentifier:for:)`, nên bạn phải set lại mọi trạng thái trong lúc configure hoặc `prepareForReuse`.",
+      "en": "`viewDidLoad` runs once when the view loads; `viewWillAppear` and `viewDidAppear` run each time the screen appears; `viewWillDisappear` is the place to stop ongoing work. Final frames are only reliable after `viewDidLayoutSubviews`, not in `viewDidLoad`. `UITableView` and `UICollectionView` reuse cells through `dequeueReusableCell(withIdentifier:for:)`, so you must reset every piece of state when configuring or in `prepareForReuse`."
+    },
+    "check": [
+      {"vi": "Bạn refresh dữ liệu khi quay lại màn hình ở `viewDidLoad` hay `viewWillAppear`, vì sao?", "en": "Do you refresh data on returning to a screen in `viewDidLoad` or `viewWillAppear`, and why?"},
+      {"vi": "Ảnh tải chậm hiện sai ở cell khác khi cuộn: nguyên nhân và cách sửa?", "en": "A slow image load shows up in the wrong cell while scrolling: why, and how do you fix it?"},
+      {"vi": "Vì sao đọc `view.bounds` trong `viewDidLoad` có thể cho kích thước sai?", "en": "Why can reading `view.bounds` in `viewDidLoad` give the wrong size?"}
+    ],
+    "topics": [],
+    "lessons": []
+  },
+  {
+    "id": "ios-middle-07",
+    "track": "ios",
+    "level": "middle",
+    "area": "ui",
+    "title": {"vi": "Auto Layout", "en": "Auto Layout"},
+    "know": {
+      "vi": "Mỗi view cần đủ constraint để xác định vị trí và kích thước, không thiếu (ambiguous) và không mâu thuẫn. View tạo bằng code phải đặt `translatesAutoresizingMaskIntoConstraints = false`, rồi bật constraint bằng `NSLayoutConstraint.activate`. Label và button có intrinsic content size; content hugging và compression resistance priority quyết định view nào co hay giãn. `UIStackView` giảm phần lớn constraint viết tay.",
+      "en": "Every view needs enough constraints to fix its position and size: none missing (ambiguous) and none conflicting. A view built in code needs `translatesAutoresizingMaskIntoConstraints = false`, then its constraints are turned on with `NSLayoutConstraint.activate`. Labels and buttons have an intrinsic content size; content hugging and compression resistance priorities decide which view shrinks or grows. `UIStackView` removes most hand-written constraints."
+    },
+    "check": [
+      {"vi": "Console in `Unable to simultaneously satisfy constraints`: bạn tìm constraint thừa thế nào?", "en": "The console prints `Unable to simultaneously satisfy constraints`: how do you find the extra constraint?"},
+      {"vi": "Hai label nằm cạnh nhau, label nào bị cắt chữ? Bạn chỉnh priority nào để đổi điều đó?", "en": "Two labels sit side by side: which one gets truncated, and which priority do you change to flip that?"},
+      {"vi": "Bạn làm cell có chiều cao tự động theo nội dung thế nào?", "en": "How do you make a cell size itself to its content?"}
+    ],
+    "topics": [],
+    "lessons": []
+  },
+  {
+    "id": "ios-middle-08",
+    "track": "ios",
+    "level": "middle",
+    "area": "ui",
+    "title": {"vi": "SwiftUI: view, identity và navigation", "en": "SwiftUI views, identity and navigation"},
+    "know": {
+      "vi": "View trong SwiftUI là struct nhẹ mô tả UI; `body` có thể được tính lại nhiều lần, nên không đặt side effect hay việc nặng trong đó. Identity của view, gồm vị trí trong cây và `id` trong `ForEach`, quyết định state được giữ hay reset. Dùng `.task` (iOS 15) cho việc async gắn với vòng đời view, vì nó tự cancel khi view biến mất. `NavigationStack` (iOS 16) thay cho `NavigationView` cho navigation dạng stack.",
+      "en": "A SwiftUI view is a lightweight struct that describes UI; `body` may be recomputed many times, so keep side effects and heavy work out of it. A view's identity, its position in the tree plus the `id` in `ForEach`, decides whether its state is kept or reset. Use `.task` (iOS 15) for async work tied to the view's lifetime, since it is cancelled when the view disappears. `NavigationStack` (iOS 16) replaces `NavigationView` for stack navigation."
+    },
+    "check": [
+      {"vi": "Vì sao dùng `id: \\.self` với dữ liệu có thể trùng lặp lại gây lỗi hiển thị?", "en": "Why does `id: \\.self` on data that can contain duplicates cause display bugs?"},
+      {"vi": "`.onAppear` và `.task` khác nhau thế nào khi gọi API?", "en": "How do `.onAppear` and `.task` differ for an API call?"},
+      {"vi": "Bạn nhúng một view SwiftUI vào màn hình UIKit có sẵn thế nào?", "en": "How do you embed a SwiftUI view in an existing UIKit screen?"}
+    ],
+    "topics": [],
+    "lessons": []
+  },
+  {
+    "id": "ios-middle-09",
+    "track": "ios",
+    "level": "middle",
+    "area": "state",
+    "title": {"vi": "State trong SwiftUI: @State, @Binding, @ObservedObject, @StateObject", "en": "SwiftUI state: @State, @Binding, @ObservedObject, @StateObject"},
+    "know": {
+      "vi": "`@State` là state riêng, nhỏ của một view và view đó sở hữu nó. `@Binding` cho view con đọc và ghi state của cha mà không sở hữu. Với `ObservableObject`, view tạo ra object phải giữ nó bằng `@StateObject` (iOS 14); view chỉ nhận từ ngoài vào thì dùng `@ObservedObject`. Tạo object trong `@ObservedObject` là bug kinh điển: object bị tạo lại mỗi khi view cha render lại và mất state.",
+      "en": "`@State` is small, private state that the view owns. `@Binding` lets a child read and write the parent's state without owning it. For an `ObservableObject`, the view that creates it holds it with `@StateObject` (iOS 14); a view that only receives it uses `@ObservedObject`. Creating the object inside `@ObservedObject` is a classic bug: it is recreated whenever the parent re-renders, and its state is lost."
+    },
+    "check": [
+      {"vi": "Form nhập liệu bị xoá trắng mỗi khi màn hình cha cập nhật. Bạn nghi ngờ property wrapper nào?", "en": "A form clears itself whenever the parent screen updates. Which property wrapper do you suspect?"},
+      {"vi": "Khi nào bạn dùng `@Binding` thay vì truyền closure?", "en": "When do you use `@Binding` instead of passing a closure?"},
+      {"vi": "`@Published` phát thay đổi lúc nào, và vì sao nên cập nhật nó trên main thread?", "en": "When does `@Published` emit a change, and why should you update it on the main thread?"}
+    ],
+    "topics": [],
+    "lessons": []
+  },
+  {
+    "id": "ios-middle-10",
+    "track": "ios",
+    "level": "middle",
+    "area": "state",
+    "title": {"vi": "Macro @Observable (iOS 17)", "en": "The @Observable macro (iOS 17)"},
+    "know": {
+      "vi": "Từ iOS 17, framework Observation có macro `@Observable` thay cho `ObservableObject` và `@Published`. SwiftUI chỉ theo dõi những property mà `body` thực sự đọc, nên view ít bị cập nhật thừa hơn. View sở hữu object thì giữ bằng `@State`, view cần binding tới property của nó thì dùng `@Bindable`, còn lại thì object được truyền như một tham số bình thường. App còn hỗ trợ iOS 16 trở xuống vẫn phải dùng `ObservableObject`.",
+      "en": "From iOS 17 the Observation framework offers the `@Observable` macro in place of `ObservableObject` and `@Published`. SwiftUI tracks only the properties that `body` actually reads, so views do fewer needless updates. The owning view holds the object in `@State`, a view that needs bindings to its properties uses `@Bindable`, and otherwise the object is passed as a plain parameter. An app that still supports iOS 16 or earlier must keep `ObservableObject`."
+    },
+    "check": [
+      {"vi": "Chuyển một `ObservableObject` sang `@Observable`, những wrapper nào trong view phải đổi?", "en": "Moving an `ObservableObject` to `@Observable`, which wrappers in the views must change?"},
+      {"vi": "Vì sao `@Observable` có thể giảm số lần view render lại?", "en": "Why can `@Observable` reduce how often views re-render?"}
+    ],
+    "topics": [],
+    "lessons": []
+  },
+  {
+    "id": "ios-middle-11",
+    "track": "ios",
+    "level": "middle",
+    "area": "memory",
+    "title": {"vi": "ARC và retain cycle", "en": "ARC and retain cycles"},
+    "know": {
+      "vi": "ARC giải phóng một instance class khi không còn strong reference nào tới nó; không có garbage collector chạy định kỳ. Hai object giữ nhau mạnh tạo thành retain cycle và không bao giờ được giải phóng. Nguồn hay gặp: delegate không khai báo `weak`, closure lưu trên `self` mà capture `self`, `Timer` giữ target, observer chưa gỡ. `weak` thành `nil` khi object bị giải phóng; `unowned` crash nếu truy cập sau lúc đó.",
+      "en": "ARC frees a class instance when no strong references to it remain; there is no periodic garbage collector. Two objects holding each other strongly form a retain cycle and are never freed. Common sources: a delegate not declared `weak`, a closure stored on `self` that captures `self`, a `Timer` holding its target, an observer never removed. `weak` becomes `nil` when the object is freed; `unowned` crashes if accessed after that."
+    },
+    "check": [
+      {"vi": "Vì sao property delegate thường là `weak var delegate: MyDelegate?` và protocol phải là `AnyObject`?", "en": "Why is a delegate usually `weak var delegate: MyDelegate?`, and why must the protocol be `AnyObject`?"},
+      {"vi": "Bạn xác nhận một view controller bị leak bằng `deinit` và Memory Graph Debugger thế nào?", "en": "How do you confirm a leaking view controller with `deinit` and the Memory Graph Debugger?"},
+      {"vi": "Khi nào `unowned` an toàn, và khi nào nên chọn `weak`?", "en": "When is `unowned` safe, and when should you pick `weak`?"}
+    ],
+    "topics": [],
+    "lessons": []
+  },
+  {
+    "id": "ios-middle-12",
+    "track": "ios",
+    "level": "middle",
+    "area": "concurrency",
+    "title": {"vi": "GCD và main thread", "en": "GCD and the main thread"},
+    "know": {
+      "vi": "UIKit và SwiftUI phải được cập nhật trên main thread; Main Thread Checker trong Xcode báo khi bạn vi phạm. Đưa việc nặng sang `DispatchQueue.global(qos:)` rồi quay về bằng `DispatchQueue.main.async`. Serial queue chạy từng task một, concurrent queue chạy song song. Gọi `DispatchQueue.main.sync` từ main thread gây deadlock. Completion handler của `URLSession` mặc định chạy trên background queue, không phải main.",
+      "en": "UIKit and SwiftUI must be updated on the main thread; Xcode's Main Thread Checker flags violations. Move heavy work to `DispatchQueue.global(qos:)` and come back with `DispatchQueue.main.async`. A serial queue runs one task at a time, a concurrent queue runs them in parallel. Calling `DispatchQueue.main.sync` from the main thread deadlocks. `URLSession` completion handlers run on a background queue by default, not on main."
+    },
+    "check": [
+      {"vi": "App giật khi decode một JSON lớn. Bạn chuyển việc gì sang queue nào?", "en": "The app stutters while decoding a large JSON. Which work moves to which queue?"},
+      {"vi": "Vì sao `DispatchQueue.main.sync` trên main thread treo app?", "en": "Why does `DispatchQueue.main.sync` on the main thread hang the app?"},
+      {"vi": "Bạn dùng serial queue để bảo vệ một dictionary dùng chung thế nào?", "en": "How do you use a serial queue to protect a shared dictionary?"}
+    ],
+    "topics": ["native/modules-ios"],
+    "lessons": ["native-modules-ios-core"]
+  },
+  {
+    "id": "ios-middle-13",
+    "track": "ios",
+    "level": "middle",
+    "area": "concurrency",
+    "title": {"vi": "async/await và Task", "en": "async/await and Task"},
+    "know": {
+      "vi": "async/await có từ Swift 5.5; trên thực tế các API async của framework như `URLSession.data(from:)` cần iOS 15. `Task { }` bắt đầu việc async từ code sync; `@MainActor` đảm bảo code chạy trên main thread, phù hợp cho view model cập nhật UI. Cancellation là hợp tác: task chỉ dừng khi code kiểm tra `Task.isCancelled` hoặc gọi `try Task.checkCancellation()`, hoặc khi API bên trong tự ném `CancellationError`. `async let` chạy vài việc song song rồi chờ tất cả.",
+      "en": "async/await arrived in Swift 5.5; in practice framework async APIs such as `URLSession.data(from:)` need iOS 15. `Task { }` starts async work from sync code; `@MainActor` keeps code on the main thread, which suits a view model that updates UI. Cancellation is cooperative: a task stops only when code checks `Task.isCancelled` or calls `try Task.checkCancellation()`, or when an API inside throws `CancellationError`. `async let` runs a few pieces of work in parallel and then awaits them."
+    },
+    "check": [
+      {"vi": "Người dùng gõ search liên tục: bạn huỷ request cũ bằng `Task` thế nào?", "en": "The user keeps typing in search: how do you cancel the previous request with `Task`?"},
+      {"vi": "Sau một `await`, code có còn chạy trên cùng thread không? `@MainActor` giải quyết điều đó ra sao?", "en": "After an `await`, are you still on the same thread? How does `@MainActor` deal with that?"},
+      {"vi": "Bạn bọc một API dùng completion handler thành hàm `async` thế nào?", "en": "How do you wrap a completion-handler API as an `async` function?"}
+    ],
+    "topics": [],
+    "lessons": []
+  },
+  {
+    "id": "ios-middle-14",
+    "track": "ios",
+    "level": "middle",
+    "area": "data",
+    "title": {"vi": "URLSession và Codable", "en": "URLSession and Codable"},
+    "know": {
+      "vi": "`URLSession` không ném lỗi cho status 4xx hay 5xx; bạn phải ép response sang `HTTPURLResponse` và tự kiểm tra `statusCode`. `Codable` cùng `JSONDecoder` map JSON sang struct; dùng `CodingKeys` hoặc `keyDecodingStrategy = .convertFromSnakeCase` khi tên key khác nhau, và `dateDecodingStrategy` cho ngày tháng. Key thiếu ở property không optional làm decode ném `DecodingError.keyNotFound`, nên chỉ để non-optional những field server luôn trả.",
+      "en": "`URLSession` does not throw for a 4xx or 5xx status; you cast the response to `HTTPURLResponse` and check `statusCode` yourself. `Codable` with `JSONDecoder` maps JSON to structs; use `CodingKeys` or `keyDecodingStrategy = .convertFromSnakeCase` when key names differ, and `dateDecodingStrategy` for dates. A missing key on a non-optional property makes decoding throw `DecodingError.keyNotFound`, so make a field non-optional only when the server always sends it."
+    },
+    "check": [
+      {"vi": "Server trả 500 với body JSON lỗi. Code của bạn phân biệt nó với thành công thế nào?", "en": "The server returns 500 with a JSON error body. How does your code tell that apart from success?"},
+      {"vi": "Một field mới thỉnh thoảng thiếu làm cả màn hình trống. Vì sao, và bạn sửa model thế nào?", "en": "A new field that is sometimes missing blanks the whole screen. Why, and how do you change the model?"},
+      {"vi": "Bạn đọc `DecodingError` thế nào để biết key nào gây lỗi?", "en": "How do you read a `DecodingError` to find which key failed?"}
+    ],
+    "topics": [],
+    "lessons": []
+  },
+  {
+    "id": "ios-middle-15",
+    "track": "ios",
+    "level": "middle",
+    "area": "data",
+    "title": {"vi": "Lưu trữ: UserDefaults, Keychain và file", "en": "Storage: UserDefaults, Keychain and files"},
+    "know": {
+      "vi": "`UserDefaults` dành cho cài đặt nhỏ; nó được lưu thành plist không mã hoá, nên không bao giờ chứa token hay mật khẩu. Secret thuộc về Keychain, qua `SecItemAdd`, `SecItemCopyMatching` với `kSecClassGenericPassword`, và mức `kSecAttrAccessible…` quyết định khi nào đọc được, ví dụ lúc chạy nền khi máy đang khoá. Dữ liệu lớn hơn ghi ra file bằng `FileManager`: Documents cho dữ liệu người dùng (được backup), Caches cho dữ liệu tải lại được, vì hệ thống có thể xoá Caches khi thiếu chỗ.",
+      "en": "`UserDefaults` is for small settings; it is stored as an unencrypted plist, so never put tokens or passwords there. Secrets belong in the Keychain, through `SecItemAdd` and `SecItemCopyMatching` with `kSecClassGenericPassword`, and the `kSecAttrAccessible…` level decides when they can be read, for example in the background while the device is locked. Larger data goes to files via `FileManager`: Documents for user data (backed up), Caches for data you can download again, because the system may purge Caches when space is low."
+    },
+    "check": [
+      {"vi": "Refresh token lưu ở đâu, và vì sao không phải `UserDefaults`?", "en": "Where do you store a refresh token, and why not in `UserDefaults`?"},
+      {"vi": "Background fetch không đọc được token khi máy khoá. Bạn kiểm tra thuộc tính Keychain nào?", "en": "A background fetch cannot read the token while the device is locked. Which Keychain attribute do you check?"},
+      {"vi": "Ảnh cache nên nằm ở Documents hay Caches, vì sao?", "en": "Should cached images live in Documents or Caches, and why?"}
+    ],
+    "topics": [],
+    "lessons": []
+  },
+  {
+    "id": "ios-middle-16",
+    "track": "ios",
+    "level": "middle",
+    "area": "architecture",
+    "title": {"vi": "Cấu trúc một tính năng: MVVM và dependency injection", "en": "Structuring a feature: MVVM and dependency injection"},
+    "know": {
+      "vi": "Với một tính năng làm từ đầu đến cuối, tách view (UIKit hoặc SwiftUI), view model giữ state màn hình, và service lo network hay storage. View model nhận service qua initializer, khai báo bằng protocol, nên test được với bản fake. Đừng để view controller gọi `URLSession` trực tiếp; massive view controller là dấu hiệu logic đặt sai chỗ. Biểu diễn state màn hình bằng enum như `loading`, `loaded`, `failed` để UI không rơi vào trạng thái vô nghĩa.",
+      "en": "For a feature built end to end, split the view (UIKit or SwiftUI), a view model that holds screen state, and services for networking or storage. The view model receives services through its initialiser, typed as protocols, so tests can pass fakes. Do not let a view controller call `URLSession` directly; a massive view controller is a sign that logic sits in the wrong place. Model screen state as an enum such as `loading`, `loaded`, `failed` so the UI cannot reach a meaningless state."
+    },
+    "check": [
+      {"vi": "Bạn vẽ luồng dữ liệu của một màn hình danh sách có pull-to-refresh thế nào?", "en": "How would you sketch the data flow of a list screen with pull-to-refresh?"},
+      {"vi": "Vì sao một enum state tốt hơn ba biến `isLoading`, `items`, `error` riêng rẽ?", "en": "Why is a state enum better than three separate `isLoading`, `items`, `error` variables?"}
+    ],
+    "topics": [],
+    "lessons": []
+  },
+  {
+    "id": "ios-middle-17",
+    "track": "ios",
+    "level": "middle",
+    "area": "quality",
+    "title": {"vi": "Debug bằng Xcode", "en": "Debugging with Xcode"},
+    "know": {
+      "vi": "Breakpoint có thể có điều kiện, có action log mà không dừng, và exception breakpoint dừng đúng chỗ ném lỗi thay vì ở `main`. Trong LLDB, `po` in mô tả của object, `v` đọc biến trong frame mà không chạy code, `bt` in stack. View debugger (Debug View Hierarchy) cho thấy view bị che, sai frame hoặc thiếu constraint. Memory Graph Debugger tìm object còn sống ngoài ý muốn và retain cycle.",
+      "en": "Breakpoints can be conditional, can log without stopping, and an exception breakpoint stops where the error is thrown instead of in `main`. In LLDB, `po` prints an object's description, `v` reads frame variables without running code, and `bt` prints the stack. The view debugger (Debug View Hierarchy) shows views that are covered, misplaced or missing constraints. The Memory Graph Debugger finds objects that are still alive by mistake, and retain cycles."
+    },
+    "check": [
+      {"vi": "Một nút không bấm được. Bạn dùng view debugger để tìm nguyên nhân thế nào?", "en": "A button does not respond to taps. How do you use the view debugger to find out why?"},
+      {"vi": "Bạn chỉ muốn dừng khi `id == 42` trong một vòng lặp lớn. Bạn đặt breakpoint thế nào?", "en": "You want to stop only when `id == 42` inside a big loop. How do you set the breakpoint?"},
+      {"vi": "Crash `Unexpectedly found nil while unwrapping`: bạn đọc stack thế nào để tìm dòng gây lỗi?", "en": "A crash says `Unexpectedly found nil while unwrapping`: how do you read the stack to find the line?"}
+    ],
+    "topics": ["debug/native"],
+    "lessons": ["debug-native-core"]
+  },
+  {
+    "id": "ios-middle-18",
+    "track": "ios",
+    "level": "middle",
+    "area": "quality",
+    "title": {"vi": "Unit test với XCTest", "en": "Unit tests with XCTest"},
+    "know": {
+      "vi": "Test viết trong subclass của `XCTestCase`, với `setUp` để tạo dữ liệu mới cho từng test và các assertion như `XCTAssertEqual`. Method test có thể là `async throws`, nên test được view model dùng async/await mà không cần expectation. Nhờ inject service qua protocol, bạn kiểm tra logic view model với dữ liệu giả, không gọi mạng thật. Từ Xcode 16 có thêm framework Swift Testing với `@Test` và `#expect`, có thể dùng cùng XCTest trong một target.",
+      "en": "Tests live in an `XCTestCase` subclass, with `setUp` creating fresh data for each test and assertions such as `XCTAssertEqual`. Test methods can be `async throws`, so a view model built on async/await is tested without expectations. Because services are injected as protocols, you check view model logic against fake data with no real network. Xcode 16 adds the Swift Testing framework, with `@Test` and `#expect`, which can sit alongside XCTest in the same target."
+    },
+    "check": [
+      {"vi": "Bạn test nhánh lỗi mạng của view model thế nào?", "en": "How do you test the network-failure path of a view model?"},
+      {"vi": "Khi nào bạn vẫn cần `XCTestExpectation`?", "en": "When do you still need an `XCTestExpectation`?"}
+    ],
+    "topics": [],
+    "lessons": []
+  },
+  {
+    "id": "ios-middle-19",
+    "track": "ios",
+    "level": "middle",
+    "area": "release",
+    "title": {"vi": "Signing và phân phối qua TestFlight", "en": "Signing and TestFlight distribution"},
+    "know": {
+      "vi": "Build lên thiết bị hay App Store cần certificate và provisioning profile khớp bundle ID; automatic signing của Xcode lo phần lớn việc này. Mỗi lần upload, build number (`CFBundleVersion`) phải tăng trong cùng một version. Archive rồi upload từ Xcode Organizer; tester nội bộ nhận build ngay khi xử lý xong, còn nhóm tester ngoài cần qua Beta App Review. Build TestFlight hết hạn sau 90 ngày.",
+      "en": "Building for a device or the App Store needs a certificate and a provisioning profile that match the bundle ID; Xcode's automatic signing handles most of it. Each upload needs a higher build number (`CFBundleVersion`) within the same version. You archive and upload from the Xcode Organizer; internal testers get the build once processing finishes, while external testers need it to pass Beta App Review. TestFlight builds expire after 90 days."
+    },
+    "check": [
+      {"vi": "Upload bị từ chối vì build number trùng. Bạn sửa ở đâu?", "en": "An upload is rejected for a duplicate build number. Where do you fix it?"},
+      {"vi": "Tester nội bộ và tester ngoài khác nhau thế nào về review và số lượng?", "en": "How do internal and external testers differ in review and numbers?"},
+      {"vi": "Build chạy trên simulator nhưng không cài được lên máy thật. Bạn kiểm tra gì trước?", "en": "A build runs in the simulator but will not install on a device. What do you check first?"}
+    ],
+    "topics": ["release/ios"],
+    "lessons": ["release-ios-core"]
+  },
+  {
+    "id": "ios-middle-20",
+    "track": "ios",
+    "level": "middle",
+    "area": "release",
+    "title": {"vi": "Đọc crash report và dSYM", "en": "Reading crash reports and dSYMs"},
+    "know": {
+      "vi": "Crash từ TestFlight và App Store hiện trong Xcode Organizer; bạn cần dSYM của đúng build để symbolicate, nếu không stack chỉ còn địa chỉ. Đọc thread bị crash, tìm frame đầu tiên trong code của bạn. `EXC_BAD_ACCESS` là truy cập vùng nhớ không hợp lệ; force unwrap `nil` thường hiện là `EXC_BREAKPOINT` kèm thông báo fatal error. Crash chỉ xảy ra ở bản release thì cài đúng bản release lên máy để tái hiện.",
+      "en": "Crashes from TestFlight and the App Store appear in the Xcode Organizer; you need the dSYM for that exact build to symbolicate, or the stack shows only addresses. Read the crashed thread and find the first frame in your own code. `EXC_BAD_ACCESS` is an invalid memory access; a force unwrap of `nil` usually shows as `EXC_BREAKPOINT` with a fatal error message. For a release-only crash, install that release build on a device to reproduce it."
+    },
+    "check": [
+      {"vi": "Stack trong crash report chỉ có địa chỉ hex. Thiếu gì, và bạn lấy nó ở đâu?", "en": "The crash report stack shows only hex addresses. What is missing, and where do you get it?"},
+      {"vi": "Bạn phân biệt crash do force unwrap với crash do truy cập object đã bị giải phóng thế nào?", "en": "How do you tell a force-unwrap crash from a crash on a freed object?"}
+    ],
+    "topics": ["maintain/crash"],
+    "lessons": ["maintain-crash-core"]
+  }
+]

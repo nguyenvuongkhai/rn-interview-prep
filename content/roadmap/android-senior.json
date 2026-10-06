@@ -1,0 +1,345 @@
+[
+  {
+    "id": "android-senior-01",
+    "track": "android",
+    "level": "senior",
+    "area": "architecture",
+    "title": {"vi": "Chọn MVVM hay MVI và giữ unidirectional data flow", "en": "Choosing MVVM or MVI and keeping unidirectional data flow"},
+    "know": {
+      "vi": "Bạn phải chọn được giữa MVVM với nhiều StateFlow riêng lẻ và MVI với một UiState duy nhất cùng một reducer, và nói được cái giá của mỗi cách: MVI dễ test và dễ tái hiện state, nhưng tốn boilerplate và dễ tạo object mới liên tục. Dù chọn gì, state chảy một chiều từ ViewModel xuống UI, còn event chảy ngược lên. Guidance của Android khuyên biến one-off event (navigate, snackbar) thành state mà UI xác nhận đã xử lý, vì gửi qua SharedFlow hay Channel có thể mất event khi UI không collect.",
+      "en": "You choose between MVVM with several separate StateFlows and MVI with a single UiState and a reducer, and you can state the cost of each: MVI is easier to test and to reproduce, but adds boilerplate and allocates a new object on every change. Either way, state flows down from the ViewModel and events flow up. Android's guidance recommends modelling one-off events (navigate, show a snackbar) as state that the UI marks as handled, because sending them through a SharedFlow or Channel can drop them while the UI is not collecting."
+    },
+    "check": [
+      {"vi": "Khi nào bạn tách UiState thành nhiều flow thay vì một data class lớn?", "en": "When would you split UiState into several flows instead of one large data class?"},
+      {"vi": "Một event navigate gửi qua Channel bị mất ở tình huống nào, và bạn sửa thế nào?", "en": "In what situation does a navigation event sent through a Channel get lost, and how do you fix it?"},
+      {"vi": "Logic nào nên nằm trong ViewModel, logic nào nên xuống domain hoặc data layer?", "en": "Which logic belongs in the ViewModel, and which should move to the domain or data layer?"}
+    ],
+    "topics": [],
+    "lessons": []
+  },
+  {
+    "id": "android-senior-02",
+    "track": "android",
+    "level": "senior",
+    "area": "architecture",
+    "title": {"vi": "Modularisation: chia module theo feature và layer", "en": "Modularisation by feature and layer"},
+    "know": {
+      "vi": "Modularisation có giá: thêm Gradle config, thêm thời gian configure, và ranh giới sai thì còn tệ hơn monolith. Bạn phải lý giải được cách chia (ví dụ `:feature:*`, `:core:data`, `:core:ui`), quy tắc feature không phụ thuộc feature khác, và cách navigation hay DI đi qua ranh giới module. Lợi ích đo được là build incremental nhanh hơn, ownership rõ ràng và encapsulation nhờ `internal`.",
+      "en": "Modularisation has a cost: more Gradle config, more configuration time, and wrong boundaries are worse than a monolith. You can justify a split (for example `:feature:*`, `:core:data`, `:core:ui`), the rule that features do not depend on each other, and how navigation and DI cross module boundaries. The measurable gains are faster incremental builds, clear ownership and encapsulation through `internal`."
+    },
+    "check": [
+      {"vi": "Hai feature module cần mở màn hình của nhau thì bạn nối chúng thế nào mà không tạo dependency vòng?", "en": "Two feature modules need to open each other's screens. How do you connect them without a circular dependency?"},
+      {"vi": "Vì sao dùng `api` thay cho `implementation` bừa bãi làm build chậm đi?", "en": "Why does overusing `api` instead of `implementation` slow the build down?"},
+      {"vi": "Bạn đo thế nào để biết việc tách module thật sự có lợi?", "en": "How do you measure whether splitting modules actually paid off?"}
+    ],
+    "topics": ["native/build"],
+    "lessons": []
+  },
+  {
+    "id": "android-senior-03",
+    "track": "android",
+    "level": "senior",
+    "area": "architecture",
+    "title": {"vi": "Dependency injection với Hilt: scope và trade-off", "en": "Dependency injection with Hilt: scopes and trade-offs"},
+    "know": {
+      "vi": "Hilt sinh code Dagger lúc compile, nên lỗi graph bị bắt sớm, nhưng đổi lại là thời gian build qua kapt hoặc KSP. Bạn phải biết component hierarchy (`SingletonComponent`, `ActivityRetainedComponent`, `ViewModelComponent`…) và chọn scope đúng: scope rộng quá giữ object lâu hơn cần thiết, gây leak hoặc state cũ. Ở mức Senior, bạn còn quyết định cách thay dependency trong test (`@TestInstallIn`, `@UninstallModules`) và so sánh được với giải pháp runtime như Koin.",
+      "en": "Hilt generates Dagger code at compile time, so graph errors surface early, at the price of build time through kapt or KSP. You know the component hierarchy (`SingletonComponent`, `ActivityRetainedComponent`, `ViewModelComponent` and so on) and pick scopes deliberately: a scope that is too wide keeps objects alive longer than needed, causing leaks or stale state. At Senior level you also decide how tests swap dependencies (`@TestInstallIn`, `@UninstallModules`) and can compare Hilt with a runtime option such as Koin."
+    },
+    "check": [
+      {"vi": "Một repository giữ cache trong bộ nhớ nên dùng scope nào, và rủi ro nếu để `@Singleton`?", "en": "Which scope fits a repository with an in-memory cache, and what is the risk of making it `@Singleton`?"},
+      {"vi": "Vì sao không nên inject Activity `Context` vào một object `@Singleton`?", "en": "Why should you not inject an Activity `Context` into a `@Singleton` object?"},
+      {"vi": "Bạn thay một module network thật bằng fake trong instrumented test như thế nào?", "en": "How do you replace a real network module with a fake in an instrumented test?"}
+    ],
+    "topics": [],
+    "lessons": []
+  },
+  {
+    "id": "android-senior-04",
+    "track": "android",
+    "level": "senior",
+    "area": "concurrency",
+    "title": {"vi": "Structured concurrency và cancellation của coroutine", "en": "Coroutine structured concurrency and cancellation"},
+    "know": {
+      "vi": "Mỗi coroutine thuộc một scope; khi scope bị cancel, mọi con bị cancel theo, và lỗi ở con mặc định cancel cả cha. `supervisorScope` hay `SupervisorJob` cho phép một con lỗi mà không kéo các con khác, đó là lý do `viewModelScope` dùng `SupervisorJob`. Cancellation là cooperative: code CPU nặng phải gọi `ensureActive()` hoặc `yield()`, và bạn không được nuốt `CancellationException` (ví dụ `runCatching` hay `catch (e: Exception)` bắt cả nó). Cleanup cần suspend thì đặt trong `withContext(NonCancellable)`.",
+      "en": "Every coroutine belongs to a scope; cancelling the scope cancels its children, and by default a failing child cancels its parent. `supervisorScope` or a `SupervisorJob` lets one child fail without taking its siblings down, which is why `viewModelScope` uses a `SupervisorJob`. Cancellation is cooperative: CPU-heavy code must call `ensureActive()` or `yield()`, and you must not swallow `CancellationException` (`runCatching` or `catch (e: Exception)` catch it too). Cleanup that needs to suspend goes inside `withContext(NonCancellable)`."
+    },
+    "check": [
+      {"vi": "Có việc phải chạy lâu hơn màn hình, ví dụ lưu bản nháp. Bạn inject scope nào cho nó, và ai chịu trách nhiệm huỷ nó?", "en": "Some work must outlive the screen, such as saving a draft. Which scope do you inject for it, and who owns its cancellation?"},
+      {"vi": "Một vòng lặp xử lý ảnh không dừng khi người dùng rời màn hình. Bạn kiểm tra gì?", "en": "An image-processing loop keeps running after the user leaves the screen. What do you check?"},
+      {"vi": "Khác nhau giữa `coroutineScope` và `supervisorScope` khi một con ném exception là gì?", "en": "What is the difference between `coroutineScope` and `supervisorScope` when one child throws?"},
+      {"vi": "Bạn bọc một suspend call trong `runCatching` thì cancellation bị ảnh hưởng ra sao?", "en": "If you wrap a suspend call in `runCatching`, how does that affect cancellation?"}
+    ],
+    "topics": [],
+    "lessons": []
+  },
+  {
+    "id": "android-senior-05",
+    "track": "android",
+    "level": "senior",
+    "area": "concurrency",
+    "title": {"vi": "Flow: cold và hot, StateFlow và SharedFlow", "en": "Flow: cold and hot, StateFlow and SharedFlow"},
+    "know": {
+      "vi": "Flow thường là cold: mỗi collector chạy lại upstream. `stateIn` và `shareIn` biến nó thành hot để nhiều collector dùng chung. StateFlow luôn có giá trị, conflate và bỏ qua giá trị bằng giá trị cũ, nên hợp với state; SharedFlow cấu hình được `replay` và buffer, hợp với broadcast nhưng có thể mất hoặc treo emit nếu cấu hình sai. Bạn phải chọn `SharingStarted` có lý do (ví dụ `WhileSubscribed(5_000)` để sống qua configuration change) và collect theo lifecycle bằng `repeatOnLifecycle` hoặc `collectAsStateWithLifecycle`.",
+      "en": "A Flow is usually cold: each collector re-runs the upstream. `stateIn` and `shareIn` make it hot so many collectors share one upstream. StateFlow always has a value, conflates, and skips values equal to the current one, so it fits state; SharedFlow has configurable `replay` and buffering, which fits broadcasts but can drop values or suspend emitters if configured badly. You choose `SharingStarted` for a reason (for example `WhileSubscribed(5_000)` to survive a configuration change) and collect with the lifecycle through `repeatOnLifecycle` or `collectAsStateWithLifecycle`."
+    },
+    "check": [
+      {"vi": "Vì sao một query Room bị chạy hai lần khi hai màn hình cùng collect, và bạn sửa thế nào?", "en": "Why does a Room query run twice when two screens collect it, and how do you fix it?"},
+      {"vi": "Emit cùng một object hai lần vào StateFlow thì UI có nhận được lần thứ hai không? Vì sao?", "en": "If you emit an equal object twice into a StateFlow, does the UI see the second one? Why?"},
+      {"vi": "Bạn chọn giữa `WhileSubscribed(5_000)`, `Eagerly` và `Lazily` thế nào cho một flow dùng chung giữa nhiều màn hình?", "en": "How do you choose between `WhileSubscribed(5_000)`, `Eagerly` and `Lazily` for a flow shared across several screens?"}
+    ],
+    "topics": [],
+    "lessons": []
+  },
+  {
+    "id": "android-senior-06",
+    "track": "android",
+    "level": "senior",
+    "area": "ui",
+    "title": {"vi": "Compose: stability và recomposition", "en": "Compose: stability and recomposition"},
+    "know": {
+      "vi": "Compose bỏ qua một composable khi các tham số không đổi, và việc so sánh phụ thuộc vào stability của kiểu. Kiểu từ module không dùng Compose compiler, hoặc `List` thường, bị coi là unstable. Strong skipping mode bật mặc định từ Compose compiler đi kèm Kotlin 2.0.20, nên composable có tham số unstable vẫn skip được bằng so sánh instance, nhưng tạo object mới mỗi lần vẫn làm mất skip. Bạn phải đọc được Compose compiler reports, biết khi nào dùng `@Stable`, `@Immutable` hay stability configuration file, và đo bằng Layout Inspector trước khi tối ưu.",
+      "en": "Compose skips a composable when its parameters are unchanged, and that comparison depends on the stability of the types. Types from modules not compiled with the Compose compiler, or a plain `List`, are treated as unstable. Strong skipping mode is on by default from the Compose compiler shipped with Kotlin 2.0.20, so composables with unstable parameters can still skip by instance equality, but allocating a new object each time still defeats skipping. You read the Compose compiler reports, know when to use `@Stable`, `@Immutable` or a stability configuration file, and measure with Layout Inspector's recomposition counts before optimising."
+    },
+    "check": [
+      {"vi": "Một item recompose mỗi khi màn hình cha đổi state dù dữ liệu của nó không đổi. Bạn điều tra theo thứ tự nào?", "en": "An item recomposes whenever its parent screen's state changes even though its data did not. In what order do you investigate?"},
+      {"vi": "Strong skipping mode thay đổi cách Compose so sánh tham số unstable và lambda như thế nào?", "en": "How does strong skipping mode change how Compose compares unstable parameters and lambdas?"},
+      {"vi": "Khi nào `derivedStateOf` giúp ích, và khi nào nó chỉ thêm chi phí?", "en": "When does `derivedStateOf` help, and when does it only add overhead?"}
+    ],
+    "topics": [],
+    "lessons": []
+  },
+  {
+    "id": "android-senior-07",
+    "track": "android",
+    "level": "senior",
+    "area": "performance",
+    "title": {"vi": "Lazy list và giảm việc trong từng frame của Compose", "en": "Lazy lists and less work per frame in Compose"},
+    "know": {
+      "vi": "Với `LazyColumn`, `key` ổn định giữ state và animation đúng item khi danh sách đổi, còn `contentType` giúp tái dùng composition giữa các item cùng loại. Đọc state ở giai đoạn muộn nhất có thể: dùng modifier dạng lambda như `Modifier.offset { }` hay `graphicsLayer { }` để thay đổi chỉ chạy lại layout hoặc draw thay vì recomposition. Đo jank bằng Macrobenchmark với `FrameTimingMetric` trên bản release, vì bản debug của Compose chậm hơn nhiều và không đại diện cho người dùng.",
+      "en": "In a `LazyColumn`, a stable `key` keeps state and animations on the right item when the list changes, and `contentType` lets compositions be reused between items of the same kind. Read state in the latest phase possible: lambda-based modifiers such as `Modifier.offset { }` or `graphicsLayer { }` make a change rerun only layout or drawing instead of composition. Measure jank with Macrobenchmark's `FrameTimingMetric` on a release build, because debug Compose is much slower and does not represent users."
+    },
+    "check": [
+      {"vi": "Khi nào `contentType` giúp ích trong lazy list, và bạn chứng minh tác dụng của nó trên trace thế nào?", "en": "When does `contentType` help in a lazy list, and how would you show its effect in a trace?"},
+      {"vi": "Một header co lại theo vị trí scroll gây recomposition mỗi frame. Bạn viết lại thế nào?", "en": "A header that shrinks with scroll position recomposes every frame. How do you rewrite it?"},
+      {"vi": "Vì sao đo hiệu năng Compose trên bản debug cho kết luận sai?", "en": "Why does measuring Compose performance on a debug build lead to wrong conclusions?"}
+    ],
+    "topics": [],
+    "lessons": []
+  },
+  {
+    "id": "android-senior-08",
+    "track": "android",
+    "level": "senior",
+    "area": "state",
+    "title": {"vi": "Process death và lưu state đúng chỗ", "en": "Process death and saving state in the right place"},
+    "know": {
+      "vi": "ViewModel sống qua configuration change nhưng không sống qua process death; khi hệ thống kill process ở background, chỉ state đã lưu vào saved instance state (qua `SavedStateHandle` hay `rememberSaveable`) và dữ liệu persist mới còn lại. Saved state đi qua Binder nên phải nhỏ: lưu id hay input của người dùng, không lưu danh sách hay bitmap, nếu không sẽ gặp `TransactionTooLargeException`. Bạn phải chia rõ state nào persist vào Room hay DataStore, state nào vào saved state, state nào chấp nhận mất, và test bằng cách kill process khi app ở background.",
+      "en": "A ViewModel survives configuration changes but not process death; when the system kills a background process, only state saved into saved instance state (through `SavedStateHandle` or `rememberSaveable`) and persisted data come back. Saved state travels through Binder, so keep it small: store ids and user input, not lists or bitmaps, or you hit `TransactionTooLargeException`. You decide which state goes to Room or DataStore, which goes to saved state and which may be lost, and you test by killing the process while the app is in the background."
+    },
+    "check": [
+      {"vi": "Bạn đưa việc test process death vào bộ test hoặc checklist QA thế nào để bắt regression trước khi release?", "en": "How do you make process-death testing part of your test suite or QA checklist, so regressions are caught before release?"},
+      {"vi": "Một form dài nhiều bước mất dữ liệu sau khi người dùng mở camera rồi quay lại. Bạn sửa ở đâu?", "en": "A long multi-step form loses its data after the user opens the camera and comes back. Where do you fix it?"},
+      {"vi": "Vì sao không nên đưa kết quả API vào `SavedStateHandle`?", "en": "Why should you not put an API response into `SavedStateHandle`?"}
+    ],
+    "topics": [],
+    "lessons": []
+  },
+  {
+    "id": "android-senior-09",
+    "track": "android",
+    "level": "senior",
+    "area": "native",
+    "title": {"vi": "Background work và giới hạn của hệ thống", "en": "Background work and the system's limits"},
+    "know": {
+      "vi": "Android giới hạn việc chạy nền qua Doze, App Standby Buckets và hạn chế khởi động service từ background, nên câu hỏi đúng là \"việc này cần chạy khi nào và có được trì hoãn không\". Việc phải xong dù app bị kill và có thể trì hoãn thì dùng WorkManager với constraints, retry và backoff; việc gấp và ngắn thì dùng expedited work. Periodic work có chu kỳ tối thiểu 15 phút và thời điểm chạy không chính xác. Bạn phải thiết kế cho việc chạy trễ, chạy lại và idempotency.",
+      "en": "Android limits background execution through Doze, App Standby Buckets and restrictions on starting services from the background, so the right question is \"when must this run, and can it be deferred?\". Work that must finish even if the app is killed, and can be deferred, goes to WorkManager with constraints, retries and backoff; short urgent work can be expedited. Periodic work has a 15-minute minimum interval and no exact timing. You design for late runs, reruns and idempotency."
+    },
+    "check": [
+      {"vi": "Upload ảnh phải hoàn tất dù người dùng tắt app. Bạn thiết kế với WorkManager thế nào, kể cả khi upload chạy hai lần?", "en": "A photo upload must finish even if the user closes the app. How do you design it with WorkManager, including the case where it runs twice?"},
+      {"vi": "Vì sao một sync định kỳ chạy đúng giờ trên emulator nhưng trễ hàng giờ trên máy thật?", "en": "Why does a periodic sync run on time on the emulator but hours late on real devices?"},
+      {"vi": "Khi nào bạn chọn `enqueueUniqueWork` và chính sách `ExistingWorkPolicy` nào?", "en": "When do you use `enqueueUniqueWork`, and which `ExistingWorkPolicy` do you pick?"}
+    ],
+    "topics": [],
+    "lessons": []
+  },
+  {
+    "id": "android-senior-10",
+    "track": "android",
+    "level": "senior",
+    "area": "native",
+    "title": {"vi": "Foreground service và yêu cầu type từ Android 14", "en": "Foreground services and type requirements since Android 14"},
+    "know": {
+      "vi": "Từ Android 14 (API 34), app target API 34 trở lên phải khai báo `foregroundServiceType` cho mỗi foreground service trong manifest và xin permission tương ứng như `FOREGROUND_SERVICE_LOCATION`; thiếu thì `startForeground()` ném exception. Một số type còn đòi điều kiện runtime, ví dụ permission location đã được cấp. Google Play cũng yêu cầu khai báo type đã dùng trong Play Console. Ở mức Senior, bạn quyết định việc nào thật sự cần foreground service, việc nào chuyển sang WorkManager hay API chuyên dụng, và theo dõi thay đổi mỗi bản Android, ví dụ giới hạn thời gian cho type `dataSync` từ Android 15.",
+      "en": "Since Android 14 (API 34), apps targeting API 34 or higher must declare a `foregroundServiceType` for each foreground service in the manifest and request the matching permission, such as `FOREGROUND_SERVICE_LOCATION`; without it `startForeground()` throws. Some types also have runtime prerequisites, for example the location permission already granted. Google Play also asks you to declare the types you use in Play Console. At Senior level you decide which work really needs a foreground service and which should move to WorkManager or a dedicated API, and you track changes in each Android release, such as the time limit on the `dataSync` type from Android 15."
+    },
+    "check": [
+      {"vi": "Sau khi nâng target SDK lên 34, app crash khi bắt đầu ghi âm nền. Bạn kiểm tra những gì?", "en": "After raising the target SDK to 34, the app crashes when background recording starts. What do you check?"},
+      {"vi": "Đồng bộ dữ liệu lớn: foreground service hay WorkManager? Lý do?", "en": "Large data sync: foreground service or WorkManager? Why?"},
+      {"vi": "Bạn theo dõi thay đổi hành vi foreground service ở mỗi bản Android mới bằng nguồn nào?", "en": "Where do you track foreground service behaviour changes for each new Android release?"}
+    ],
+    "topics": [],
+    "lessons": []
+  },
+  {
+    "id": "android-senior-11",
+    "track": "android",
+    "level": "senior",
+    "area": "performance",
+    "title": {"vi": "Startup và Baseline Profiles", "en": "Startup and Baseline Profiles"},
+    "know": {
+      "vi": "Bạn phải phân biệt cold, warm và hot start, đo TTID và TTFD (gọi `reportFullyDrawn()` khi màn hình thật sự dùng được), và đo bằng Macrobenchmark với `StartupTimingMetric` trên bản release. Baseline Profile liệt kê class và method cần compile AOT khi cài, giúp startup và các luồng quan trọng nhanh hơn ở lần chạy đầu; bạn tạo nó bằng Baseline Profile Gradle plugin và Macrobenchmark, rồi cài qua ProfileInstaller hoặc Play. Phần còn lại là giảm việc trong `Application.onCreate`: khởi tạo lazy, dời SDK không cần ngay ra sau first frame.",
+      "en": "You distinguish cold, warm and hot starts, measure TTID and TTFD (calling `reportFullyDrawn()` when the screen is really usable), and measure with Macrobenchmark's `StartupTimingMetric` on a release build. A Baseline Profile lists classes and methods to compile ahead of time at install, making startup and key journeys faster from the first run; you generate it with the Baseline Profile Gradle plugin and Macrobenchmark, and it is installed through ProfileInstaller or Play. The rest is cutting work in `Application.onCreate`: initialise lazily and move SDKs that are not needed at once to after the first frame."
+    },
+    "check": [
+      {"vi": "Cold start tăng 300 ms sau một release. Bạn tìm nguyên nhân bằng công cụ nào?", "en": "Cold start grew by 300 ms after a release. Which tools do you use to find the cause?"},
+      {"vi": "Vì sao Baseline Profile giúp lần mở đầu sau khi cài, còn JIT thì không?", "en": "Why does a Baseline Profile help the first launch after install when JIT does not?"},
+      {"vi": "Bạn chặn regression startup trong CI thế nào?", "en": "How do you catch startup regressions in CI?"}
+    ],
+    "topics": ["maintain/regression"],
+    "lessons": ["maintain-regression-core"]
+  },
+  {
+    "id": "android-senior-12",
+    "track": "android",
+    "level": "senior",
+    "area": "performance",
+    "title": {"vi": "ANR: nguyên nhân và cách điều tra", "en": "ANRs: causes and investigation"},
+    "know": {
+      "vi": "ANR xảy ra khi main thread không xử lý kịp, ví dụ một input event không được phản hồi trong khoảng 5 giây. Nguyên nhân thường gặp là I/O hay lock trên main thread, Binder call chậm, `BroadcastReceiver` làm quá nhiều việc, hoặc main thread chờ một lock mà thread khác đang giữ. Bạn đọc stack của main thread trong báo cáo ANR của Play Console hay `ApplicationExitInfo`, dùng StrictMode khi dev để bắt disk và network trên main thread, và nhớ rằng thread dump chỉ là ảnh chụp lúc timeout, chưa chắc là thủ phạm.",
+      "en": "An ANR happens when the main thread falls behind, for example an input event not handled within about 5 seconds. Common causes are I/O or locks on the main thread, slow Binder calls, a `BroadcastReceiver` doing too much, or the main thread waiting on a lock another thread holds. You read the main thread stack in Play Console's ANR reports or `ApplicationExitInfo`, use StrictMode in development to catch disk and network access on the main thread, and remember that the dump is a snapshot at timeout, not necessarily the culprit."
+    },
+    "check": [
+      {"vi": "Báo cáo ANR chỉ vào `MessageQueue.nativePollOnce`. Bạn diễn giải thế nào?", "en": "An ANR report points at `MessageQueue.nativePollOnce`. How do you interpret it?"},
+      {"vi": "ANR tăng chỉ trên một vài model máy giá rẻ. Bạn khoanh vùng thế nào?", "en": "ANRs rise only on a few low-end phone models. How do you narrow it down?"},
+      {"vi": "SharedPreferences `apply()` có thể góp phần gây ANR ở đâu?", "en": "Where can SharedPreferences `apply()` contribute to an ANR?"}
+    ],
+    "topics": ["maintain/crash", "debug/native"],
+    "lessons": ["maintain-crash-core"]
+  },
+  {
+    "id": "android-senior-13",
+    "track": "android",
+    "level": "senior",
+    "area": "memory",
+    "title": {"vi": "Profiling bộ nhớ, CPU và jank", "en": "Profiling memory, CPU and jank"},
+    "know": {
+      "vi": "Bạn phải chọn đúng công cụ cho câu hỏi: heap dump và LeakCanary cho leak (Activity, Fragment view hay ViewModel bị giữ bởi listener, singleton, coroutine sống quá lâu), system trace qua Android Studio Profiler hoặc Perfetto cho jank và startup, method trace khi cần chi tiết nhưng biết nó làm app chậm và lệch số đo. Profile trên build `profileable` hoặc release gần giống thật, vì debuggable build chạy chậm hơn. Ở mức Senior, bạn biến phát hiện thành chỉ số được theo dõi, không chỉ sửa một lần.",
+      "en": "You pick the right tool for the question: heap dumps and LeakCanary for leaks (an Activity, Fragment view or ViewModel held by a listener, a singleton or a long-lived coroutine), a system trace in the Android Studio Profiler or Perfetto for jank and startup, and method tracing only when you need detail, knowing it slows the app and skews numbers. Profile a `profileable` or release-like build, because debuggable builds run slower. At Senior level you turn findings into tracked metrics rather than one-off fixes."
+    },
+    "check": [
+      {"vi": "Bạn cấu hình một bản release `profileable` thế nào, và vì sao số đo của nó khác bản debuggable?", "en": "How do you set up a `profileable` release build, and why do its numbers differ from a debuggable build?"},
+      {"vi": "Khi nào bạn dùng system trace thay vì method trace?", "en": "When do you use a system trace instead of a method trace?"},
+      {"vi": "Bộ nhớ tăng dần trong một phiên dài. Bạn chứng minh đó là leak chứ không phải cache bằng cách nào?", "en": "Memory grows steadily over a long session. How do you prove it is a leak and not a cache?"}
+    ],
+    "topics": ["maintain/regression"],
+    "lessons": ["maintain-regression-core"]
+  },
+  {
+    "id": "android-senior-14",
+    "track": "android",
+    "level": "senior",
+    "area": "release",
+    "title": {"vi": "R8: shrinking, obfuscation và keep rule", "en": "R8: shrinking, obfuscation and keep rules"},
+    "know": {
+      "vi": "R8 xoá code không dùng, tối ưu và đổi tên class cho bản release; từ AGP 8.0 full mode bật mặc định nên tối ưu mạnh hơn và dễ làm vỡ code dùng reflection, ví dụ serialization dựa trên reflection hay tên class đọc lúc runtime. Bạn phải viết keep rule hẹp nhất có thể, để library tự mang consumer rules, và test bản minified chứ không chỉ debug. Upload file `mapping.txt` của mỗi bản lên Play Console và công cụ crash reporting, nếu không stack trace sẽ không đọc được.",
+      "en": "R8 removes unused code, optimises it and renames classes in release builds; since AGP 8.0 full mode is the default, which optimises harder and breaks reflection-based code more easily, such as reflection-based serialization or class names read at runtime. You write the narrowest keep rules you can, let libraries ship their own consumer rules, and test the minified build, not just debug. Upload each build's `mapping.txt` to Play Console and your crash reporting tool, or stack traces are unreadable."
+    },
+    "check": [
+      {"vi": "Một library dùng reflection và không kèm consumer rules. Bạn viết keep rule hẹp nhất cho nó và chứng minh nó đúng thế nào?", "en": "A library uses reflection and ships no consumer rules. How do you write the narrowest keep rule for it and prove it works?"},
+      {"vi": "Vì sao `-keep class com.example.** { *; }` là cách sửa tồi?", "en": "Why is `-keep class com.example.** { *; }` a poor fix?"},
+      {"vi": "Bạn đảm bảo mapping file luôn khớp với bản đã phát hành bằng cách nào?", "en": "How do you make sure the mapping file always matches the shipped build?"}
+    ],
+    "topics": ["native/build", "release/android"],
+    "lessons": ["release-android-core"]
+  },
+  {
+    "id": "android-senior-15",
+    "track": "android",
+    "level": "senior",
+    "area": "native",
+    "title": {"vi": "Sức khoẻ của Gradle build", "en": "Gradle build health"},
+    "know": {
+      "vi": "Build chậm làm cả đội chậm, nên Senior coi thời gian build là một chỉ số. Bạn phải biết configuration cache, build cache, tránh làm việc nặng lúc configuration, gom logic chung vào convention plugin trong `build-logic`, quản lý version bằng version catalog, và chuyển annotation processing từ kapt sang KSP khi library hỗ trợ. Đo bằng Build Analyzer của Android Studio hoặc Build Scan trước khi đổi, và nâng AGP, Gradle, Kotlin theo kế hoạch thay vì dồn nhiều bản.",
+      "en": "A slow build slows the whole team, so a Senior treats build time as a metric. You know the configuration cache and build cache, avoid heavy work during configuration, put shared logic into convention plugins in `build-logic`, manage versions with a version catalog, and move annotation processing from kapt to KSP where libraries support it. Measure with Android Studio's Build Analyzer or a Build Scan before changing anything, and upgrade AGP, Gradle and Kotlin on a plan rather than letting versions pile up."
+    },
+    "check": [
+      {"vi": "Build incremental sau khi sửa một dòng mất hai phút. Bạn tìm nguyên nhân thế nào?", "en": "An incremental build after a one-line change takes two minutes. How do you find the cause?"},
+      {"vi": "Convention plugin giải quyết vấn đề gì mà copy `build.gradle.kts` không giải quyết được?", "en": "What problem do convention plugins solve that copying `build.gradle.kts` does not?"},
+      {"vi": "Bạn lên kế hoạch nâng AGP major version cho một app nhiều module ra sao?", "en": "How do you plan a major AGP upgrade for a multi-module app?"}
+    ],
+    "topics": ["native/build"],
+    "lessons": ["native-build-core"]
+  },
+  {
+    "id": "android-senior-16",
+    "track": "android",
+    "level": "senior",
+    "area": "release",
+    "title": {"vi": "Vận hành trên Play Console: staged rollout và Android vitals", "en": "Play Console operations: staged rollouts and Android vitals"},
+    "know": {
+      "vi": "Staged rollout phát hành cho một phần trăm người dùng rồi tăng dần; bạn có thể halt rollout, nhưng Play không rollback được bản đã cài, nên cách sửa là phát hành bản mới với `versionCode` cao hơn. Android vitals đo user-perceived crash rate và ANR rate, cả tổng thể lẫn theo từng model máy, và Google Play có ngưỡng bad behavior mà vượt qua thì app có thể bị giảm khả năng hiển thị trên store. Ngưỡng có thể thay đổi, nên đọc giá trị hiện tại trong mục Android vitals của Play Console và đặt cảnh báo nội bộ thấp hơn ngưỡng đó.",
+      "en": "A staged rollout releases to a percentage of users and then widens; you can halt a rollout, but Play cannot roll back an installed version, so the fix is a new release with a higher `versionCode`. Android vitals measures user-perceived crash and ANR rates, overall and per phone model, and Google Play defines bad behaviour thresholds; crossing them can reduce the app's visibility on the store. The thresholds can change, so read the current values in Play Console's Android vitals section and set internal alerts below them."
+    },
+    "check": [
+      {"vi": "Bản mới ở 10% rollout có crash rate tăng gấp đôi. Bạn làm gì trong giờ đầu tiên?", "en": "A new version at 10% rollout has doubled the crash rate. What do you do in the first hour?"},
+      {"vi": "Vì sao chỉ nhìn crash rate tổng thể có thể bỏ sót vấn đề trên một model máy?", "en": "Why can looking only at the overall crash rate hide a problem on one phone model?"},
+      {"vi": "Bạn quyết định tiêu chí để tăng rollout từ 20% lên 50% dựa trên số liệu nào?", "en": "Which numbers decide whether you widen a rollout from 20% to 50%?"}
+    ],
+    "topics": ["release/android", "maintain/crash"],
+    "lessons": ["release-android-core", "maintain-crash-core"]
+  },
+  {
+    "id": "android-senior-17",
+    "track": "android",
+    "level": "senior",
+    "area": "release",
+    "title": {"vi": "Chính sách target SDK hằng năm", "en": "The yearly target SDK policy"},
+    "know": {
+      "vi": "Google Play yêu cầu app mới và bản cập nhật target một API level gần với bản Android mới nhất, và mốc này dời lên mỗi năm; app không cập nhật kịp có thể không còn hiển thị với người dùng mới trên các bản Android mới hơn. Hạn chót và API level cụ thể nằm trong trang Target API level requirements của Google Play và mục Policy status trong Play Console, nên luôn kiểm tra ở đó. Nâng target SDK không chỉ là đổi một số: mỗi bản kéo theo behaviour changes (foreground service, permission, edge-to-edge…) mà bạn phải lên kế hoạch và test sớm.",
+      "en": "Google Play requires new apps and updates to target an API level close to the latest Android release, and the bar moves up every year; apps that fall behind can stop being available to new users on newer Android versions. The exact deadlines and API levels are on Google Play's target API level requirements page and in Play Console's Policy status, so always check there. Raising the target SDK is not just changing a number: each release brings behaviour changes (foreground services, permissions, edge-to-edge and so on) that you plan for and test early."
+    },
+    "check": [
+      {"vi": "Bạn lập kế hoạch nâng target SDK cho một app lớn thế nào để không dồn vào tháng cuối?", "en": "How do you plan a target SDK upgrade for a large app so it does not pile up in the final month?"},
+      {"vi": "Khác nhau giữa `compileSdk`, `targetSdk` và `minSdk` về hành vi runtime là gì?", "en": "How do `compileSdk`, `targetSdk` and `minSdk` differ in their effect on runtime behaviour?"},
+      {"vi": "Một SDK bên thứ ba chưa hỗ trợ target mới. Bạn xử lý rủi ro này thế nào?", "en": "A third-party SDK does not support the new target yet. How do you handle that risk?"}
+    ],
+    "topics": ["release/android", "native/modules-android"],
+    "lessons": ["release-android-core", "native-modules-android-core"]
+  },
+  {
+    "id": "android-senior-18",
+    "track": "android",
+    "level": "senior",
+    "area": "quality",
+    "title": {"vi": "Chiến lược test cho app Android", "en": "A testing strategy for an Android app"},
+    "know": {
+      "vi": "Senior quyết định đặt test ở đâu cho đáng tiền: phần lớn là local JVM test cho ViewModel, use case và repository với fake thay vì mock, một lớp Compose UI test hoặc Robolectric cho màn hình, và ít instrumented test end-to-end cho luồng quan trọng. Test coroutine dùng `runTest` với test dispatcher, inject dispatcher thay vì gọi cứng `Dispatchers.IO`. Screenshot test bắt regression giao diện, còn Macrobenchmark bắt regression hiệu năng; flaky test phải được xử lý như bug, không phải retry mãi.",
+      "en": "A Senior decides where tests pay off: mostly local JVM tests for ViewModels, use cases and repositories with fakes rather than mocks, a layer of Compose UI tests or Robolectric for screens, and few end-to-end instrumented tests for critical journeys. Coroutine tests use `runTest` with a test dispatcher, and you inject dispatchers instead of hard-coding `Dispatchers.IO`. Screenshot tests catch visual regressions and Macrobenchmark catches performance ones; flaky tests are treated as bugs, not retried forever."
+    },
+    "check": [
+      {"vi": "Vì sao fake repository thường tốt hơn mock cho test ViewModel?", "en": "Why is a fake repository often better than a mock for ViewModel tests?"},
+      {"vi": "Bạn test một ViewModel expose StateFlow với `stateIn(WhileSubscribed)` thế nào để không bị treo hay thiếu giá trị?", "en": "How do you test a ViewModel exposing a StateFlow built with `stateIn(WhileSubscribed)` without hanging or missing values?"},
+      {"vi": "Bộ test UI mất 40 phút và hay flaky. Bạn cắt giảm và ổn định nó theo hướng nào?", "en": "The UI suite takes 40 minutes and is flaky. How do you cut it down and stabilise it?"}
+    ],
+    "topics": [],
+    "lessons": []
+  },
+  {
+    "id": "android-senior-19",
+    "track": "android",
+    "level": "senior",
+    "area": "teamwork",
+    "title": {"vi": "Code review, chuẩn chung và dẫn dắt migration", "en": "Code review, shared standards and leading migrations"},
+    "know": {
+      "vi": "Senior biến quyết định thành chuẩn mà đội tự áp dụng được: lint và detekt hoặc ktlint trong CI, architecture decision record cho lựa chọn lớn, checklist review tập trung vào lifecycle, threading, process death và hiệu năng thay vì style. Với migration dài như View sang Compose hay LiveData sang Flow, bạn chia theo màn hình, dùng interop (`ComposeView`, `AndroidView`) để chạy song song, đặt chỉ số tiến độ và tiêu chí hoàn thành. Review là để chia sẻ kiến thức, nên giải thích lý do và để người khác tự sửa.",
+      "en": "A Senior turns decisions into standards the team applies on its own: lint plus detekt or ktlint in CI, architecture decision records for big choices, and a review checklist focused on lifecycle, threading, process death and performance rather than style. For long migrations such as Views to Compose or LiveData to Flow, you split by screen, run both side by side through interop (`ComposeView`, `AndroidView`), and set progress metrics and exit criteria. Review is for sharing knowledge, so explain the reason and let the author make the fix."
+    },
+    "check": [
+      {"vi": "Bạn lập kế hoạch chuyển một app 80 màn hình sang Compose mà không dừng phát triển tính năng thế nào?", "en": "How do you plan moving an 80-screen app to Compose without stopping feature work?"},
+      {"vi": "Ba điều bạn luôn kiểm tra khi review một PR có coroutine và lifecycle là gì?", "en": "What three things do you always check when reviewing a PR with coroutines and lifecycle code?"},
+      {"vi": "Khi đội bất đồng về kiến trúc, bạn đi đến quyết định và ghi lại nó thế nào?", "en": "When the team disagrees about architecture, how do you reach a decision and record it?"}
+    ],
+    "topics": [],
+    "lessons": []
+  }
+]

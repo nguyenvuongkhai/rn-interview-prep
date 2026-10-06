@@ -1,0 +1,344 @@
+[
+  {
+    "id": "ios-senior-01",
+    "track": "ios",
+    "level": "senior",
+    "area": "architecture",
+    "title": {"vi": "Chọn kiến trúc cho cả app", "en": "Choosing an architecture for the whole app"},
+    "know": {
+      "vi": "MVVM, MVC, VIPER hay một kiểu unidirectional đều là cách chia trách nhiệm, không có cái nào đúng cho mọi app. Ở mức Senior bạn chọn dựa trên kích thước đội, độ phức tạp của state và chi phí test, rồi giữ ranh giới đó nhất quán. Với SwiftUI, Observation (`@Observable`, từ iOS 17) đổi cách view model báo thay đổi, nên min deployment target ảnh hưởng trực tiếp tới lựa chọn. Kiến trúc tốt là kiến trúc người mới đọc vào biết logic nằm ở đâu.",
+      "en": "MVVM, MVC, VIPER or a unidirectional style are all ways of splitting responsibility, and none is right for every app. At Senior level you choose based on team size, state complexity and the cost of testing, then keep the boundaries consistent. In SwiftUI, Observation (`@Observable`, from iOS 17) changes how a view model publishes changes, so the minimum deployment target directly affects the choice. A good architecture is one where a newcomer can tell where the logic lives."
+    },
+    "check": [
+      {"vi": "Logic nào được nằm trong view model, logic nào phải tách ra service hay use case?", "en": "Which logic may live in a view model, and which must move to a service or use case?"},
+      {"vi": "Nếu app phải hỗ trợ iOS 16, bạn dùng `ObservableObject` hay `@Observable`, và chuyển đổi sau này thế nào?", "en": "If the app must support iOS 16, do you use `ObservableObject` or `@Observable`, and how would you migrate later?"},
+      {"vi": "Khi nào một kiến trúc nặng như VIPER đáng chi phí, khi nào là quá tay?", "en": "When is a heavy architecture such as VIPER worth its cost, and when is it overkill?"}
+    ],
+    "topics": [],
+    "lessons": []
+  },
+  {
+    "id": "ios-senior-02",
+    "track": "ios",
+    "level": "senior",
+    "area": "architecture",
+    "title": {"vi": "Điều hướng và coordinator", "en": "Navigation and coordinators"},
+    "know": {
+      "vi": "Coordinator tách việc quyết định màn tiếp theo ra khỏi view controller, để màn hình dùng lại được và luồng test được. Trong SwiftUI, `NavigationStack` với path (từ iOS 16) cho phép điều hướng bằng dữ liệu, nên một router giữ path đóng vai trò tương tự. Senior phải thiết kế được deep link, luồng đăng nhập và modal lồng nhau mà không để mỗi màn tự biết toàn bộ app.",
+      "en": "A coordinator moves the decision about the next screen out of the view controller, so screens are reusable and flows are testable. In SwiftUI, `NavigationStack` with a path (from iOS 16) makes navigation data-driven, so a router that owns the path plays a similar role. A Senior must design deep links, sign-in flows and nested modals without every screen knowing the whole app."
+    },
+    "check": [
+      {"vi": "Một deep link tới màn chi tiết khi người dùng chưa đăng nhập đi qua những bước nào trong thiết kế của bạn?", "en": "In your design, what steps does a deep link to a detail screen take when the user is signed out?"},
+      {"vi": "Ai sở hữu và giải phóng một child coordinator khi luồng kết thúc?", "en": "Who owns a child coordinator and releases it when the flow ends?"},
+      {"vi": "Trong app trộn UIKit và SwiftUI, bạn đặt nguồn sự thật của điều hướng ở đâu?", "en": "In an app that mixes UIKit and SwiftUI, where do you keep the source of truth for navigation?"}
+    ],
+    "topics": [],
+    "lessons": []
+  },
+  {
+    "id": "ios-senior-03",
+    "track": "ios",
+    "level": "senior",
+    "area": "architecture",
+    "title": {"vi": "Module hoá bằng Swift package", "en": "Modularisation with Swift packages"},
+    "know": {
+      "vi": "Tách app thành nhiều Swift package giúp ranh giới rõ, build song song và incremental build nhanh hơn, nhưng thêm chi phí quản lý đồ thị phụ thuộc. Access control là công cụ chính: chỉ `public` những gì module khác cần, và từ Swift 5.9 có `package` để chia sẻ trong cùng package. Resource trong package truy cập qua `Bundle.module`, khác với main bundle. Quyết định khó là cắt theo feature hay theo layer, và tránh phụ thuộc vòng.",
+      "en": "Splitting the app into Swift packages gives clear boundaries, parallel builds and faster incremental builds, but adds the cost of managing the dependency graph. Access control is the main tool: make `public` only what other modules need, and from Swift 5.9 `package` shares code within one package. Resources in a package are reached through `Bundle.module`, not the main bundle. The hard decision is whether to cut by feature or by layer, and how to avoid cycles."
+    },
+    "check": [
+      {"vi": "Hai feature module cần điều hướng sang nhau mà không phụ thuộc trực tiếp; bạn làm thế nào?", "en": "Two feature modules must navigate to each other without depending on each other directly; how?"},
+      {"vi": "Bạn đo thế nào để biết việc module hoá thật sự làm build nhanh hơn?", "en": "How would you measure whether modularisation actually made builds faster?"},
+      {"vi": "Khi nào nên đóng gói một module thành binary (XCFramework) thay vì source?", "en": "When should a module ship as a binary (XCFramework) rather than source?"}
+    ],
+    "topics": [],
+    "lessons": []
+  },
+  {
+    "id": "ios-senior-04",
+    "track": "ios",
+    "level": "senior",
+    "area": "architecture",
+    "title": {"vi": "Dependency injection", "en": "Dependency injection"},
+    "know": {
+      "vi": "Truyền phụ thuộc qua initializer là cách rõ ràng nhất: compiler bắt thiếu phụ thuộc và test chỉ cần truyền bản giả. Container hay service locator giảm boilerplate nhưng đẩy lỗi thiếu đăng ký sang runtime. Trong SwiftUI, `Environment` tiện cho phụ thuộc dùng rộng nhưng dễ thành phụ thuộc ngầm. Senior chọn mức trừu tượng vừa đủ: protocol ở ranh giới I/O như network, storage, clock, không phải cho mọi class.",
+      "en": "Passing dependencies through the initialiser is the clearest option: the compiler catches a missing dependency and tests just pass a fake. A container or service locator cuts boilerplate but moves missing-registration errors to runtime. In SwiftUI, `Environment` suits widely used dependencies but easily becomes hidden coupling. A Senior picks just enough abstraction: protocols at I/O boundaries such as network, storage and clock, not for every class."
+    },
+    "check": [
+      {"vi": "Vì sao inject một clock hay date provider lại giúp test ổn định hơn?", "en": "Why does injecting a clock or date provider make tests more stable?"},
+      {"vi": "Đổi từ initializer injection sang một DI container được gì và mất gì?", "en": "What do you gain and lose by moving from initialiser injection to a DI container?"},
+      {"vi": "Làm sao tránh composition root phình to khi app có hàng chục feature?", "en": "How do you stop the composition root from bloating when the app has dozens of features?"}
+    ],
+    "topics": [],
+    "lessons": []
+  },
+  {
+    "id": "ios-senior-05",
+    "track": "ios",
+    "level": "senior",
+    "area": "concurrency",
+    "title": {"vi": "Structured concurrency và cancellation", "en": "Structured concurrency and cancellation"},
+    "know": {
+      "vi": "`async let` và `TaskGroup` tạo child task gắn với scope cha: scope chỉ kết thúc khi mọi child xong, và lỗi hay cancel lan theo cây. `Task { }` là unstructured nhưng thừa hưởng actor, priority và task-local từ nơi tạo; `Task.detached` không thừa hưởng gì. Cancellation là hợp tác: task chỉ dừng khi code kiểm tra `Task.isCancelled` hoặc gọi API có hỗ trợ cancel. Senior phải biết ai sở hữu mỗi task và khi nào nó bị huỷ.",
+      "en": "`async let` and `TaskGroup` create child tasks tied to the parent scope: the scope ends only when every child is done, and errors and cancellation flow through the tree. `Task { }` is unstructured but inherits actor, priority and task-locals from where it is created; `Task.detached` inherits none of them. Cancellation is cooperative: a task stops only when code checks `Task.isCancelled` or calls an API that honours cancellation. A Senior knows who owns each task and when it is cancelled."
+    },
+    "check": [
+      {"vi": "Khi màn hình đóng, những task nào của nó vẫn chạy tiếp, và bạn huỷ chúng ở đâu?", "en": "When a screen closes, which of its tasks keep running, and where do you cancel them?"},
+      {"vi": "Khi nào `Task.detached` là lựa chọn đúng, và nó dễ gây lỗi gì?", "en": "When is `Task.detached` the right choice, and what mistakes does it invite?"},
+      {"vi": "Một vòng lặp xử lý ảnh dài không phản ứng với cancel; bạn sửa thế nào?", "en": "A long image-processing loop ignores cancellation; how do you fix it?"}
+    ],
+    "topics": [],
+    "lessons": []
+  },
+  {
+    "id": "ios-senior-06",
+    "track": "ios",
+    "level": "senior",
+    "area": "concurrency",
+    "title": {"vi": "Actor và reentrancy", "en": "Actors and reentrancy"},
+    "know": {
+      "vi": "Actor bảo vệ state của nó bằng cách cho chạy từng đoạn một, nhưng actor là reentrant: tại mỗi `await`, actor có thể chạy việc khác và state có thể đã đổi khi bạn quay lại. Vì vậy invariant phải đúng trước mỗi điểm suspend, và kiểm tra rồi dùng phải nằm trong cùng một đoạn đồng bộ. Mẫu thường gặp là cache giữ `Task` đang chạy để nhiều caller không tải trùng. Actor không thay được thiết kế: quá nhiều hop giữa actor cũng tốn chi phí.",
+      "en": "An actor protects its state by running one piece of work at a time, but actors are reentrant: at every `await` the actor may run other work, and state may have changed when you resume. So invariants must hold before every suspension point, and a check followed by a use must sit in the same synchronous stretch. A common pattern is a cache that stores the in-flight `Task` so several callers do not load the same thing twice. Actors do not replace design: too many hops between actors also cost time."
+    },
+    "check": [
+      {"vi": "Viết bằng lời một bug do reentrancy trong actor quản lý token đăng nhập, và cách sửa.", "en": "Describe a reentrancy bug in an actor that manages a sign-in token, and how to fix it."},
+      {"vi": "Khi nào bạn chọn actor, khi nào một lock hay serial queue vẫn hợp lý hơn?", "en": "When do you choose an actor, and when is a lock or serial queue still the better fit?"},
+      {"vi": "Vì sao gọi actor trong vòng lặp chặt có thể chậm, và bạn gom việc thế nào?", "en": "Why can calling an actor in a tight loop be slow, and how would you batch the work?"}
+    ],
+    "topics": [],
+    "lessons": []
+  },
+  {
+    "id": "ios-senior-07",
+    "track": "ios",
+    "level": "senior",
+    "area": "concurrency",
+    "title": {"vi": "Sendable và Swift 6 strict concurrency", "en": "Sendable and Swift 6 strict concurrency"},
+    "know": {
+      "vi": "`Sendable` đánh dấu kiểu an toàn khi đi qua ranh giới isolation. Ở Swift 6 language mode, vi phạm data-race safety là lỗi compile; ở Swift 5 mode bạn bật strict concurrency checking để thấy chúng dưới dạng warning trước. Migration nên đi từng module, bắt đầu từ module lá, và dùng `@preconcurrency import` cho thư viện chưa cập nhật. `@unchecked Sendable` là lời hứa của bạn với compiler, chỉ dùng khi có lock thật bên trong và có lý do ghi lại.",
+      "en": "`Sendable` marks a type as safe to cross an isolation boundary. In the Swift 6 language mode, data-race safety violations are compile errors; in Swift 5 mode you turn on strict concurrency checking to see them as warnings first. Migrate module by module, starting from leaf modules, and use `@preconcurrency import` for libraries that have not caught up. `@unchecked Sendable` is your promise to the compiler: use it only with a real lock inside and a written reason."
+    },
+    "check": [
+      {"vi": "Bạn lập kế hoạch đưa một app lớn lên Swift 6 language mode thế nào mà không chặn đội?", "en": "How would you plan moving a large app to the Swift 6 language mode without blocking the team?"},
+      {"vi": "Một class có state mutable cần đi qua actor; bạn có những lựa chọn nào ngoài `@unchecked Sendable`?", "en": "A class with mutable state must cross an actor boundary; what options do you have besides `@unchecked Sendable`?"},
+      {"vi": "Vì sao một closure gửi sang task khác phải là `@Sendable`?", "en": "Why must a closure sent to another task be `@Sendable`?"}
+    ],
+    "topics": [],
+    "lessons": []
+  },
+  {
+    "id": "ios-senior-08",
+    "track": "ios",
+    "level": "senior",
+    "area": "concurrency",
+    "title": {"vi": "MainActor và ranh giới với UI", "en": "MainActor and the UI boundary"},
+    "know": {
+      "vi": "UIKit và SwiftUI yêu cầu cập nhật UI trên main thread; `@MainActor` biến yêu cầu đó thành kiểm tra lúc compile. Đánh dấu cả view model là `@MainActor` đơn giản, nhưng việc nặng như parse hay xử lý ảnh phải đẩy ra ngoài rồi quay lại. Từ Swift 6.2 bạn có thể đặt default actor isolation của một module là MainActor, hợp với module UI. Code cũ dùng GCD hay callback delegate cần được bọc cẩn thận để không mất thông tin isolation.",
+      "en": "UIKit and SwiftUI require UI updates on the main thread; `@MainActor` turns that rule into a compile-time check. Marking a whole view model `@MainActor` is simple, but heavy work such as parsing or image processing must move off it and come back. From Swift 6.2 you can set a module's default actor isolation to MainActor, which suits UI modules. Older code built on GCD or delegate callbacks must be wrapped carefully so isolation is not lost."
+    },
+    "check": [
+      {"vi": "Một delegate của framework cũ gọi lại trên thread bất kỳ; bạn đưa kết quả về `@MainActor` an toàn thế nào?", "en": "An old framework delegate calls back on any thread; how do you get the result onto `@MainActor` safely?"},
+      {"vi": "Đặt default isolation là MainActor cho module network có hợp lý không? Vì sao?", "en": "Is MainActor default isolation sensible for a networking module? Why?"},
+      {"vi": "Làm sao phát hiện việc nặng đang chạy trên main actor trước khi người dùng thấy giật?", "en": "How do you catch heavy work running on the main actor before users feel the stutter?"}
+    ],
+    "topics": [],
+    "lessons": []
+  },
+  {
+    "id": "ios-senior-09",
+    "track": "ios",
+    "level": "senior",
+    "area": "performance",
+    "title": {"vi": "Đo bằng Instruments: Time Profiler và hang", "en": "Measuring with Instruments: Time Profiler and hangs"},
+    "know": {
+      "vi": "Hiệu năng phải đo trên thiết bị thật với bản build Release, không phải Simulator hay Debug. Time Profiler lấy mẫu call stack để chỉ ra hàm tốn CPU; công cụ phân tích hang cho thấy main thread bị chặn bao lâu và vì sao, Apple coi main thread không phản hồi từ khoảng 250 ms là hang. Đánh dấu đoạn code bằng `os_signpost` để thấy nó trên timeline Instruments. Senior biến kết quả đo thành ngân sách cụ thể, ví dụ thời gian mở màn, rồi giữ nó.",
+      "en": "Measure performance on a real device with a Release build, not the Simulator or Debug. Time Profiler samples call stacks to show which functions cost CPU; hang analysis shows how long the main thread was blocked and why, and Apple treats a main thread that does not respond for about 250 ms or more as a hang. Mark code regions with `os_signpost` to see them on the Instruments timeline. A Senior turns measurements into a concrete budget, such as screen open time, and keeps to it."
+    },
+    "check": [
+      {"vi": "Vì sao số đo trên Simulator hay bản Debug có thể dẫn bạn tối ưu sai chỗ?", "en": "Why can numbers from the Simulator or a Debug build lead you to optimise the wrong thing?"},
+      {"vi": "Đọc một trace Time Profiler thế nào khi phần lớn thời gian nằm trong framework của hệ thống?", "en": "How do you read a Time Profiler trace when most time sits inside system frameworks?"},
+      {"vi": "Người dùng báo app đơ khi cuộn nhưng bạn không tái hiện được; bạn lấy dữ liệu từ đâu?", "en": "Users report freezes while scrolling but you cannot reproduce it; where do you get data?"}
+    ],
+    "topics": ["maintain/regression"],
+    "lessons": ["maintain-regression-core"]
+  },
+  {
+    "id": "ios-senior-10",
+    "track": "ios",
+    "level": "senior",
+    "area": "performance",
+    "title": {"vi": "Thời gian khởi động và chống regression", "en": "Launch time and guarding against regressions"},
+    "know": {
+      "vi": "Khởi động chịu ảnh hưởng của số dynamic framework, code chạy trong `application(_:didFinishLaunchingWithOptions:)` và việc làm đồng bộ trước frame đầu tiên. XCTest có metric như `XCTApplicationLaunchMetric` để đo lặp lại trong CI, còn Xcode Organizer và MetricKit cho số liệu từ người dùng thật. Senior đặt ngưỡng, so sánh từng release, và trì hoãn việc không cần cho frame đầu tiên. Một con số trung bình che mất máy yếu; nhìn cả percentile cao.",
+      "en": "Launch time depends on the number of dynamic frameworks, the code in `application(_:didFinishLaunchingWithOptions:)` and synchronous work before the first frame. XCTest has metrics such as `XCTApplicationLaunchMetric` for repeatable measurement in CI, while Xcode Organizer and MetricKit give numbers from real users. A Senior sets thresholds, compares each release, and defers work the first frame does not need. An average hides slow devices; look at high percentiles too."
+    },
+    "check": [
+      {"vi": "Bạn quyết định việc khởi tạo SDK nào được trì hoãn sau frame đầu tiên dựa trên gì?", "en": "How do you decide which SDK initialisation can wait until after the first frame?"},
+      {"vi": "Số khởi động trong Organizer tăng sau một release; bạn khoanh vùng nguyên nhân thế nào?", "en": "Launch time in Organizer rose after a release; how do you narrow down the cause?"},
+      {"vi": "Test hiệu năng trong CI dễ nhiễu; bạn làm gì để nó vẫn có ích?", "en": "Performance tests in CI are noisy; what makes them still useful?"}
+    ],
+    "topics": ["maintain/regression"],
+    "lessons": ["maintain-regression-core"]
+  },
+  {
+    "id": "ios-senior-11",
+    "track": "ios",
+    "level": "senior",
+    "area": "memory",
+    "title": {"vi": "Retain cycle và tìm leak", "en": "Retain cycles and finding leaks"},
+    "know": {
+      "vi": "ARC không thu hồi được vòng tham chiếu mạnh: closure giữ `self`, delegate khai báo strong, subscription Combine lưu trong chính object, timer giữ target. `Task` giữ những gì nó capture cho tới khi chạy xong, nên một task vô hạn trong view model có thể giữ view model sống mãi. Memory Graph Debugger cho thấy ai đang giữ object, Leaks tìm vùng nhớ không còn đường tới, còn Allocations với Mark Generation cho thấy bộ nhớ tăng sau mỗi lần mở rồi đóng màn. `[weak self]` là công cụ, không phải thói quen máy móc.",
+      "en": "ARC cannot reclaim strong reference cycles: a closure holding `self`, a strong delegate, a Combine subscription stored in the same object, a timer holding its target. A `Task` keeps what it captures alive until it finishes, so an endless task in a view model can keep the view model alive for good. The Memory Graph Debugger shows who holds an object, Leaks finds memory with no path to it, and Allocations with Mark Generation shows growth after each open and close of a screen. `[weak self]` is a tool, not a reflex."
+    },
+    "check": [
+      {"vi": "Màn hình đã đóng nhưng `deinit` không chạy; bạn tìm người giữ nó theo các bước nào?", "en": "A screen has closed but `deinit` never runs; what steps do you take to find the holder?"},
+      {"vi": "Vì sao Leaks có thể không báo gì trong khi bộ nhớ vẫn tăng mãi?", "en": "Why can Leaks report nothing while memory keeps growing?"},
+      {"vi": "Bạn thêm một cơ chế kiểm tra (test hoặc debug assertion) thế nào để bắt được màn hình không bao giờ được giải phóng trước khi nó tới tay người dùng?", "en": "How would you add a check (a test or a debug assertion) that catches a screen that is never deallocated before it reaches users?"}
+    ],
+    "topics": [],
+    "lessons": []
+  },
+  {
+    "id": "ios-senior-12",
+    "track": "ios",
+    "level": "senior",
+    "area": "memory",
+    "title": {"vi": "Memory footprint và bị hệ thống kill", "en": "Memory footprint and being killed by the system"},
+    "know": {
+      "vi": "Khi vượt giới hạn bộ nhớ, iOS kill app mà không có crash report thông thường; bạn chỉ thấy jetsam event hoặc số liệu terminate trong MetricKit và Organizer. Ảnh là nguồn lớn nhất: bitmap đã decode tốn khoảng rộng × cao × 4 byte, bất kể file nén nhỏ thế nào, nên cần downsample bằng ImageIO về đúng kích thước hiển thị. Cache phải có giới hạn và phản ứng với memory warning. Senior theo dõi footprint qua các phiên dài, không chỉ lúc mở app.",
+      "en": "When an app exceeds its memory limit, iOS kills it without a normal crash report; you only see a jetsam event or termination numbers in MetricKit and Organizer. Images are the biggest source: a decoded bitmap costs about width × height × 4 bytes however small the compressed file is, so downsample with ImageIO to the displayed size. Caches must be bounded and react to memory warnings. A Senior tracks footprint across long sessions, not just at launch."
+    },
+    "check": [
+      {"vi": "Một ảnh 4000 × 3000 hiển thị trong ô 100 pt tốn bao nhiêu bộ nhớ nếu không downsample?", "en": "How much memory does a 4000 × 3000 image shown in a 100 pt cell cost without downsampling?"},
+      {"vi": "Làm sao phân biệt app bị kill vì bộ nhớ với một crash thật?", "en": "How do you tell an out-of-memory kill from a real crash?"},
+      {"vi": "`NSCache` khác một dictionary tự quản ở điểm nào khi hệ thống thiếu bộ nhớ?", "en": "How does `NSCache` differ from a hand-rolled dictionary when the system is low on memory?"}
+    ],
+    "topics": ["maintain/regression"],
+    "lessons": ["maintain-regression-core"]
+  },
+  {
+    "id": "ios-senior-13",
+    "track": "ios",
+    "level": "senior",
+    "area": "data",
+    "title": {"vi": "Chọn cách lưu trữ: Core Data, SwiftData, SQLite", "en": "Choosing persistence: Core Data, SwiftData, SQLite"},
+    "know": {
+      "vi": "Core Data là object graph trưởng thành, có migration, fetched results và đồng bộ CloudKit, nhưng có quy tắc thread chặt: mỗi context gắn với một queue. SwiftData (từ iOS 17) viết bằng Swift với `@Model` và chạy trên nền Core Data, gọn hơn nhưng yêu cầu iOS 17 và còn mới ở các ca phức tạp. SQLite trực tiếp hoặc qua một thư viện cho bạn kiểm soát truy vấn và schema, đổi lại phải tự viết migration và mapping. Senior chọn theo min iOS, độ phức tạp truy vấn, nhu cầu sync và khả năng test.",
+      "en": "Core Data is a mature object graph with migrations, fetched results and CloudKit sync, but strict threading rules: each context belongs to one queue. SwiftData (from iOS 17) is written in Swift with `@Model` and runs on top of Core Data; it is more concise but needs iOS 17 and is still young for complex cases. SQLite directly or through a library gives you control over queries and schema, at the cost of writing migrations and mapping yourself. A Senior chooses by minimum iOS, query complexity, sync needs and testability."
+    },
+    "check": [
+      {"vi": "Bạn lên kế hoạch migration schema thế nào để người dùng nhảy từ bản cũ ba version lên vẫn an toàn?", "en": "How do you plan schema migrations so a user jumping three versions ahead stays safe?"},
+      {"vi": "Ghi dữ liệu lớn ở background trong Core Data hay SwiftData thế nào để không chặn main thread?", "en": "How do you write large data in the background with Core Data or SwiftData without blocking the main thread?"},
+      {"vi": "Điều gì khiến bạn chọn SQLite thay vì Core Data cho một app mới?", "en": "What would make you choose SQLite over Core Data for a new app?"}
+    ],
+    "topics": [],
+    "lessons": []
+  },
+  {
+    "id": "ios-senior-14",
+    "track": "ios",
+    "level": "senior",
+    "area": "native",
+    "title": {"vi": "Signing và provisioning cho cả đội", "en": "Signing and provisioning for a team"},
+    "know": {
+      "vi": "Một bản build chạy được khi certificate, provisioning profile, App ID và entitlements khớp nhau; profile development và ad hoc còn gắn danh sách thiết bị. Automatic signing tiện cho máy dev, còn CI thường cần manual signing hoặc một quy trình chia sẻ certificate có kiểm soát. Senior quản lý ai được giữ certificate distribution, theo dõi ngày hết hạn và dùng App Store Connect API key thay vì tài khoản cá nhân trong CI. Lỗi signing thường là lỗi quy trình, không phải lỗi code.",
+      "en": "A build runs when the certificate, provisioning profile, App ID and entitlements all match; development and ad hoc profiles also carry a device list. Automatic signing suits developer machines, while CI usually needs manual signing or a controlled way to share certificates. A Senior manages who may hold the distribution certificate, tracks expiry dates and uses an App Store Connect API key rather than a personal account in CI. Signing failures are usually process failures, not code failures."
+    },
+    "check": [
+      {"vi": "Thêm một capability như push notification làm thay đổi những gì trong signing?", "en": "What changes in signing when you add a capability such as push notifications?"},
+      {"vi": "Certificate distribution sắp hết hạn; bạn xử lý thế nào để CI không gãy?", "en": "The distribution certificate is about to expire; how do you handle it so CI does not break?"},
+      {"vi": "App có extension; vì sao mỗi target cần profile riêng?", "en": "The app has extensions; why does each target need its own profile?"}
+    ],
+    "topics": ["native/build", "release/ios"],
+    "lessons": ["native-build-core", "release-ios-core"]
+  },
+  {
+    "id": "ios-senior-15",
+    "track": "ios",
+    "level": "senior",
+    "area": "release",
+    "title": {"vi": "App Store review và phased release", "en": "App Store review and phased release"},
+    "know": {
+      "vi": "Review là rủi ro lịch trình: tính thời gian chờ vào kế hoạch, cung cấp tài khoản demo và ghi chú cho reviewer, và biết có thể xin expedited review cho lỗi nghiêm trọng. Phased release chỉ đẩy bản cập nhật dần cho người dùng bật cập nhật tự động trong khoảng bảy ngày, có thể tạm dừng, và người dùng vẫn tự tải bản mới được. Vì không rollback được một bản đã phát hành, Senior dựa thêm vào feature flag phía server và kill switch. Quy định review thay đổi theo thời gian, nên kiểm tra App Review Guidelines và App Store Connect Help hiện hành.",
+      "en": "Review is a schedule risk: build waiting time into the plan, provide a demo account and reviewer notes, and know you can request an expedited review for a critical bug. Phased release rolls an update out gradually, over about seven days, only to users with automatic updates on; it can be paused, and users can still download the new version manually. Because you cannot roll back a shipped build, a Senior also relies on server-side feature flags and kill switches. Review rules change over time, so check the current App Review Guidelines and App Store Connect Help."
+    },
+    "check": [
+      {"vi": "Phased release đang ở ngày thứ ba thì crash tăng; bạn có những lựa chọn nào?", "en": "On day three of a phased release crashes rise; what options do you have?"},
+      {"vi": "Bản build bị reject vì một guideline bạn không đồng ý; bạn trao đổi với Apple thế nào?", "en": "A build is rejected under a guideline you disagree with; how do you respond to Apple?"},
+      {"vi": "Vì sao feature flag phía server là phần của chiến lược phát hành iOS, không chỉ là tiện ích?", "en": "Why are server-side feature flags part of an iOS release strategy rather than a convenience?"}
+    ],
+    "topics": ["release/ios"],
+    "lessons": ["release-ios-core"]
+  },
+  {
+    "id": "ios-senior-16",
+    "track": "ios",
+    "level": "senior",
+    "area": "release",
+    "title": {"vi": "Privacy manifest và SDK bên thứ ba", "en": "Privacy manifests and third-party SDKs"},
+    "know": {
+      "vi": "Apple yêu cầu app và SDK có privacy manifest (`PrivacyInfo.xcprivacy`) khai báo dữ liệu thu thập, tracking domain và lý do dùng các API thuộc nhóm required reason; yêu cầu này được áp dụng từ mùa xuân 2024. Các SDK phổ biến nằm trong danh sách của Apple còn phải có manifest và chữ ký riêng. Senior chịu trách nhiệm cả phần SDK đưa vào: kiểm tra manifest khi thêm hay nâng cấp dependency, và đối chiếu với nhãn quyền riêng tư trên App Store. Danh sách API và SDK thay đổi, nên kiểm tra tài liệu Apple hiện hành trước mỗi release.",
+      "en": "Apple requires apps and SDKs to include a privacy manifest (`PrivacyInfo.xcprivacy`) declaring collected data, tracking domains and the reasons for using required-reason APIs; this has been enforced since spring 2024. Commonly used SDKs on Apple's list must also ship their own manifest and signature. A Senior owns what the SDKs bring in too: check manifests when adding or upgrading a dependency, and reconcile them with the App Store privacy labels. The API and SDK lists change, so check Apple's current documentation before each release."
+    },
+    "check": [
+      {"vi": "Một SDK analytics chưa có privacy manifest; bạn đánh giá rủi ro và quyết định thế nào?", "en": "An analytics SDK has no privacy manifest; how do you assess the risk and decide?"},
+      {"vi": "Xcode giúp bạn xem tổng hợp privacy manifest của cả app bằng cách nào?", "en": "How can Xcode help you see the combined privacy manifest for the whole app?"},
+      {"vi": "Ai trong đội chịu trách nhiệm giữ nhãn quyền riêng tư khớp với hành vi thật của app?", "en": "Who on the team keeps the privacy labels in line with what the app actually does?"}
+    ],
+    "topics": ["release/ios"],
+    "lessons": ["release-ios-core"]
+  },
+  {
+    "id": "ios-senior-17",
+    "track": "ios",
+    "level": "senior",
+    "area": "release",
+    "title": {"vi": "Crash report và symbolication", "en": "Crash reports and symbolication"},
+    "know": {
+      "vi": "Crash report chỉ có địa chỉ; cần dSYM của đúng bản build, khớp UUID, để đổi thành tên hàm và dòng code. Từ Xcode 14 Bitcode bị deprecated và App Store không còn biên dịch lại app, nên dSYM tạo khi archive là bản dùng được, và phải được lưu cùng mỗi release hoặc upload lên dịch vụ crash. Xcode Organizer, MetricKit và dịch vụ bên thứ ba cho góc nhìn khác nhau: Senior chọn nguồn sự thật, theo dõi crash-free rate theo version và ưu tiên theo số người bị ảnh hưởng. Một crash không symbolicate được là một crash không sửa được.",
+      "en": "A crash report holds only addresses; you need the dSYM from the exact build, matched by UUID, to turn them into function names and lines. Bitcode was deprecated in Xcode 14 and the App Store no longer recompiles your app, so the dSYM produced at archive time is the one that works, and it must be kept with every release or uploaded to the crash service. Xcode Organizer, MetricKit and third-party services give different views: a Senior picks the source of truth, tracks the crash-free rate per version and prioritises by how many users are affected. A crash you cannot symbolicate is a crash you cannot fix."
+    },
+    "check": [
+      {"vi": "Crash trên dịch vụ báo thiếu dSYM; bạn kiểm tra và khắc phục theo bước nào?", "en": "The crash service says a dSYM is missing; what steps do you take to check and fix it?"},
+      {"vi": "Bạn quyết định một crash cần hotfix ngay hay chờ release sau dựa trên gì?", "en": "How do you decide whether a crash needs an immediate hotfix or can wait for the next release?"},
+      {"vi": "Crash chỉ xảy ra trên bản Release; những khác biệt nào giữa Debug và Release bạn nghi đầu tiên?", "en": "A crash happens only in Release; which Debug versus Release differences do you suspect first?"}
+    ],
+    "topics": ["maintain/crash", "debug/native"],
+    "lessons": ["maintain-crash-core", "debug-native-core"]
+  },
+  {
+    "id": "ios-senior-18",
+    "track": "ios",
+    "level": "senior",
+    "area": "quality",
+    "title": {"vi": "Chiến lược test: XCTest và Swift Testing", "en": "Testing strategy: XCTest and Swift Testing"},
+    "know": {
+      "vi": "Swift Testing (ra mắt cùng Xcode 16) dùng `@Test`, `#expect` và `#require`, hỗ trợ test có tham số và chạy song song mặc định; nó có thể sống cùng XCTest trong một target. UI test và performance test vẫn dùng XCTest. Senior quyết định tỉ lệ: nhiều unit test cho logic thuần, ít UI test cho luồng quan trọng vì chúng chậm và dễ flaky. Test được hay không phụ thuộc vào kiến trúc: không inject được network và clock thì không viết được test ổn định.",
+      "en": "Swift Testing (introduced with Xcode 16) uses `@Test`, `#expect` and `#require`, supports parameterised tests and runs tests in parallel by default; it can live alongside XCTest in one target. UI tests and performance tests still use XCTest. A Senior decides the mix: many unit tests for pure logic, few UI tests for critical flows because they are slow and flaky. Testability depends on architecture: if you cannot inject the network and clock, you cannot write stable tests."
+    },
+    "check": [
+      {"vi": "Chạy song song mặc định của Swift Testing làm lộ lỗi gì trong test dùng state toàn cục?", "en": "What bugs in tests that share global state does Swift Testing's default parallelism expose?"},
+      {"vi": "Bạn chuyển dần test từ XCTest sang Swift Testing thế nào, và phần nào giữ lại?", "en": "How would you move tests from XCTest to Swift Testing gradually, and what would you keep?"},
+      {"vi": "Một UI test flaky chặn merge mỗi tuần; bạn xử lý thế nào?", "en": "A flaky UI test blocks merges every week; how do you handle it?"}
+    ],
+    "topics": [],
+    "lessons": []
+  },
+  {
+    "id": "ios-senior-19",
+    "track": "ios",
+    "level": "senior",
+    "area": "teamwork",
+    "title": {"vi": "Dẫn dắt kỹ thuật và code review", "en": "Technical leadership and code review"},
+    "know": {
+      "vi": "Code review của Senior tập trung vào thứ khó sửa sau này: ranh giới module, threading và isolation, vòng đời bộ nhớ, API công khai và migration dữ liệu. Phần định dạng nên để linter và CI lo. Quyết định lớn như đổi kiến trúc hay lên Swift 6 language mode cần một văn bản ngắn nêu bối cảnh, lựa chọn và trade-off, để đội hiểu và sau này còn tra lại. Senior cũng nâng người khác lên: giải thích lý do trong review, chia việc vừa sức và chịu trách nhiệm khi có sự cố.",
+      "en": "A Senior's code review focuses on what is hard to change later: module boundaries, threading and isolation, memory lifetimes, public APIs and data migrations. Leave formatting to linters and CI. Big decisions such as an architecture change or the move to the Swift 6 language mode need a short written record of context, options and trade-offs, so the team understands and can look it up later. A Senior also lifts others: explaining the reasoning in reviews, sizing work sensibly and owning incidents."
+    },
+    "check": [
+      {"vi": "Năm điều đầu tiên bạn nhìn khi review một PR iOS lớn là gì?", "en": "What are the first five things you look at when reviewing a large iOS PR?"},
+      {"vi": "Bạn phản hồi thế nào khi một dev mới dùng `@unchecked Sendable` để tắt lỗi compiler?", "en": "How do you respond when a junior uses `@unchecked Sendable` to silence a compiler error?"},
+      {"vi": "Đội bất đồng về kiến trúc; bạn đi tới quyết định và ghi lại thế nào?", "en": "The team disagrees on architecture; how do you reach and record a decision?"}
+    ],
+    "topics": ["workflow/git-agile"],
+    "lessons": ["workflow-git-agile-core"]
+  }
+]

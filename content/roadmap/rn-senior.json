@@ -1,0 +1,344 @@
+[
+  {
+    "id": "rn-senior-01",
+    "track": "rn",
+    "level": "senior",
+    "area": "architecture",
+    "title": {"vi": "Kiến trúc mới: JSI, Fabric, TurboModules, Bridgeless", "en": "New Architecture: JSI, Fabric, TurboModules, Bridgeless"},
+    "know": {
+      "vi": "Bạn phải giải thích được kiến trúc mới thay bridge bất đồng bộ bằng gì: JSI cho JS giữ tham chiếu tới object C++ và gọi trực tiếp, TurboModules load lazy và có thể gọi đồng bộ, Fabric dựng shadow tree bằng C++ dùng chung và hỗ trợ concurrent rendering, Bridgeless bỏ hẳn bridge khi khởi động. Từ RN 0.76, kiến trúc mới và Bridgeless bật mặc định. Ở mức Senior, bạn dùng hiểu biết này để đoán trước tác động lên hiệu năng, threading và thư viện, chứ không chỉ kể tên.",
+      "en": "You must explain what the New Architecture replaces the async bridge with: JSI lets JS hold references to C++ objects and call them directly, TurboModules load lazily and can be called synchronously, Fabric builds a shared C++ shadow tree that supports concurrent rendering, and Bridgeless removes the bridge from startup entirely. Since RN 0.76, the New Architecture and Bridgeless are on by default. At Senior level you use this to predict the effect on performance, threading and libraries, not just to name the parts."
+    },
+    "check": [
+      {"vi": "Một lời gọi native đồng bộ qua JSI có thể làm chậm UI theo cách nào, và khi nào bạn vẫn chọn nó?", "en": "How can a synchronous native call over JSI hurt the UI, and when would you still choose it?"},
+      {"vi": "Fabric thay đổi điều gì ở cách layout được tính và commit lên màn hình so với renderer cũ?", "en": "What does Fabric change about how layout is computed and committed to the screen compared with the old renderer?"},
+      {"vi": "Vì sao TurboModules load lazy lại ảnh hưởng tới thời gian khởi động?", "en": "Why does lazy loading of TurboModules affect startup time?"}
+    ],
+    "topics": ["architecture/new-arch"],
+    "lessons": ["architecture-new-arch-core"]
+  },
+  {
+    "id": "rn-senior-02",
+    "track": "rn",
+    "level": "senior",
+    "area": "architecture",
+    "title": {"vi": "Dẫn dắt migration sang kiến trúc mới", "en": "Leading the migration to the New Architecture"},
+    "know": {
+      "vi": "Migration là một dự án có rủi ro, không phải một flag. Bạn kiểm kê thư viện native, biết cái nào đã hỗ trợ kiến trúc mới, cái nào chạy được nhờ interop layer, cái nào phải thay hoặc tự viết lại. Từ RN 0.82, không còn opt-out về kiến trúc cũ, nên app nào muốn nâng cấp tiếp đều phải migrate xong. Bạn lên kế hoạch theo giai đoạn, đo trước và sau, và có đường lùi cho từng bước.",
+      "en": "Migration is a risky project, not a flag. You audit the native libraries and know which ones support the New Architecture, which run through the interop layer, and which must be replaced or rewritten. Since RN 0.82 the legacy architecture opt-out is gone, so any app that wants to keep upgrading has to finish the migration. You plan it in phases, measure before and after, and keep a way back for each step."
+    },
+    "check": [
+      {"vi": "Bạn kiểm kê dependency native thế nào để biết thư viện nào chặn migration?", "en": "How do you audit native dependencies to find the libraries that block the migration?"},
+      {"vi": "Interop layer giúp gì, và vì sao không nên coi nó là trạng thái cuối?", "en": "What does the interop layer give you, and why should it not be the end state?"},
+      {"vi": "Bạn chia migration thành những bước nào để mỗi bước release được và đo được?", "en": "How do you split the migration so that each step can ship and be measured?"}
+    ],
+    "topics": ["architecture/new-arch", "maintain/upgrade"],
+    "lessons": ["architecture-new-arch-core", "maintain-upgrade-core"]
+  },
+  {
+    "id": "rn-senior-03",
+    "track": "rn",
+    "level": "senior",
+    "area": "performance",
+    "title": {"vi": "Đo hiệu năng trước khi sửa", "en": "Measuring performance before fixing it"},
+    "know": {
+      "vi": "Senior không sửa hiệu năng theo cảm giác. Bạn đặt baseline đo trên release build và máy thật cấp thấp, chọn chỉ số cụ thể (thời gian khởi động, frame bị drop, thời gian render một màn), rồi mới khoanh vùng bằng công cụ phù hợp: React DevTools Profiler cho render, Hermes sampling profiler cho JS thread, Xcode Instruments và Android Studio Profiler cho phía native. Kết quả phải là một con số trước và sau, không phải câu \"có vẻ mượt hơn\".",
+      "en": "A Senior does not fix performance by feel. You set a baseline on a release build and a low-end real device, pick concrete metrics (startup time, dropped frames, time to render a screen), and only then narrow it down with the right tool: React DevTools Profiler for renders, the Hermes sampling profiler for the JS thread, Xcode Instruments and Android Studio Profiler for the native side. The result must be a before and after number, not \"it feels smoother\"."
+    },
+    "check": [
+      {"vi": "Vì sao số đo trên debug build hoặc simulator có thể dẫn bạn đi sai hướng?", "en": "Why can numbers from a debug build or a simulator send you the wrong way?"},
+      {"vi": "Màn hình giật khi cuộn: bạn phân biệt JS thread nghẽn với UI thread nghẽn bằng cách nào?", "en": "A screen stutters while scrolling: how do you tell a blocked JS thread from a blocked UI thread?"},
+      {"vi": "Bạn giữ cho hiệu năng không tụt lại sau khi đã sửa bằng cách nào?", "en": "How do you stop performance from sliding back after you fixed it?"}
+    ],
+    "topics": ["performance", "maintain/regression", "debug/js"],
+    "lessons": ["maintain-regression-core", "performance-js-thread-core"]
+  },
+  {
+    "id": "rn-senior-04",
+    "track": "rn",
+    "level": "senior",
+    "area": "ui",
+    "title": {"vi": "Chiến lược re-render ở quy mô cả app", "en": "A re-render strategy for the whole app"},
+    "know": {
+      "vi": "Ở mức Senior, câu hỏi không còn là \"dùng memo ở đâu\" mà là \"vì sao cả cây re-render\". Bạn nhìn vào ranh giới state: Context quá rộng, store selector trả về object mới, props truyền xuống quá sâu. Bạn biết memo hoá có chi phí và quyết định nơi nào đáng làm dựa trên số đo của Profiler. React Compiler 1.0 có thể memoize tự động, nhưng nó không phát hiện được mọi vi phạm Rules of React, nên đội vẫn cần hiểu cơ chế.",
+      "en": "At Senior level the question is no longer \"where do I add memo\" but \"why does the whole tree re-render\". You look at state boundaries: a Context that is too wide, a store selector that returns a new object, props passed down too deep. You know memoisation has a cost and decide where it pays off from Profiler numbers. React Compiler 1.0 can memoize automatically, but it does not catch every violation of the Rules of React, so the team still needs to understand the mechanism."
+    },
+    "check": [
+      {"vi": "Một Context chứa cả user và theme làm cả app re-render: bạn tách nó thế nào?", "en": "A Context holding both the user and the theme re-renders the whole app: how do you split it?"},
+      {"vi": "Khi nào bạn quyết định không memo hoá dù Profiler cho thấy một component render nhiều lần?", "en": "When would you decide not to memoise even though the Profiler shows a component rendering many times?"},
+      {"vi": "Bật React Compiler cho một codebase lớn thì bạn cần kiểm tra những rủi ro gì?", "en": "What risks do you check before turning on React Compiler for a large codebase?"}
+    ],
+    "topics": ["render/memo", "render"],
+    "lessons": ["render-memo-core", "render-memo-pitfalls", "render-memo-lab"]
+  },
+  {
+    "id": "rn-senior-05",
+    "track": "rn",
+    "level": "senior",
+    "area": "performance",
+    "title": {"vi": "Danh sách lớn: chọn giải pháp và chứng minh bằng số", "en": "Large lists: choosing an approach and proving it"},
+    "know": {
+      "vi": "Bạn biết vì sao FlatList chậm với dữ liệu lớn: virtualization vẫn phải mount item mới khi cuộn, và mỗi item nặng hoặc re-render thừa đều cộng dồn. Bạn tối ưu theo thứ tự: item rẻ và ổn định, keyExtractor đúng, getItemLayout khi biết chiều cao, rồi mới chỉnh windowSize và maxToRenderPerBatch. Khi FlatList vẫn không đủ, bạn đánh giá thư viện thay thế như FlashList của Shopify bằng số đo trên máy thật, không theo trào lưu.",
+      "en": "You know why FlatList struggles with large data: virtualisation still has to mount new items while scrolling, and every heavy item or wasted re-render adds up. You optimise in order: cheap and stable items, a correct keyExtractor, getItemLayout when heights are known, and only then windowSize and maxToRenderPerBatch. When FlatList is still not enough, you evaluate a replacement such as Shopify's FlashList with numbers from real devices, not because it is popular."
+    },
+    "check": [
+      {"vi": "Ô trắng khi cuộn nhanh nói lên điều gì, và bạn đổi thông số nào để đánh đổi giữa nó với bộ nhớ?", "en": "What do blank cells during fast scrolling tell you, and which settings trade them against memory?"},
+      {"vi": "Vì sao một callback inline trong renderItem có thể làm hỏng mọi tối ưu khác?", "en": "Why can an inline callback in renderItem undo every other optimisation?"},
+      {"vi": "Bạn thuyết phục đội đổi sang một thư viện list khác bằng dữ liệu gì?", "en": "What data would you use to convince the team to switch to another list library?"}
+    ],
+    "topics": ["performance/lists"],
+    "lessons": ["performance-lists-core", "performance-lists-lab"]
+  },
+  {
+    "id": "rn-senior-06",
+    "track": "rn",
+    "level": "senior",
+    "area": "concurrency",
+    "title": {"vi": "Ngân sách của JS thread", "en": "The JS thread budget"},
+    "know": {
+      "vi": "JS thread là tài nguyên chung của cả app: render, xử lý sự kiện, parse dữ liệu và logic nghiệp vụ đều tranh nhau một luồng. Bạn biết cách nhận ra việc nặng chiếm luồng, rồi chọn cách xử lý phù hợp: chia nhỏ công việc, giảm tần suất sự kiện bằng throttle hoặc debounce, đưa animation và gesture lên UI thread bằng thư viện như Reanimated, hoặc chuyển việc tính toán nặng xuống native. Mỗi lựa chọn có giá về độ phức tạp, và bạn phải nói rõ vì sao chọn nó.",
+      "en": "The JS thread is shared by the whole app: rendering, event handling, data parsing and business logic all compete for one thread. You know how to spot heavy work holding it, then pick the right fix: split the work into chunks, cut event frequency with throttle or debounce, move animations and gestures to the UI thread with a library such as Reanimated, or move heavy computation to native. Each option costs complexity, and you must say why you chose it."
+    },
+    "check": [
+      {"vi": "Parse một JSON vài MB làm màn hình đứng: bạn có những lựa chọn nào và chọn cái nào?", "en": "Parsing a JSON payload of a few MB freezes the screen: what are your options and which do you pick?"},
+      {"vi": "Vì sao một animation chạy bằng JS vẫn giật dù component đã được memo hoá?", "en": "Why does a JS-driven animation still stutter even though the component is memoised?"},
+      {"vi": "Khi nào việc chuyển logic xuống native là quyết định đúng, và khi nào là quá tay?", "en": "When is moving logic to native the right call, and when is it overkill?"}
+    ],
+    "topics": ["performance/js-thread"],
+    "lessons": ["performance-js-thread-core", "performance-js-thread-lab"]
+  },
+  {
+    "id": "rn-senior-07",
+    "track": "rn",
+    "level": "senior",
+    "area": "performance",
+    "title": {"vi": "Thời gian khởi động", "en": "Startup time"},
+    "know": {
+      "vi": "Thời gian khởi động gồm phần native, phần load và chạy bundle JS, rồi tới màn hình đầu tiên có dữ liệu. Bạn đo từng đoạn trên cold start ở release build trước khi sửa. Các đòn bẩy chính là Hermes biên dịch sẵn bytecode, inline requires trong Metro để không chạy module chưa cần, khởi tạo SDK theo kiểu lazy, và giảm việc làm trước màn hình đầu. Bạn coi thời gian khởi động là một chỉ số được theo dõi qua từng release.",
+      "en": "Startup time covers the native part, loading and running the JS bundle, and reaching the first screen with data. You measure each segment on a cold start in a release build before fixing anything. The main levers are Hermes precompiling to bytecode, inline requires in Metro so unused modules do not run, initialising SDKs lazily, and doing less before the first screen. You treat startup time as a metric tracked across releases."
+    },
+    "check": [
+      {"vi": "Bạn tách thời gian khởi động thành những đoạn nào để biết nên sửa ở đâu?", "en": "Which segments do you split startup into so you know where to fix it?"},
+      {"vi": "Ba SDK analytics khởi tạo ở index.js: bạn đánh đổi thế nào giữa dữ liệu đầy đủ và khởi động nhanh?", "en": "Three analytics SDKs initialise in index.js: how do you trade complete data against fast startup?"},
+      {"vi": "Làm sao bạn phát hiện một release làm khởi động chậm đi trước khi người dùng phàn nàn?", "en": "How do you catch a release that slows startup before users complain?"}
+    ],
+    "topics": ["performance", "maintain/regression"],
+    "lessons": ["maintain-regression-core"]
+  },
+  {
+    "id": "rn-senior-08",
+    "track": "rn",
+    "level": "senior",
+    "area": "memory",
+    "title": {"vi": "Memory leak trên cả JS và native", "en": "Memory leaks across JS and native"},
+    "know": {
+      "vi": "Leak trong app RN có thể nằm ở JS (listener và subscription không gỡ, closure giữ object lớn, cache không giới hạn) hoặc ở native (view, bitmap, module giữ tham chiếu). Bạn biết tái hiện bằng một kịch bản lặp lại, rồi so sánh heap snapshot trong React Native DevTools, Memory Graph của Xcode hoặc Memory Profiler của Android Studio. Ở mức Senior, bạn còn đặt quy tắc review và test để leak không quay lại.",
+      "en": "A leak in an RN app can live in JS (listeners and subscriptions never removed, closures holding large objects, unbounded caches) or in native (views, bitmaps, modules holding references). You reproduce it with a repeated scenario, then compare heap snapshots in React Native DevTools, the Xcode Memory Graph or the Android Studio Memory Profiler. At Senior level you also set review rules and tests so the leak does not come back."
+    },
+    "check": [
+      {"vi": "Bộ nhớ tăng mỗi lần mở rồi đóng một màn hình: bạn khoanh vùng nó ở JS hay native thế nào?", "en": "Memory grows each time a screen opens and closes: how do you tell whether it is JS or native?"},
+      {"vi": "Những mẫu code nào trong useEffect thường gây leak, và bạn bắt chúng trong review ra sao?", "en": "Which useEffect patterns usually cause leaks, and how do you catch them in review?"},
+      {"vi": "App bị hệ điều hành kill khi chạy nền lâu: bạn kiểm tra những gì?", "en": "The OS kills the app after a long time in the background: what do you check?"}
+    ],
+    "topics": ["render/effects", "debug/native"],
+    "lessons": ["render-effects-core", "render-effects-lab", "debug-native-core"]
+  },
+  {
+    "id": "rn-senior-09",
+    "track": "rn",
+    "level": "senior",
+    "area": "state",
+    "title": {"vi": "Thiết kế state cho cả app", "en": "Designing app-wide state"},
+    "know": {
+      "vi": "Bạn phân loại state trước khi chọn công cụ: server state (cache dữ liệu từ API), client state toàn cục (phiên đăng nhập, cài đặt), state của màn hình và state của form. Mỗi loại có chỗ ở riêng, và trộn chúng là nguồn bug và re-render thừa. Bạn chọn công cụ như Redux Toolkit hay một thư viện cache dữ liệu dựa trên quy mô đội, nhu cầu offline và khả năng debug, rồi viết quy ước để cả đội theo.",
+      "en": "You classify state before you pick a tool: server state (cached API data), global client state (session, settings), screen state and form state. Each kind has its own home, and mixing them causes bugs and wasted re-renders. You choose tools such as Redux Toolkit or a data-caching library based on team size, offline needs and debuggability, then write conventions the whole team follows."
+    },
+    "check": [
+      {"vi": "Dữ liệu API được copy vào Redux rồi sửa ở nhiều nơi: rủi ro là gì và bạn tái cấu trúc thế nào?", "en": "API data is copied into Redux and edited in several places: what is the risk and how do you restructure it?"},
+      {"vi": "Vì sao bạn normalise dữ liệu trong store, và khi nào thì không cần?", "en": "Why would you normalise data in the store, and when is it unnecessary?"},
+      {"vi": "Bạn bảo vệ quyết định chọn hoặc bỏ Redux trước đội như thế nào?", "en": "How do you defend a decision to adopt or drop Redux in front of the team?"}
+    ],
+    "topics": ["state", "state/redux"],
+    "lessons": ["state-redux-core"]
+  },
+  {
+    "id": "rn-senior-10",
+    "track": "rn",
+    "level": "senior",
+    "area": "concurrency",
+    "title": {"vi": "Luồng bất đồng bộ đúng ở quy mô lớn", "en": "Correct async flows at scale"},
+    "know": {
+      "vi": "Khi app lớn, bug khó nhất thường đến từ thứ tự: response cũ ghi đè response mới, request chạy tiếp sau khi người dùng rời màn hình, retry làm trùng giao dịch. Bạn thiết kế cancellation, idempotency và quy tắc \"chỉ kết quả mới nhất được ghi\" ngay từ đầu, và chọn mô hình side effect (thunk, saga, thư viện cache) theo độ phức tạp thật của luồng. Bạn cũng biết luồng nào cần test riêng cho race condition.",
+      "en": "In a large app the hardest bugs usually come from ordering: an old response overwrites a new one, a request keeps running after the user leaves the screen, a retry duplicates a transaction. You design cancellation, idempotency and a \"latest result wins\" rule up front, and pick the side-effect model (thunks, sagas, a caching library) by the real complexity of the flow. You also know which flows need dedicated race-condition tests."
+    },
+    "check": [
+      {"vi": "Ô tìm kiếm hiển thị kết quả của từ khoá cũ: bạn sửa ở tầng nào để không lặp lại ở màn khác?", "en": "The search box shows results for an old query: at which layer do you fix it so other screens do not repeat it?"},
+      {"vi": "Khi nào Redux-Saga đáng với độ phức tạp nó thêm vào, và khi nào thì không?", "en": "When is Redux-Saga worth the complexity it adds, and when is it not?"},
+      {"vi": "Bạn thiết kế idempotency key giữa client và server thế nào để một thanh toán bị retry không bao giờ bị trừ tiền hai lần?", "en": "How do you design an idempotency key between client and server so a retried payment is never charged twice?"}
+    ],
+    "topics": ["state/async", "state/redux-saga"],
+    "lessons": ["state-async-core", "state-redux-saga-core"]
+  },
+  {
+    "id": "rn-senior-11",
+    "track": "rn",
+    "level": "senior",
+    "area": "architecture",
+    "title": {"vi": "Kiến trúc theo feature và module", "en": "Feature and module architecture"},
+    "know": {
+      "vi": "Bạn tổ chức codebase để nhiều người làm song song mà ít đụng nhau: chia theo feature, mỗi feature có public API rõ ràng, dependency chỉ đi một chiều, phần dùng chung tách thành module riêng. Bạn dùng TypeScript và lint rule về import để giữ ranh giới, không chỉ dựa vào quy ước miệng. Bạn cũng biết khi nào cấu trúc hiện tại đã đủ, vì tách module quá sớm cũng là một chi phí.",
+      "en": "You organise the codebase so many people can work in parallel without stepping on each other: split by feature, give each feature a clear public API, keep dependencies flowing one way, and move shared code into its own modules. You enforce boundaries with TypeScript and import lint rules, not just verbal agreements. You also know when the current structure is good enough, because splitting modules too early is a cost too."
+    },
+    "check": [
+      {"vi": "Hai feature import file nội bộ của nhau: hậu quả lâu dài là gì và bạn gỡ nó thế nào?", "en": "Two features import each other's internal files: what is the long-term cost and how do you untangle it?"},
+      {"vi": "Bạn định nghĩa contract giữa các feature (navigation, dữ liệu, sự kiện) ra sao?", "en": "How do you define the contracts between features (navigation, data, events)?"},
+      {"vi": "Dấu hiệu nào cho thấy đã đến lúc tách codebase thành nhiều package?", "en": "What signs tell you it is time to split the codebase into several packages?"}
+    ],
+    "topics": ["architecture", "typescript/react"],
+    "lessons": ["typescript-react-core"]
+  },
+  {
+    "id": "rn-senior-12",
+    "track": "rn",
+    "level": "senior",
+    "area": "native",
+    "title": {"vi": "Viết native module cho kiến trúc mới", "en": "Writing native modules for the New Architecture"},
+    "know": {
+      "vi": "Bạn viết được Turbo Native Module: khai báo spec bằng TypeScript, để Codegen sinh interface, rồi hiện thực bằng Objective-C hoặc Swift trên iOS và Kotlin hoặc Java trên Android. Bạn quyết định method nào đồng bộ, method nào trả Promise, việc chạy trên luồng nào, và lỗi native được báo lên JS ra sao. Bạn cũng cân nhắc lựa chọn khác như Expo Modules API, hoặc dùng thư viện có sẵn thay vì tự duy trì code native.",
+      "en": "You can write a Turbo Native Module: declare the spec in TypeScript, let Codegen generate the interface, then implement it in Objective-C or Swift on iOS and Kotlin or Java on Android. You decide which methods are synchronous and which return a Promise, which thread the work runs on, and how native errors reach JS. You also weigh alternatives such as the Expo Modules API, or an existing library instead of maintaining native code yourself."
+    },
+    "check": [
+      {"vi": "Vì sao spec có kiểu chặt giúp tránh cả một nhóm crash so với module kiểu cũ?", "en": "Why does a strictly typed spec prevent a whole class of crashes compared with legacy modules?"},
+      {"vi": "Một method native chạy lâu nên được thiết kế thế nào để không chặn JS thread hay UI thread?", "en": "How should a long-running native method be designed so it blocks neither the JS thread nor the UI thread?"},
+      {"vi": "Khi nào bạn quyết định tự viết module thay vì dùng thư viện cộng đồng?", "en": "When do you decide to write your own module instead of using a community library?"}
+    ],
+    "topics": ["native/modules-ios", "native/modules-android", "architecture/new-arch"],
+    "lessons": ["native-modules-ios-core", "native-modules-android-core"]
+  },
+  {
+    "id": "rn-senior-13",
+    "track": "rn",
+    "level": "senior",
+    "area": "quality",
+    "title": {"vi": "Chiến lược test cho cả đội", "en": "A test strategy for the team"},
+    "know": {
+      "vi": "Bạn quyết định test cái gì ở tầng nào: logic thuần bằng unit test với Jest, hành vi màn hình bằng React Native Testing Library, vài luồng sống còn như đăng nhập và thanh toán bằng E2E. Bạn cân nhắc độ tin cậy, tốc độ và chi phí bảo trì, và xử lý test flaky như một bug thật. Mục tiêu là đội dám release thường xuyên, không phải đạt một con số coverage.",
+      "en": "You decide what to test at which layer: pure logic with Jest unit tests, screen behaviour with React Native Testing Library, and a few critical flows such as login and checkout with E2E. You weigh confidence, speed and maintenance cost, and treat a flaky test as a real bug. The goal is a team that dares to release often, not a coverage number."
+    },
+    "check": [
+      {"vi": "Bộ E2E mất 40 phút và hay fail ngẫu nhiên: bạn cắt giảm và sửa nó thế nào?", "en": "The E2E suite takes 40 minutes and fails at random: how do you cut it down and fix it?"},
+      {"vi": "Vì sao test chi tiết hiện thực thay vì hành vi làm đội chậm lại khi refactor?", "en": "Why do tests of implementation details instead of behaviour slow the team down during refactors?"},
+      {"vi": "Bạn đặt quy tắc gì cho test trong pull request mà không biến nó thành thủ tục?", "en": "What rules do you set for tests in pull requests without turning them into ritual?"}
+    ],
+    "topics": ["testing", "testing/unit", "testing/components", "testing/e2e"],
+    "lessons": ["testing-unit-core", "testing-unit-lab", "testing-components-core", "testing-e2e-core"]
+  },
+  {
+    "id": "rn-senior-14",
+    "track": "rn",
+    "level": "senior",
+    "area": "quality",
+    "title": {"vi": "Debug sự cố khó tái hiện", "en": "Debugging hard-to-reproduce issues"},
+    "know": {
+      "vi": "Bug khó nhất chỉ xảy ra trên một số máy, một phiên bản OS hoặc một trình tự thao tác. Bạn làm việc theo giả thuyết: gom dữ liệu từ log, crash report và breadcrumb, thu hẹp điều kiện, tái hiện, rồi mới sửa. Bạn biết dùng React Native DevTools (debugger mặc định từ RN 0.76) cho phía JS và Xcode hoặc Android Studio cho phía native, và dùng git bisect khi bug là một regression.",
+      "en": "The hardest bugs happen only on some devices, one OS version or one sequence of actions. You work from hypotheses: gather data from logs, crash reports and breadcrumbs, narrow the conditions, reproduce, and only then fix. You use React Native DevTools (the default debugger since RN 0.76) for the JS side and Xcode or Android Studio for the native side, and git bisect when the bug is a regression."
+    },
+    "check": [
+      {"vi": "Bug chỉ có ở release build, không có ở debug: bạn nghi ngờ những gì trước?", "en": "A bug appears only in release builds, never in debug: what do you suspect first?"},
+      {"vi": "Bạn thêm log và breadcrumb thế nào để lần sau có đủ dữ liệu mà không lộ thông tin người dùng?", "en": "How do you add logs and breadcrumbs so next time you have enough data without leaking user information?"},
+      {"vi": "Khi nào bạn dùng git bisect, và bạn chuẩn bị gì để nó chạy nhanh?", "en": "When do you reach for git bisect, and what do you prepare so it runs fast?"}
+    ],
+    "topics": ["debug/js", "debug/native"],
+    "lessons": ["debug-js-core", "debug-js-lab", "debug-native-core"]
+  },
+  {
+    "id": "rn-senior-15",
+    "track": "rn",
+    "level": "senior",
+    "area": "release",
+    "title": {"vi": "CI/CD và OTA update an toàn", "en": "Safe CI/CD and OTA updates"},
+    "know": {
+      "vi": "Bạn sở hữu đường đi từ commit tới tay người dùng: pipeline build và ký app tự động, versioning nhất quán, phát hành theo giai đoạn trên cả hai store. Với OTA update (ví dụ EAS Update), bạn hiểu OTA chỉ thay được JS và asset, nên phải khớp bundle với runtime version của phần native, và phải có cách rollback. Microsoft đã ngừng App Center, bao gồm dịch vụ CodePush, từ tháng 3/2025, nên app còn dùng nó cần kế hoạch thay thế.",
+      "en": "You own the path from commit to user: an automated pipeline that builds and signs the app, consistent versioning, and staged rollouts on both stores. With OTA updates (EAS Update, for example) you understand OTA can only replace JS and assets, so the bundle must match the runtime version of the native side, and there must be a way to roll back. Microsoft retired App Center, including the CodePush service, in March 2025, so apps still on it need a replacement plan."
+    },
+    "check": [
+      {"vi": "Một OTA update làm crash trên phiên bản native cũ: chuyện gì đã sai và quy trình nào chặn được nó?", "en": "An OTA update crashes on an older native version: what went wrong and which process would have stopped it?"},
+      {"vi": "Thay đổi nào bắt buộc phải lên store, và thay đổi nào được phép gửi qua OTA?", "en": "Which changes must go through the store, and which can ship over OTA?"},
+      {"vi": "Bạn bảo vệ certificate, keystore và secret trong CI ra sao?", "en": "How do you protect certificates, keystores and secrets in CI?"}
+    ],
+    "topics": ["release/ota-ci", "release/ios", "release/android", "native/build"],
+    "lessons": ["release-ota-ci-core", "release-ios-core", "release-android-core", "native-build-core"]
+  },
+  {
+    "id": "rn-senior-16",
+    "track": "rn",
+    "level": "senior",
+    "area": "release",
+    "title": {"vi": "Nâng cấp React Native có kế hoạch", "en": "Planned React Native upgrades"},
+    "know": {
+      "vi": "Nâng cấp RN chạm cùng lúc vào JS, native, build tool và hàng chục thư viện. Bạn đặt nhịp nâng cấp đều đặn để không bị tụt nhiều phiên bản, dùng React Native Upgrade Helper để xem diff của template, kiểm tra thư viện tương thích trước, và nâng từng bước một trên nhánh riêng. Bạn đo lại hiệu năng và crash rate sau mỗi lần nâng, và giải thích được với quản lý vì sao việc này cần thời gian trong kế hoạch.",
+      "en": "An RN upgrade touches JS, native code, build tools and dozens of libraries at once. You keep a steady upgrade cadence so the app never falls many versions behind, use the React Native Upgrade Helper to see the template diff, check library compatibility first, and move one step at a time on a separate branch. You re-measure performance and crash rate after each upgrade, and can explain to management why this work needs time in the plan."
+    },
+    "check": [
+      {"vi": "App đang chậm năm phiên bản: bạn nâng thẳng hay từng bước, và vì sao?", "en": "The app is five versions behind: do you jump straight or step through, and why?"},
+      {"vi": "Một thư viện quan trọng chưa hỗ trợ phiên bản mới: bạn có những lựa chọn nào?", "en": "A key library does not support the new version yet: what are your options?"},
+      {"vi": "Bạn kiểm tra gì trước khi đưa bản nâng cấp ra toàn bộ người dùng?", "en": "What do you check before rolling the upgrade out to all users?"}
+    ],
+    "topics": ["maintain/upgrade", "native/build"],
+    "lessons": ["maintain-upgrade-core", "native-build-core"]
+  },
+  {
+    "id": "rn-senior-17",
+    "track": "rn",
+    "level": "senior",
+    "area": "release",
+    "title": {"vi": "Crash và sự cố production", "en": "Crashes and production incidents"},
+    "know": {
+      "vi": "Bạn theo dõi crash-free rate và ANR như chỉ số sức khoẻ của app, và bảo đảm crash đọc được: upload source map cho JS, dSYM cho iOS, mapping file cho Android. Khi có sự cố, bạn điều phối: đánh giá mức ảnh hưởng, dừng staged rollout, tắt tính năng bằng feature flag hoặc rollback OTA, rồi mới sửa gốc. Sau đó bạn viết postmortem không đổ lỗi, có hành động cụ thể để lỗi cùng loại không lặp lại.",
+      "en": "You track crash-free rate and ANRs as health metrics for the app, and make sure crashes are readable: upload source maps for JS, dSYMs for iOS, mapping files for Android. During an incident you coordinate: assess the impact, halt the staged rollout, switch the feature off with a feature flag or roll back the OTA update, and only then fix the root cause. Afterwards you write a blameless postmortem with concrete actions so the same class of failure does not return."
+    },
+    "check": [
+      {"vi": "Crash tăng vọt sau một release lúc 11 giờ đêm: bạn làm gì trong 30 phút đầu?", "en": "Crashes spike after a release at 11 pm: what do you do in the first 30 minutes?"},
+      {"vi": "Stack trace JS chỉ toàn tên hàm bị minify: thiếu bước nào trong pipeline?", "en": "The JS stack trace shows only minified names: which pipeline step is missing?"},
+      {"vi": "Một postmortem tốt khác một biên bản đổ lỗi ở điểm nào?", "en": "What makes a good postmortem different from a record of blame?"}
+    ],
+    "topics": ["maintain/crash", "maintain/regression", "debug/native"],
+    "lessons": ["maintain-crash-core", "maintain-regression-core"]
+  },
+  {
+    "id": "rn-senior-18",
+    "track": "rn",
+    "level": "senior",
+    "area": "teamwork",
+    "title": {"vi": "Code review và dẫn dắt kỹ thuật", "en": "Code review and technical leadership"},
+    "know": {
+      "vi": "Ở mức Senior, review là để giảm rủi ro và nâng mặt bằng của đội, không phải để bắt lỗi chính tả. Bạn tập trung vào tính đúng, ranh giới kiến trúc, hiệu năng và khả năng bảo trì, còn format thì để tool lo. Bạn ghi lại quyết định lớn bằng tài liệu ngắn như ADR, nói rõ trade-off bằng ngôn ngữ mà quản lý và product hiểu, và mentor người khác để đội không phụ thuộc vào một mình bạn.",
+      "en": "At Senior level, review exists to lower risk and raise the team's baseline, not to catch typos. You focus on correctness, architectural boundaries, performance and maintainability, and leave formatting to tools. You record big decisions in short documents such as ADRs, explain trade-offs in language that management and product understand, and mentor others so the team does not depend on you alone."
+    },
+    "check": [
+      {"vi": "Một pull request 2.000 dòng đến hạn ngay hôm nay: bạn review thế nào và nói gì với tác giả?", "en": "A 2,000-line pull request is due today: how do you review it and what do you tell the author?"},
+      {"vi": "Bạn bất đồng với một senior khác về kiến trúc: bạn đi đến quyết định ra sao?", "en": "You disagree with another senior about architecture: how do you reach a decision?"},
+      {"vi": "Bạn giải thích việc cần thời gian trả nợ kỹ thuật với product owner thế nào?", "en": "How do you explain to the product owner why paying down technical debt needs time?"}
+    ],
+    "topics": ["workflow/git-agile"],
+    "lessons": ["workflow-git-agile-core"]
+  },
+  {
+    "id": "rn-senior-19",
+    "track": "rn",
+    "level": "senior",
+    "area": "teamwork",
+    "title": {"vi": "Dùng AI có trách nhiệm trong đội", "en": "Responsible AI use in the team"},
+    "know": {
+      "vi": "AI assistant giúp viết nhanh hơn, nhưng nó có thể bịa API, dùng cách làm đã cũ với phiên bản RN hiện tại, hoặc sinh code đúng cú pháp mà sai logic. Bạn đặt quy tắc cho đội: code do AI viết qua cùng chuẩn review và test như code khác, không dán secret hay dữ liệu người dùng vào prompt, và luôn kiểm chứng bằng tài liệu chính thức hoặc chạy thử. Bạn đo xem AI thực sự giúp ở việc nào thay vì áp dụng cho mọi thứ.",
+      "en": "An AI assistant speeds up writing, but it can invent APIs, suggest approaches that are outdated for the current RN version, or produce code that compiles yet has wrong logic. You set rules for the team: AI-written code passes the same review and test bar as any other code, no secrets or user data go into prompts, and claims are checked against official docs or by running the code. You measure where AI actually helps instead of applying it to everything."
+    },
+    "check": [
+      {"vi": "AI đề xuất một prop mà bạn chưa từng thấy: bạn kiểm chứng nó thế nào trước khi merge?", "en": "The AI suggests a prop you have never seen: how do you verify it before merging?"},
+      {"vi": "Bạn viết prompt thế nào để kết quả khớp với phiên bản RN và quy ước của dự án?", "en": "How do you write prompts so the output matches your RN version and the project's conventions?"},
+      {"vi": "Đội nên dùng AI cho loại việc nào, và tránh dùng cho loại việc nào?", "en": "Which kinds of work should the team use AI for, and which should it avoid?"}
+    ],
+    "topics": ["ai/workflow", "ai/prompting"],
+    "lessons": ["ai-workflow-core", "ai-prompting-core", "ai-prompting-lab"]
+  }
+]

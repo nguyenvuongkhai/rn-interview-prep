@@ -17,6 +17,15 @@ describe('repository content', () => {
     }
   });
 
+  it('has roadmap items for every track and level', () => {
+    for (const track of ['rn', 'ios', 'android'] as const) {
+      for (const level of ['middle', 'senior'] as const) {
+        const n = content.roadmap.items.filter((i) => i.track === track && i.level === level).length;
+        expect(n, `${track} ${level}`).toBeGreaterThanOrEqual(12);
+      }
+    }
+  });
+
   it('has both languages for every lesson body', () => {
     for (const l of content.lessons) {
       expect(l.body.vi.trim().length, l.id).toBeGreaterThan(0);

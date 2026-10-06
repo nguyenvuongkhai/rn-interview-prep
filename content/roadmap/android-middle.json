@@ -1,0 +1,363 @@
+[
+  {
+    "id": "android-middle-01",
+    "track": "android",
+    "level": "middle",
+    "area": "language",
+    "title": {"vi": "Kotlin null safety", "en": "Kotlin null safety"},
+    "know": {
+      "vi": "Kotlin tách kiểu nullable (String?) và non-null (String) ngay trong type system, nên phần lớn lỗi null bị chặn lúc compile. Bạn cần dùng thành thạo ?., ?: và smart cast, hiểu vì sao !! là một lời hứa có thể làm crash app. Giá trị đến từ Java là platform type (String!), compiler không kiểm tra, nên đây là nơi NullPointerException vẫn lọt vào. lateinit var cho phép khởi tạo muộn nhưng đọc trước khi gán sẽ ném UninitializedPropertyAccessException.",
+      "en": "Kotlin separates nullable (String?) and non-null (String) types in the type system, so most null errors are caught at compile time. You should be fluent with ?., ?: and smart casts, and understand why !! is a promise that can crash the app. Values coming from Java are platform types (String!) that the compiler does not check, which is where NullPointerException still slips in. lateinit var allows late initialisation, but reading it before assignment throws UninitializedPropertyAccessException."
+    },
+    "check": [
+      {"vi": "Khi nào smart cast không hoạt động với một var property, và bạn xử lý thế nào?", "en": "When does a smart cast not work on a var property, and how do you handle it?"},
+      {"vi": "Platform type là gì và vì sao nó nguy hiểm khi gọi Java API?", "en": "What is a platform type and why is it risky when calling Java APIs?"},
+      {"vi": "Bạn chọn lateinit, by lazy hay kiểu nullable cho một property trong trường hợp nào?", "en": "When do you choose lateinit, by lazy or a nullable type for a property?"}
+    ],
+    "topics": [],
+    "lessons": []
+  },
+  {
+    "id": "android-middle-02",
+    "track": "android",
+    "level": "middle",
+    "area": "language",
+    "title": {"vi": "Data class, sealed class và extension function", "en": "Data classes, sealed classes and extension functions"},
+    "know": {
+      "vi": "Data class tự sinh equals, hashCode, toString, copy và componentN, nhưng chỉ từ các property trong primary constructor. Sealed class hoặc sealed interface giới hạn tập con, nên when trên nó là exhaustive và rất hợp để mô tả UI state như Loading, Success, Error. Extension function thêm hàm cho một kiểu mà không sửa class, nhưng được resolve tĩnh theo kiểu khai báo, không phải kiểu runtime, và không truy cập được private member.",
+      "en": "A data class generates equals, hashCode, toString, copy and componentN, but only from properties in the primary constructor. A sealed class or sealed interface restricts its subtypes, so a when over it is exhaustive, which suits UI state such as Loading, Success and Error. An extension function adds a function to a type without changing the class, but it is resolved statically by the declared type, not the runtime type, and cannot reach private members."
+    },
+    "check": [
+      {"vi": "Một property khai báo trong body của data class có tham gia equals không? Hậu quả là gì?", "en": "Does a property declared in a data class body take part in equals? What follows from that?"},
+      {"vi": "Vì sao dùng sealed interface cho UI state thay vì nhiều Boolean như isLoading, hasError?", "en": "Why use a sealed interface for UI state instead of several Booleans such as isLoading and hasError?"},
+      {"vi": "Nếu một extension function có cùng signature với member function, hàm nào được gọi?", "en": "If an extension function has the same signature as a member function, which one is called?"}
+    ],
+    "topics": [],
+    "lessons": []
+  },
+  {
+    "id": "android-middle-03",
+    "track": "android",
+    "level": "middle",
+    "area": "language",
+    "title": {"vi": "Lambda, higher-order function và scope function", "en": "Lambdas, higher-order functions and scope functions"},
+    "know": {
+      "vi": "Kotlin coi function là giá trị: bạn truyền lambda vào higher-order function như map, filter hay một callback onClick. Năm scope function khác nhau ở hai điểm: object được tham chiếu là this (run, with, apply) hay it (let, also), và giá trị trả về là kết quả lambda (let, run, with) hay chính object (apply, also). inline function chép thân lambda vào nơi gọi, tránh cấp phát object và cho phép return không cục bộ. Lambda giữ tham chiếu tới Activity hoặc View có thể gây leak nếu sống lâu hơn chúng.",
+      "en": "Kotlin treats functions as values: you pass lambdas to higher-order functions such as map, filter or an onClick callback. The five scope functions differ in two ways: whether the object is referenced as this (run, with, apply) or it (let, also), and whether they return the lambda result (let, run, with) or the object itself (apply, also). An inline function copies the lambda body into the call site, avoiding an allocation and allowing non-local returns. A lambda holding an Activity or View can leak it if the lambda outlives them."
+    },
+    "check": [
+      {"vi": "Bạn dùng apply hay also để cấu hình một object vừa tạo, và vì sao?", "en": "Would you use apply or also to configure a freshly created object, and why?"},
+      {"vi": "Vì sao chuỗi ?.let { } ?: run { } có thể chạy cả hai nhánh?", "en": "Why can a chain like ?.let { } ?: run { } end up running both branches?"},
+      {"vi": "inline mang lại lợi ích gì cho higher-order function, và khi nào không nên dùng?", "en": "What does inline give a higher-order function, and when should you avoid it?"}
+    ],
+    "topics": [],
+    "lessons": []
+  },
+  {
+    "id": "android-middle-04",
+    "track": "android",
+    "level": "middle",
+    "area": "ui",
+    "title": {"vi": "Vòng đời Activity và configuration change", "en": "Activity lifecycle and configuration changes"},
+    "know": {
+      "vi": "Activity đi qua onCreate, onStart, onResume, onPause, onStop, onDestroy, và mỗi bước có việc riêng: bắt đầu hoặc dừng lắng nghe dữ liệu, giải phóng tài nguyên. Mặc định, configuration change như xoay màn hình, đổi ngôn ngữ hay dark mode sẽ huỷ và tạo lại Activity, nên state chỉ nằm trong field sẽ mất. Process death khác configuration change: hệ thống giết process khi app ở nền, và chỉ saved instance state (onSaveInstanceState, SavedStateHandle) sống sót. Dùng android:configChanges để tự xử lý là ngoại lệ, không phải cách sửa mặc định.",
+      "en": "An Activity moves through onCreate, onStart, onResume, onPause, onStop and onDestroy, and each step has its own job: starting or stopping data observation, releasing resources. By default a configuration change such as rotation, a locale change or dark mode destroys and recreates the Activity, so state held only in fields is lost. Process death is different from a configuration change: the system kills the process while the app is in the background, and only saved instance state (onSaveInstanceState, SavedStateHandle) survives. Handling changes yourself with android:configChanges is an exception, not the default fix."
+    },
+    "check": [
+      {"vi": "Khi xoay màn hình, những gì mất, những gì còn: field của Activity, ViewModel, nội dung EditText có id?", "en": "On rotation, what is lost and what survives: Activity fields, the ViewModel, the text in an EditText with an id?"},
+      {"vi": "Bạn tái hiện process death trên máy thật hoặc emulator thế nào để test?", "en": "How do you reproduce process death on a device or emulator to test it?"},
+      {"vi": "Vì sao không nên khai báo android:configChanges chỉ để tránh mất state?", "en": "Why should you not declare android:configChanges just to avoid losing state?"}
+    ],
+    "topics": [],
+    "lessons": []
+  },
+  {
+    "id": "android-middle-05",
+    "track": "android",
+    "level": "middle",
+    "area": "ui",
+    "title": {"vi": "Fragment và view lifecycle", "en": "Fragments and the view lifecycle"},
+    "know": {
+      "vi": "Fragment có hai vòng đời: của chính Fragment và của view của nó; view có thể bị huỷ (onDestroyView) trong khi Fragment vẫn sống, ví dụ khi nằm trong back stack. Vì vậy khi observe dữ liệu trong Fragment phải dùng viewLifecycleOwner, không phải this, và phải bỏ tham chiếu ViewBinding trong onDestroyView. Fragment cần constructor không tham số; dữ liệu đầu vào đi qua arguments (hoặc Safe Args của Navigation component) để sống sót khi được tạo lại.",
+      "en": "A Fragment has two lifecycles: its own and its view's; the view can be destroyed (onDestroyView) while the Fragment lives on, for example on the back stack. So when observing data in a Fragment you use viewLifecycleOwner, not this, and you clear the ViewBinding reference in onDestroyView. A Fragment needs a no-argument constructor; input goes through arguments (or Navigation component Safe Args) so it survives recreation."
+    },
+    "check": [
+      {"vi": "Chuyện gì xảy ra nếu observe LiveData với this thay vì viewLifecycleOwner rồi quay lại Fragment từ back stack?", "en": "What happens if you observe LiveData with this instead of viewLifecycleOwner and then return to the Fragment from the back stack?"},
+      {"vi": "Vì sao truyền dữ liệu qua constructor của Fragment là sai?", "en": "Why is passing data through a Fragment constructor wrong?"},
+      {"vi": "Hai Fragment cùng màn hình chia sẻ dữ liệu bằng cách nào mà không gọi trực tiếp nhau?", "en": "How do two Fragments on the same screen share data without calling each other directly?"}
+    ],
+    "topics": [],
+    "lessons": []
+  },
+  {
+    "id": "android-middle-06",
+    "track": "android",
+    "level": "middle",
+    "area": "ui",
+    "title": {"vi": "View system: RecyclerView và ViewBinding", "en": "The View system: RecyclerView and ViewBinding"},
+    "know": {
+      "vi": "Nhiều app vẫn dùng XML layout, nên bạn cần đọc và sửa được chúng. RecyclerView tái sử dụng ViewHolder; ListAdapter với DiffUtil.ItemCallback tính phần thay đổi trên background thread và chỉ cập nhật item cần thiết, thay vì notifyDataSetChanged. ViewBinding sinh class an toàn kiểu cho từng layout, thay findViewById. Lồng layout sâu và đo lại nhiều lần làm chậm render, ConstraintLayout giúp làm phẳng cây view.",
+      "en": "Many apps still use XML layouts, so you need to read and change them. RecyclerView recycles ViewHolders; ListAdapter with a DiffUtil.ItemCallback computes changes on a background thread and updates only the items that changed, instead of notifyDataSetChanged. ViewBinding generates a type-safe class per layout, replacing findViewById. Deeply nested layouts and repeated measure passes slow rendering, and ConstraintLayout helps flatten the view tree."
+    },
+    "check": [
+      {"vi": "areItemsTheSame và areContentsTheSame khác nhau thế nào, và trả sai thì hậu quả gì?", "en": "How do areItemsTheSame and areContentsTheSame differ, and what goes wrong if they return the wrong answer?"},
+      {"vi": "Vì sao gọi submitList với cùng một instance list đã bị sửa thì UI không cập nhật?", "en": "Why does calling submitList with the same, mutated list instance not update the UI?"},
+      {"vi": "Bạn tìm nguyên nhân một danh sách cuộn bị giật bằng công cụ nào?", "en": "Which tools do you use to find why a list stutters while scrolling?"}
+    ],
+    "topics": [],
+    "lessons": []
+  },
+  {
+    "id": "android-middle-07",
+    "track": "android",
+    "level": "middle",
+    "area": "ui",
+    "title": {"vi": "Jetpack Compose: state, remember và recomposition", "en": "Jetpack Compose: state, remember and recomposition"},
+    "know": {
+      "vi": "Composable là hàm mô tả UI từ state; khi State đọc trong hàm đổi giá trị, Compose chạy lại (recompose) những phần đọc nó. remember giữ giá trị qua các lần recomposition nhưng mất khi configuration change; rememberSaveable lưu vào saved instance state nên sống qua cả xoay màn hình và process death. State hoisting đẩy state lên composable cha, để con nhận value và callback, dễ test và tái sử dụng. Side effect như gọi suspend function phải đặt trong LaunchedEffect với key đúng, không chạy trực tiếp trong thân composable.",
+      "en": "A composable is a function that describes UI from state; when a State it reads changes, Compose re-runs (recomposes) the parts that read it. remember keeps a value across recompositions but loses it on a configuration change; rememberSaveable stores it in saved instance state, so it survives rotation and process death. State hoisting moves state up to the parent, so the child takes a value and a callback, which makes it easier to test and reuse. Side effects such as calling a suspend function belong in a LaunchedEffect with the right key, not directly in the composable body."
+    },
+    "check": [
+      {"vi": "Vì sao var count = 0 trong composable không làm UI cập nhật, và sửa thế nào?", "en": "Why does var count = 0 inside a composable not update the UI, and how do you fix it?"},
+      {"vi": "Khi nào dùng remember, khi nào rememberSaveable, khi nào để state trong ViewModel?", "en": "When do you use remember, when rememberSaveable, and when do you keep state in the ViewModel?"},
+      {"vi": "Key của LaunchedEffect ảnh hưởng thế nào đến việc coroutine bị huỷ và chạy lại?", "en": "How does the LaunchedEffect key decide when its coroutine is cancelled and restarted?"},
+      {"vi": "Vì sao nên truyền key cho item trong LazyColumn?", "en": "Why should you pass a key for items in a LazyColumn?"}
+    ],
+    "topics": [],
+    "lessons": []
+  },
+  {
+    "id": "android-middle-08",
+    "track": "android",
+    "level": "middle",
+    "area": "state",
+    "title": {"vi": "ViewModel và SavedStateHandle", "en": "ViewModel and SavedStateHandle"},
+    "know": {
+      "vi": "ViewModel giữ state của màn hình qua configuration change và bị xoá (onCleared) khi owner kết thúc hẳn, ví dụ Activity finish hoặc Fragment bị pop. ViewModel không sống qua process death, nên state nhỏ cần khôi phục như query tìm kiếm hay id đang chọn nên để trong SavedStateHandle. ViewModel không được giữ tham chiếu tới Activity, Fragment, View hay Context của chúng, vì nó sống lâu hơn chúng; nếu cần Context thì dùng AndroidViewModel với Application.",
+      "en": "A ViewModel keeps screen state across configuration changes and is cleared (onCleared) when its owner is gone for good, for example when the Activity finishes or the Fragment is popped. A ViewModel does not survive process death, so small state you must restore, such as a search query or a selected id, belongs in SavedStateHandle. A ViewModel must not hold an Activity, Fragment, View or their Context, because it outlives them; if you need a Context, use AndroidViewModel with the Application."
+    },
+    "check": [
+      {"vi": "Scope của ViewModel lấy bằng by viewModels() và by activityViewModels() khác nhau thế nào?", "en": "How does the scope differ between by viewModels() and by activityViewModels()?"},
+      {"vi": "Dữ liệu nào nên đưa vào SavedStateHandle, dữ liệu nào thì không?", "en": "What data belongs in SavedStateHandle, and what does not?"},
+      {"vi": "Vì sao giữ một View trong ViewModel gây memory leak?", "en": "Why does holding a View in a ViewModel cause a memory leak?"}
+    ],
+    "topics": [],
+    "lessons": []
+  },
+  {
+    "id": "android-middle-09",
+    "track": "android",
+    "level": "middle",
+    "area": "state",
+    "title": {"vi": "StateFlow, LiveData và thu thập theo lifecycle", "en": "StateFlow, LiveData and lifecycle-aware collection"},
+    "know": {
+      "vi": "Một màn hình thường expose một UI state duy nhất dạng StateFlow (hoặc LiveData) từ ViewModel, còn UI gửi event ngược lên bằng gọi hàm, theo unidirectional data flow. StateFlow luôn có giá trị ban đầu, chỉ phát khi giá trị khác (theo equals) và không tự biết lifecycle; LiveData thì lifecycle-aware sẵn nhưng gắn với Android. Thu thập StateFlow trong View system dùng repeatOnLifecycle(Lifecycle.State.STARTED), trong Compose dùng collectAsStateWithLifecycle, để không tốn tài nguyên khi app ở nền. Sự kiện một lần như hiện Snackbar cần cách xử lý riêng, không nhét bừa vào state.",
+      "en": "A screen usually exposes a single UI state as a StateFlow (or LiveData) from the ViewModel, and the UI sends events back up by calling functions, following unidirectional data flow. StateFlow always has an initial value, emits only when the value differs (by equals) and is not lifecycle-aware on its own; LiveData is lifecycle-aware out of the box but tied to Android. Collect a StateFlow in the View system with repeatOnLifecycle(Lifecycle.State.STARTED) and in Compose with collectAsStateWithLifecycle, so nothing runs while the app is in the background. One-off events such as showing a Snackbar need their own handling rather than being stuffed into state."
+    },
+    "check": [
+      {"vi": "Vì sao collect một Flow trong lifecycleScope.launch mà không có repeatOnLifecycle là có vấn đề?", "en": "Why is collecting a Flow in lifecycleScope.launch without repeatOnLifecycle a problem?"},
+      {"vi": "Bạn biến một Flow lạnh từ repository thành StateFlow bằng stateIn thế nào, và SharingStarted.WhileSubscribed(5000) dùng để làm gì?", "en": "How do you turn a cold Flow from a repository into a StateFlow with stateIn, and what is SharingStarted.WhileSubscribed(5000) for?"},
+      {"vi": "Vì sao cập nhật StateFlow bằng một list đã bị sửa tại chỗ có thể không làm UI đổi?", "en": "Why might updating a StateFlow with a list mutated in place not change the UI?"}
+    ],
+    "topics": [],
+    "lessons": []
+  },
+  {
+    "id": "android-middle-10",
+    "track": "android",
+    "level": "middle",
+    "area": "architecture",
+    "title": {"vi": "Kiến trúc một tính năng: UI, ViewModel, repository và DI", "en": "Feature architecture: UI, ViewModel, repository and DI"},
+    "know": {
+      "vi": "Kiến trúc Google khuyến nghị chia thành UI layer (Activity, Fragment hoặc composable cùng ViewModel), data layer (repository và data source như Retrofit, Room), và domain layer tuỳ chọn. Repository là nguồn sự thật cho một loại dữ liệu, quyết định lấy từ mạng hay cache, để ViewModel không biết chi tiết đó. Dependency injection với Hilt (@HiltAndroidApp, @AndroidEntryPoint, @HiltViewModel, @Inject) giúp thay data source khi test. Ở Middle, bạn phải tự dựng được một tính năng đi qua đủ các lớp này.",
+      "en": "Google's recommended architecture splits a UI layer (Activity, Fragment or composables plus a ViewModel), a data layer (repositories and data sources such as Retrofit and Room), and an optional domain layer. A repository is the source of truth for one kind of data and decides whether to read from the network or a cache, so the ViewModel does not know those details. Dependency injection with Hilt (@HiltAndroidApp, @AndroidEntryPoint, @HiltViewModel, @Inject) lets you swap data sources in tests. At Middle level you should be able to build a feature through all of these layers yourself."
+    },
+    "check": [
+      {"vi": "Mô tả luồng dữ liệu khi người dùng kéo để refresh một danh sách, từ UI xuống mạng rồi quay lại.", "en": "Describe the data flow when the user pulls to refresh a list, from the UI down to the network and back."},
+      {"vi": "Vì sao ViewModel không nên gọi thẳng Retrofit service?", "en": "Why should a ViewModel not call the Retrofit service directly?"},
+      {"vi": "Không có DI thì bạn test ViewModel với một repository giả thế nào?", "en": "Without DI, how would you test a ViewModel with a fake repository?"}
+    ],
+    "topics": [],
+    "lessons": []
+  },
+  {
+    "id": "android-middle-11",
+    "track": "android",
+    "level": "middle",
+    "area": "concurrency",
+    "title": {"vi": "Coroutine cơ bản và structured concurrency", "en": "Coroutine basics and structured concurrency"},
+    "know": {
+      "vi": "suspend function có thể tạm dừng mà không chặn thread; launch chạy một việc không trả kết quả, async trả Deferred để await. Mỗi coroutine chạy trong một CoroutineScope, và huỷ scope sẽ huỷ mọi coroutine con: viewModelScope bị huỷ khi ViewModel bị clear, lifecycleScope khi lifecycle bị destroy. Huỷ là cộng tác: code phải gọi suspend function hoặc kiểm tra isActive mới dừng, và đừng nuốt CancellationException trong catch. GlobalScope bỏ qua tất cả điều này nên gần như không bao giờ đúng trong app.",
+      "en": "A suspend function can pause without blocking a thread; launch starts work that returns nothing, and async returns a Deferred you await. Every coroutine runs in a CoroutineScope, and cancelling the scope cancels all its children: viewModelScope is cancelled when the ViewModel is cleared, lifecycleScope when the lifecycle is destroyed. Cancellation is cooperative: code only stops when it calls a suspend function or checks isActive, and you must not swallow CancellationException in a catch. GlobalScope skips all of this, so it is almost never right in an app."
+    },
+    "check": [
+      {"vi": "Chuyện gì xảy ra với request mạng đang chạy trong viewModelScope khi người dùng rời màn hình?", "en": "What happens to a network request running in viewModelScope when the user leaves the screen?"},
+      {"vi": "Vì sao catch (e: Exception) quanh một suspend call có thể phá cơ chế huỷ?", "en": "Why can catch (e: Exception) around a suspend call break cancellation?"},
+      {"vi": "Bạn chạy hai request song song rồi chờ cả hai bằng cách nào?", "en": "How do you run two requests in parallel and wait for both?"}
+    ],
+    "topics": [],
+    "lessons": []
+  },
+  {
+    "id": "android-middle-12",
+    "track": "android",
+    "level": "middle",
+    "area": "concurrency",
+    "title": {"vi": "Dispatcher, main-safety và ANR", "en": "Dispatchers, main-safety and ANRs"},
+    "know": {
+      "vi": "Dispatchers.Main chạy trên main thread để cập nhật UI, Dispatchers.IO cho I/O chặn như file hay JDBC, Dispatchers.Default cho việc nặng CPU như parse JSON lớn. Một hàm là main-safe khi gọi từ main thread an toàn, vì nó tự chuyển thread bên trong bằng withContext; suspend function của Retrofit và Room vốn đã main-safe. Chặn main thread quá lâu làm giật frame, và nếu app không phản hồi input trong khoảng 5 giây, hệ thống báo ANR. StrictMode giúp phát hiện disk và network access trên main thread khi dev.",
+      "en": "Dispatchers.Main runs on the main thread for UI updates, Dispatchers.IO is for blocking I/O such as files or JDBC, and Dispatchers.Default is for CPU-heavy work such as parsing a large JSON payload. A function is main-safe when it is safe to call from the main thread because it switches threads internally with withContext; Retrofit and Room suspend functions are already main-safe. Blocking the main thread for too long drops frames, and if the app does not respond to input within about 5 seconds the system reports an ANR. StrictMode helps catch disk and network access on the main thread during development."
+    },
+    "check": [
+      {"vi": "Có cần bọc một suspend call của Retrofit trong withContext(Dispatchers.IO) không? Vì sao?", "en": "Do you need to wrap a Retrofit suspend call in withContext(Dispatchers.IO)? Why or why not?"},
+      {"vi": "Bạn đặt withContext ở ViewModel hay ở repository, và vì sao?", "en": "Do you put withContext in the ViewModel or in the repository, and why?"},
+      {"vi": "Báo cáo ANR trong Play Console cho bạn thông tin gì để tìm nguyên nhân?", "en": "What does an ANR report in Play Console give you to find the cause?"}
+    ],
+    "topics": ["maintain/crash"],
+    "lessons": ["maintain-crash-core"]
+  },
+  {
+    "id": "android-middle-13",
+    "track": "android",
+    "level": "middle",
+    "area": "data",
+    "title": {"vi": "Gọi mạng với Retrofit và OkHttp", "en": "Networking with Retrofit and OkHttp"},
+    "know": {
+      "vi": "Retrofit biến một interface có annotation (@GET, @POST, @Path, @Query, @Body) thành HTTP client, và hỗ trợ suspend function từ Retrofit 2.6.0. Converter (Moshi, Gson hoặc kotlinx.serialization) chuyển JSON thành object; bên dưới là OkHttp, nơi bạn cấu hình timeout, cache và interceptor để thêm header auth hoặc log. Khi kiểu trả về là body, response không thành công ném HttpException, còn lỗi mạng ném IOException; dùng Response<T> nếu muốn tự đọc status code. Nên dùng một OkHttpClient chung cho cả app vì mỗi client giữ connection pool và thread pool riêng.",
+      "en": "Retrofit turns an annotated interface (@GET, @POST, @Path, @Query, @Body) into an HTTP client and supports suspend functions from Retrofit 2.6.0. A converter (Moshi, Gson or kotlinx.serialization) maps JSON to objects; underneath sits OkHttp, where you configure timeouts, caching and interceptors that add auth headers or logging. When the return type is the body, a non-successful response throws HttpException and a network failure throws IOException; return Response<T> if you want to read the status code yourself. Share one OkHttpClient across the app, because each client keeps its own connection pool and thread pool."
+    },
+    "check": [
+      {"vi": "Bạn phân biệt lỗi 401, lỗi 500 và mất mạng thế nào để hiện thông báo đúng cho người dùng?", "en": "How do you tell a 401, a 500 and a lost connection apart so the user sees the right message?"},
+      {"vi": "Interceptor và network interceptor của OkHttp khác nhau ở đâu?", "en": "How does an OkHttp interceptor differ from a network interceptor?"},
+      {"vi": "Vì sao không nên bật HttpLoggingInterceptor ở mức BODY trong bản release?", "en": "Why should HttpLoggingInterceptor not log at BODY level in a release build?"}
+    ],
+    "topics": [],
+    "lessons": []
+  },
+  {
+    "id": "android-middle-14",
+    "track": "android",
+    "level": "middle",
+    "area": "data",
+    "title": {"vi": "Lưu trữ cục bộ với Room", "en": "Local storage with Room"},
+    "know": {
+      "vi": "Room là lớp trừu tượng trên SQLite gồm @Entity, @Dao và @Database, kiểm tra câu SQL lúc compile. Mặc định Room không cho query trên main thread; DAO dùng suspend function cho thao tác một lần và trả Flow cho query cần theo dõi, Flow sẽ phát lại khi bảng liên quan thay đổi. Khi đổi schema phải tăng version và cung cấp Migration (hoặc AutoMigration), nếu không app sẽ crash khi người dùng cập nhật. Mẫu thường gặp là offline-first: UI đọc từ Room, repository tải từ mạng rồi ghi vào Room.",
+      "en": "Room is an abstraction over SQLite made of @Entity, @Dao and @Database, and it checks SQL at compile time. By default Room does not allow queries on the main thread; DAOs use suspend functions for one-shot operations and return Flow for queries you observe, and the Flow emits again when the underlying tables change. When the schema changes you must bump the version and provide a Migration (or an AutoMigration), otherwise the app crashes when users update. A common pattern is offline-first: the UI reads from Room, and the repository fetches from the network and writes into Room."
+    },
+    "check": [
+      {"vi": "Điều gì xảy ra nếu bạn thêm một cột vào Entity mà không viết migration?", "en": "What happens if you add a column to an Entity without writing a migration?"},
+      {"vi": "Vì sao fallbackToDestructiveMigration nguy hiểm với dữ liệu người dùng?", "en": "Why is fallbackToDestructiveMigration dangerous for user data?"},
+      {"vi": "Bạn dùng @Transaction khi nào?", "en": "When do you use @Transaction?"}
+    ],
+    "topics": [],
+    "lessons": []
+  },
+  {
+    "id": "android-middle-15",
+    "track": "android",
+    "level": "middle",
+    "area": "data",
+    "title": {"vi": "DataStore thay cho SharedPreferences", "en": "DataStore instead of SharedPreferences"},
+    "know": {
+      "vi": "Jetpack DataStore lưu dữ liệu nhỏ dạng key-value (Preferences DataStore) hoặc object có kiểu qua protocol buffers (Proto DataStore). Đọc qua data là một Flow, ghi qua edit hoặc updateData là suspend function và có tính transaction, nên không chặn main thread như commit của SharedPreferences. Chỉ được có một instance DataStore cho mỗi file trong một process, thường tạo bằng property delegate preferencesDataStore ở top level. DataStore không dành cho dữ liệu lớn hay có quan hệ; đó là việc của Room.",
+      "en": "Jetpack DataStore stores small data as key-value pairs (Preferences DataStore) or typed objects via protocol buffers (Proto DataStore). Reading through data is a Flow, and writing through edit or updateData is a transactional suspend function, so it does not block the main thread the way SharedPreferences commit can. There must be only one DataStore instance per file in a process, usually created with the top-level preferencesDataStore property delegate. DataStore is not for large or relational data; that is Room's job."
+    },
+    "check": [
+      {"vi": "Vì sao tạo hai instance DataStore cho cùng một file lại gây lỗi?", "en": "Why does creating two DataStore instances for the same file cause an error?"},
+      {"vi": "Bạn xử lý IOException khi đọc DataStore thế nào để UI vẫn chạy?", "en": "How do you handle an IOException when reading DataStore so the UI still works?"},
+      {"vi": "Dữ liệu nào bạn để trong DataStore, dữ liệu nào để trong Room?", "en": "Which data do you keep in DataStore and which in Room?"}
+    ],
+    "topics": [],
+    "lessons": []
+  },
+  {
+    "id": "android-middle-16",
+    "track": "android",
+    "level": "middle",
+    "area": "native",
+    "title": {"vi": "Runtime permission", "en": "Runtime permissions"},
+    "know": {
+      "vi": "Từ Android 6 (API 23), dangerous permission như camera, vị trí hay danh bạ phải xin lúc runtime, không chỉ khai báo trong manifest. Luồng chuẩn: kiểm tra bằng ContextCompat.checkSelfPermission, xin bằng registerForActivityResult với ActivityResultContracts.RequestPermission, và giải thích lý do khi shouldShowRequestPermissionRationale trả true. Từ Android 13 (API 33), app phải xin POST_NOTIFICATIONS để hiện notification. Người dùng có thể từ chối vĩnh viễn hoặc thu hồi quyền trong Settings bất cứ lúc nào, nên tính năng phải chạy được khi không có quyền.",
+      "en": "From Android 6 (API 23), dangerous permissions such as camera, location or contacts must be requested at runtime, not just declared in the manifest. The standard flow: check with ContextCompat.checkSelfPermission, request with registerForActivityResult and ActivityResultContracts.RequestPermission, and explain why when shouldShowRequestPermissionRationale returns true. From Android 13 (API 33), apps must request POST_NOTIFICATIONS to show notifications. Users can deny permanently or revoke a permission in Settings at any time, so the feature has to work without it."
+    },
+    "check": [
+      {"vi": "Sau khi người dùng từ chối hai lần, gọi xin quyền lại thì chuyện gì xảy ra, và bạn hướng họ đi đâu?", "en": "After the user has denied twice, what happens when you request again, and where do you send them?"},
+      {"vi": "Vì sao phải gọi registerForActivityResult trước khi Activity hoặc Fragment ở trạng thái STARTED?", "en": "Why must registerForActivityResult be called before the Activity or Fragment reaches STARTED?"},
+      {"vi": "Xin vị trí gần đúng và chính xác khác nhau thế nào từ Android 12 (API 31)?", "en": "How do approximate and precise location requests differ from Android 12 (API 31)?"}
+    ],
+    "topics": ["native/modules-android"],
+    "lessons": ["native-modules-android-core"]
+  },
+  {
+    "id": "android-middle-17",
+    "track": "android",
+    "level": "middle",
+    "area": "memory",
+    "title": {"vi": "Memory leak thường gặp và LeakCanary", "en": "Common memory leaks and LeakCanary"},
+    "know": {
+      "vi": "Leak trên Android thường là một object sống lâu giữ tham chiếu tới Activity, Fragment view hay Context của chúng sau khi chúng đã bị huỷ. Nguồn quen thuộc: singleton giữ Activity Context thay vì applicationContext, listener hay callback không được gỡ, ViewBinding không được xoá trong onDestroyView, coroutine hoặc thread chạy lâu hơn màn hình. LeakCanary phát hiện object đáng ra đã bị thu hồi và in ra leak trace, chỉ ra chuỗi tham chiếu giữ nó lại. Leak lặp lại dẫn tới OutOfMemoryError, nhất là khi giữ Bitmap.",
+      "en": "A leak on Android is usually a long-lived object holding an Activity, a Fragment view or their Context after they have been destroyed. Familiar sources: a singleton keeping an Activity Context instead of applicationContext, listeners or callbacks that are never removed, a ViewBinding not cleared in onDestroyView, and coroutines or threads that outlive the screen. LeakCanary detects objects that should have been garbage collected and prints a leak trace showing the reference chain that keeps them alive. Repeated leaks lead to OutOfMemoryError, especially when Bitmaps are retained."
+    },
+    "check": [
+      {"vi": "Đọc một leak trace của LeakCanary thế nào để tìm tham chiếu cần cắt?", "en": "How do you read a LeakCanary leak trace to find the reference to cut?"},
+      {"vi": "Khi nào truyền applicationContext là an toàn, khi nào bắt buộc dùng Activity Context?", "en": "When is passing applicationContext safe, and when must you use an Activity Context?"},
+      {"vi": "Vì sao xoay màn hình nhiều lần là cách nhanh để lộ leak?", "en": "Why is rotating the screen repeatedly a quick way to expose a leak?"}
+    ],
+    "topics": ["maintain/crash"],
+    "lessons": []
+  },
+  {
+    "id": "android-middle-18",
+    "track": "android",
+    "level": "middle",
+    "area": "quality",
+    "title": {"vi": "Debug với Android Studio, Logcat và adb", "en": "Debugging with Android Studio, Logcat and adb"},
+    "know": {
+      "vi": "Logcat là nơi đầu tiên cần xem: lọc theo app, tag và mức log (trong Logcat mới của Android Studio dùng cú pháp như package:mine level:error), và đọc stack trace từ dòng Caused by trên cùng thuộc code của bạn. Debugger của Android Studio cho đặt breakpoint, breakpoint có điều kiện, xem biến, và attach vào một process đang chạy mà không cần cài lại. Layout Inspector cho xem cây View hoặc Compose cùng số lần recomposition. adb (adb logcat, adb shell, adb install) giúp làm việc với máy khi không có IDE.",
+      "en": "Logcat is the first place to look: filter by app, tag and level (the newer Logcat in Android Studio uses queries such as package:mine level:error), and read a stack trace from the top Caused by line that belongs to your code. The Android Studio debugger offers breakpoints, conditional breakpoints, variable inspection and attaching to a running process without reinstalling. Layout Inspector shows the View or Compose tree along with recomposition counts. adb (adb logcat, adb shell, adb install) lets you work with a device without the IDE."
+    },
+    "check": [
+      {"vi": "App crash ngay khi mở; bạn lần lượt làm gì để tìm nguyên nhân trong 5 phút?", "en": "The app crashes on launch; what do you do, step by step, to find the cause in five minutes?"},
+      {"vi": "Vì sao một bug chỉ xuất hiện ở bản release, và bạn debug nó thế nào?", "en": "Why might a bug appear only in the release build, and how do you debug it?"},
+      {"vi": "Layout Inspector giúp bạn phát hiện recomposition thừa trong Compose ra sao?", "en": "How does Layout Inspector help you spot unnecessary recompositions in Compose?"}
+    ],
+    "topics": ["debug/native"],
+    "lessons": ["debug-native-core"]
+  },
+  {
+    "id": "android-middle-19",
+    "track": "android",
+    "level": "middle",
+    "area": "native",
+    "title": {"vi": "Gradle: build type, flavor và R8", "en": "Gradle: build types, flavors and R8"},
+    "know": {
+      "vi": "Build type (debug, release) quyết định cách build, product flavor (ví dụ dev, prod) quyết định biến thể sản phẩm, và mỗi tổ hợp là một build variant với source set và BuildConfig riêng. Ở release, bật isMinifyEnabled để R8 thu gọn, tối ưu và obfuscate code; class được gọi qua reflection, như model của Gson, có thể bị xoá hoặc đổi tên nếu thiếu keep rule. R8 sinh mapping.txt, cần lưu lại hoặc upload lên Play Console để đọc được stack trace. Phụ thuộc nên khai báo tập trung, thường qua version catalog (libs.versions.toml).",
+      "en": "A build type (debug, release) decides how the app is built, a product flavor (for example dev, prod) decides the product variant, and each combination is a build variant with its own source sets and BuildConfig. For release, enable isMinifyEnabled so R8 shrinks, optimises and obfuscates the code; classes reached through reflection, such as Gson models, can be removed or renamed without keep rules. R8 produces mapping.txt, which you must keep or upload to Play Console to read stack traces. Dependencies are best declared in one place, usually a version catalog (libs.versions.toml)."
+    },
+    "check": [
+      {"vi": "Bản release crash với ClassNotFoundException hoặc JSON parse ra null nhưng debug thì chạy; bạn nghi gì đầu tiên?", "en": "The release build crashes with ClassNotFoundException, or JSON parses to null, while debug works; what do you suspect first?"},
+      {"vi": "Bạn trỏ flavor dev và prod tới hai base URL khác nhau thế nào?", "en": "How do you point the dev and prod flavors at different base URLs?"},
+      {"vi": "Vì sao phải giữ mapping.txt cho từng bản phát hành?", "en": "Why must you keep mapping.txt for every release?"}
+    ],
+    "topics": ["native/build"],
+    "lessons": ["native-build-core"]
+  },
+  {
+    "id": "android-middle-20",
+    "track": "android",
+    "level": "middle",
+    "area": "release",
+    "title": {"vi": "Phát hành lên Google Play: app bundle, signing và internal testing", "en": "Shipping to Google Play: app bundles, signing and internal testing"},
+    "know": {
+      "vi": "Từ tháng 8/2021, app mới trên Google Play phải nộp Android App Bundle (.aab); Play tạo APK tối ưu cho từng máy từ bundle đó. Với Play App Signing, Google giữ app signing key, còn bạn ký bundle bằng upload key; mất upload key thì có thể xin reset, mất app signing key tự quản thì không cập nhật app được nữa. Mỗi lần upload phải tăng versionCode. Internal testing track cho tối đa 100 tester nhận bản mới trong vài phút, là bước kiểm tra bản release thật trước khi lên closed, open testing hoặc production.",
+      "en": "Since August 2021, new apps on Google Play must be published as an Android App Bundle (.aab); Play generates optimised APKs for each device from it. With Play App Signing, Google holds the app signing key and you sign bundles with an upload key; a lost upload key can be reset, whereas losing a self-managed app signing key means you can no longer update the app. Every upload needs a higher versionCode. The internal testing track gets a new build to up to 100 testers within minutes, which is the step for checking the real release build before closed testing, open testing or production."
+    },
+    "check": [
+      {"vi": "Upload key và app signing key khác nhau thế nào, và bạn cất upload key ở đâu?", "en": "How do the upload key and the app signing key differ, and where do you keep the upload key?"},
+      {"vi": "versionCode và versionName khác nhau thế nào?", "en": "How do versionCode and versionName differ?"},
+      {"vi": "Vì sao nên cài bản từ internal testing thay vì chỉ test bản debug trước khi phát hành?", "en": "Why install the internal testing build rather than only testing the debug build before a release?"}
+    ],
+    "topics": ["release/android"],
+    "lessons": ["release-android-core"]
+  }
+]

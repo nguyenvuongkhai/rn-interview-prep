@@ -1,0 +1,326 @@
+[
+  {
+    "id": "rn-middle-01",
+    "track": "rn",
+    "level": "middle",
+    "area": "language",
+    "title": {"vi": "Closure và scope trong JavaScript", "en": "Closures and scope in JavaScript"},
+    "know": {
+      "vi": "Một function giữ tham chiếu tới biến ở scope nơi nó được tạo, không phải bản sao giá trị tại lúc gọi. Trong React, mỗi lần render tạo ra closure mới với props và state của lần render đó. Hiểu điều này giúp bạn giải thích vì sao callback trong `setTimeout` hoặc listener đọc phải state cũ (stale closure).",
+      "en": "A function keeps a reference to the variables in the scope where it was created, not a copy taken when it is called. In React, every render creates new closures over that render's props and state. Knowing this lets you explain why a callback in `setTimeout` or a listener reads old state (a stale closure)."
+    },
+    "check": [
+      {"vi": "Vì sao `setInterval(() => setCount(count + 1), 1000)` trong một effect chỉ chạy một lần lại dừng ở 1?", "en": "Why does `setInterval(() => setCount(count + 1), 1000)` inside a run-once effect stop at 1?"},
+      {"vi": "Hai cách sửa stale closure là gì, và khi nào dùng updater function `setX(prev => …)`?", "en": "What are two ways to fix a stale closure, and when do you use the updater form `setX(prev => …)`?"},
+      {"vi": "`let` trong vòng lặp `for` khác `var` thế nào khi tạo callback?", "en": "How does `let` in a `for` loop differ from `var` when you create callbacks?"}
+    ],
+    "topics": ["render/effects"],
+    "lessons": ["render-effects-core"]
+  },
+  {
+    "id": "rn-middle-02",
+    "track": "rn",
+    "level": "middle",
+    "area": "language",
+    "title": {"vi": "Promise và async/await", "en": "Promises and async/await"},
+    "know": {
+      "vi": "`async` function luôn trả về Promise, và `await` chỉ tạm dừng function đó, không chặn JS thread. Bạn cần biết lỗi đi đâu: một Promise bị reject mà không ai `await` hay `.catch` sẽ thành unhandled rejection. Chạy song song bằng `Promise.all` khi các request độc lập, chạy tuần tự khi request sau cần kết quả request trước.",
+      "en": "An `async` function always returns a Promise, and `await` only pauses that function; it does not block the JS thread. You need to know where errors go: a rejected Promise that nobody awaits or catches becomes an unhandled rejection. Run independent requests in parallel with `Promise.all`, and run them in sequence only when one needs the result of another."
+    },
+    "check": [
+      {"vi": "`await` trong `forEach` có chờ từng phần tử không? Bạn viết lại thế nào?", "en": "Does `await` inside `forEach` wait for each element? How would you rewrite it?"},
+      {"vi": "`Promise.all` và `Promise.allSettled` khác nhau ra sao khi một request lỗi?", "en": "How do `Promise.all` and `Promise.allSettled` differ when one request fails?"},
+      {"vi": "Vì sao không truyền thẳng một `async` function vào `useEffect`?", "en": "Why do you not pass an `async` function directly to `useEffect`?"}
+    ],
+    "topics": ["state/async"],
+    "lessons": ["state-async-core"]
+  },
+  {
+    "id": "rn-middle-03",
+    "track": "rn",
+    "level": "middle",
+    "area": "language",
+    "title": {"vi": "TypeScript cho props và component", "en": "TypeScript for props and components"},
+    "know": {
+      "vi": "Bạn khai báo kiểu cho props bằng `type` hoặc `interface`, phân biệt prop bắt buộc và tuỳ chọn, và dùng union type cho các biến thể như `variant: 'primary' | 'secondary'`. Biết cách gõ kiểu cho `children` (`React.ReactNode`), callback, và props của component có sẵn như `PressableProps`. Mục tiêu là trình biên dịch bắt lỗi trước khi app chạy, nên tránh `any`.",
+      "en": "You type props with `type` or `interface`, separate required from optional props, and use union types for variants such as `variant: 'primary' | 'secondary'`. You know how to type `children` (`React.ReactNode`), callbacks, and the props of built-in components such as `PressableProps`. The goal is for the compiler to catch mistakes before the app runs, so you avoid `any`."
+    },
+    "check": [
+      {"vi": "Làm sao để một component wrapper nhận toàn bộ props của `Pressable` và thêm một prop riêng?", "en": "How do you make a wrapper component accept all of `Pressable`'s props plus one of its own?"},
+      {"vi": "Khi nào bạn dùng `unknown` thay cho `any`, và phải làm gì trước khi dùng giá trị đó?", "en": "When do you use `unknown` instead of `any`, and what must you do before using the value?"},
+      {"vi": "Discriminated union giúp gì khi mô tả state `loading | error | success`?", "en": "How does a discriminated union help when you model a `loading | error | success` state?"}
+    ],
+    "topics": ["typescript/react", "typescript/types"],
+    "lessons": ["typescript-react-core", "typescript-types-core"]
+  },
+  {
+    "id": "rn-middle-04",
+    "track": "rn",
+    "level": "middle",
+    "area": "ui",
+    "title": {"vi": "Render và re-render", "en": "Rendering and re-rendering"},
+    "know": {
+      "vi": "Một component render lại khi state của nó đổi, khi component cha render lại, hoặc khi context nó dùng đổi giá trị. State phải được cập nhật immutable, vì React so sánh tham chiếu để biết có gì thay đổi. `key` cho React biết phần tử nào là cùng một phần tử giữa các lần render; đổi `key` sẽ tạo lại component và mất state của nó.",
+      "en": "A component re-renders when its state changes, when its parent re-renders, or when a context it reads changes value. State must be updated immutably, because React compares references to see what changed. `key` tells React which element is the same element across renders; changing the `key` remounts the component and loses its state."
+    },
+    "check": [
+      {"vi": "Vì sao `items.push(x); setItems(items)` không làm màn hình cập nhật?", "en": "Why does `items.push(x); setItems(items)` not update the screen?"},
+      {"vi": "Component con không nhận prop nào vẫn render lại khi cha render lại. Khi nào điều đó là vấn đề, và `React.memo` giúp gì?", "en": "A child with no props still re-renders when its parent does. When is that a problem, and how does `React.memo` help?"},
+      {"vi": "Dùng index làm `key` gây lỗi gì khi danh sách bị sắp xếp lại?", "en": "What goes wrong when you use the index as `key` and the list is reordered?"}
+    ],
+    "topics": ["render/memo"],
+    "lessons": ["render-memo-core", "render-memo-pitfalls"]
+  },
+  {
+    "id": "rn-middle-05",
+    "track": "rn",
+    "level": "middle",
+    "area": "ui",
+    "title": {"vi": "Rules of Hooks và useEffect", "en": "Rules of Hooks and useEffect"},
+    "know": {
+      "vi": "Hook chỉ được gọi ở top level của component hoặc custom hook, không trong điều kiện hay vòng lặp, vì React dựa vào thứ tự gọi. `useEffect` dùng để đồng bộ với hệ thống bên ngoài, không phải để tính dữ liệu suy ra từ props hay state. Dependency array phải đủ mọi giá trị effect dùng, và effect nào đăng ký listener hay timer thì phải có cleanup.",
+      "en": "Hooks may only be called at the top level of a component or custom hook, never inside conditions or loops, because React relies on call order. `useEffect` is for syncing with an external system, not for computing values derived from props or state. The dependency array must list every value the effect uses, and an effect that registers a listener or timer needs a cleanup."
+    },
+    "check": [
+      {"vi": "Cleanup của effect chạy vào những lúc nào?", "en": "When does an effect's cleanup run?"},
+      {"vi": "Vì sao tính `fullName` trong effect rồi `setFullName` là thừa, và nên viết thế nào?", "en": "Why is computing `fullName` in an effect and calling `setFullName` unnecessary, and what should you write instead?"},
+      {"vi": "Effect chạy vô hạn khi dependency là một object tạo mới mỗi lần render. Bạn sửa thế nào?", "en": "An effect loops forever because a dependency is an object created on every render. How do you fix it?"}
+    ],
+    "topics": ["render/effects"],
+    "lessons": ["render-effects-core", "render-effects-lab"]
+  },
+  {
+    "id": "rn-middle-06",
+    "track": "rn",
+    "level": "middle",
+    "area": "ui",
+    "title": {"vi": "Layout với Flexbox và khác biệt nền tảng", "en": "Flexbox layout and platform differences"},
+    "know": {
+      "vi": "Layout trong RN dùng Flexbox với `flexDirection` mặc định là `column`, khác web. Bạn dựng được màn hình co giãn theo kích thước, xử lý safe area (notch, thanh điều hướng) và bàn phím che input. Khi iOS và Android cần khác nhau, bạn dùng `Platform.OS`, `Platform.select` hoặc file `.ios.tsx` / `.android.tsx`.",
+      "en": "RN layout uses Flexbox with `flexDirection` defaulting to `column`, unlike the web. You can build screens that adapt to size, handle safe areas (notch, navigation bar) and keep the keyboard from covering inputs. When iOS and Android must differ, you use `Platform.OS`, `Platform.select` or `.ios.tsx` / `.android.tsx` files."
+    },
+    "check": [
+      {"vi": "`flex: 1` làm gì với một view con trong container dạng `column`?", "en": "What does `flex: 1` do to a child view in a `column` container?"},
+      {"vi": "Bạn xử lý thế nào khi bàn phím che ô nhập ở cuối form?", "en": "How do you handle the keyboard covering an input at the bottom of a form?"},
+      {"vi": "Vì sao nội dung bị dính vào notch, và bạn sửa bằng cách nào?", "en": "Why does content end up under the notch, and how do you fix it?"}
+    ],
+    "topics": [],
+    "lessons": []
+  },
+  {
+    "id": "rn-middle-07",
+    "track": "rn",
+    "level": "middle",
+    "area": "performance",
+    "title": {"vi": "FlatList cơ bản", "en": "FlatList basics"},
+    "know": {
+      "vi": "FlatList chỉ render các item gần vùng nhìn thấy (virtualization), nên dùng nó cho danh sách dài thay vì `ScrollView` với `map`. Bạn cần `keyExtractor` ổn định, `renderItem` nhẹ, và biết các prop thường dùng như `ListEmptyComponent`, `onEndReached`, `refreshing` / `onRefresh`. Không đặt FlatList trong `ScrollView` cùng chiều, vì virtualization sẽ không hoạt động.",
+      "en": "FlatList renders only the items near the visible area (virtualisation), so you use it for long lists instead of `ScrollView` with `map`. You need a stable `keyExtractor`, a light `renderItem`, and the common props such as `ListEmptyComponent`, `onEndReached` and `refreshing` / `onRefresh`. Do not nest a FlatList inside a `ScrollView` of the same direction, because virtualisation stops working."
+    },
+    "check": [
+      {"vi": "Vì sao `onEndReached` có thể bị gọi nhiều lần liên tiếp, và bạn chặn tải trùng thế nào?", "en": "Why can `onEndReached` fire several times in a row, and how do you prevent duplicate loads?"},
+      {"vi": "`getItemLayout` giúp gì, và chỉ dùng được khi nào?", "en": "What does `getItemLayout` help with, and when can you use it?"},
+      {"vi": "Item trong list nháy hoặc mất state khi cuộn. Bạn kiểm tra điều gì trước?", "en": "List items flicker or lose state while scrolling. What do you check first?"}
+    ],
+    "topics": ["performance/lists"],
+    "lessons": ["performance-lists-core", "performance-lists-lab"]
+  },
+  {
+    "id": "rn-middle-08",
+    "track": "rn",
+    "level": "middle",
+    "area": "state",
+    "title": {"vi": "Local state và global state", "en": "Local and global state"},
+    "know": {
+      "vi": "Giữ state ở component gần nhất cần nó, chỉ nâng lên khi nhiều nơi cùng dùng. Context hợp với giá trị ít đổi như theme hay user, nhưng mọi consumer sẽ render lại khi value đổi. Với state dùng chung và đổi thường xuyên, bạn dùng một thư viện như Redux Toolkit hoặc Zustand và đọc state qua selector. Dữ liệu từ server là một loại state riêng, thường nên để thư viện data-fetching quản lý.",
+      "en": "Keep state in the closest component that needs it, and lift it only when several places share it. Context suits values that rarely change, such as theme or the current user, but every consumer re-renders when the value changes. For shared state that changes often, you use a library such as Redux Toolkit or Zustand and read it through selectors. Server data is a separate kind of state and is usually best left to a data-fetching library."
+    },
+    "check": [
+      {"vi": "Một giá trị trong Context đổi mỗi giây làm cả cây render lại. Bạn có những cách sửa nào?", "en": "A Context value changes every second and the whole tree re-renders. What are your options?"},
+      {"vi": "Vì sao selector trả về object mới mỗi lần gây re-render thừa?", "en": "Why does a selector that returns a new object every time cause extra re-renders?"},
+      {"vi": "Dữ liệu nào bạn để ở local state, dữ liệu nào để ở store chung? Cho ví dụ.", "en": "Which data do you keep in local state and which in a shared store? Give examples."}
+    ],
+    "topics": ["state/redux"],
+    "lessons": ["state-redux-core"]
+  },
+  {
+    "id": "rn-middle-09",
+    "track": "rn",
+    "level": "middle",
+    "area": "concurrency",
+    "title": {"vi": "Race condition khi gọi bất đồng bộ", "en": "Race conditions in async calls"},
+    "know": {
+      "vi": "Khi người dùng gõ tìm kiếm hoặc chuyển màn hình nhanh, các response có thể về sai thứ tự và ghi đè kết quả mới bằng kết quả cũ. Bạn chặn điều này bằng cờ bỏ qua trong cleanup của effect, hoặc huỷ request bằng `AbortController`. Cũng cần tránh `setState` sau khi màn hình đã rời đi, và debounce các request do gõ phím.",
+      "en": "When a user types a search or switches screens quickly, responses can arrive out of order and overwrite fresh results with stale ones. You prevent this with an ignore flag in the effect's cleanup, or by cancelling the request with `AbortController`. You also avoid `setState` after the screen has gone, and debounce requests triggered by typing."
+    },
+    "check": [
+      {"vi": "Gõ \"ab\" rồi \"abc\", màn hình lại hiện kết quả của \"ab\". Vì sao, và bạn sửa thế nào?", "en": "You type \"ab\" then \"abc\", and the screen shows results for \"ab\". Why, and how do you fix it?"},
+      {"vi": "Huỷ bằng `AbortController` khác gì so với chỉ bỏ qua kết quả?", "en": "How does cancelling with `AbortController` differ from simply ignoring the result?"},
+      {"vi": "Nút \"Thanh toán\" bị bấm hai lần gửi hai request. Bạn chặn ở đâu?", "en": "A Pay button tapped twice sends two requests. Where do you guard against it?"}
+    ],
+    "topics": ["state/async"],
+    "lessons": ["state-async-core"]
+  },
+  {
+    "id": "rn-middle-10",
+    "track": "rn",
+    "level": "middle",
+    "area": "architecture",
+    "title": {"vi": "Điều hướng với React Navigation", "en": "Navigation with React Navigation"},
+    "know": {
+      "vi": "Bạn dựng được cấu trúc stack lồng trong tab bằng `@react-navigation/native-stack` và `@react-navigation/bottom-tabs`, và biết màn hình nào nằm ở navigator nào. Params truyền qua `navigation.navigate('Screen', params)` và đọc qua `route.params`; nên truyền id thay vì cả object lớn. Bạn khai báo kiểu cho param list để TypeScript bắt lỗi tên màn hình và params sai.",
+      "en": "You can build stacks nested inside tabs with `@react-navigation/native-stack` and `@react-navigation/bottom-tabs`, and you know which screen lives in which navigator. Params go through `navigation.navigate('Screen', params)` and are read from `route.params`; pass an id rather than a large object. You type the param list so TypeScript catches wrong screen names and params."
+    },
+    "check": [
+      {"vi": "Vì sao nên truyền `productId` thay vì cả object `product` qua params?", "en": "Why pass `productId` rather than the whole `product` object as a param?"},
+      {"vi": "Màn hình trong tab không bị unmount khi chuyển tab. Điều đó ảnh hưởng gì đến effect và việc tải dữ liệu?", "en": "A tab screen is not unmounted when you switch tabs. How does that affect effects and data loading?"},
+      {"vi": "Luồng đăng nhập: bạn tổ chức navigator thế nào để người dùng không quay lại màn login bằng nút back?", "en": "For a login flow, how do you arrange navigators so the user cannot go back to the login screen?"}
+    ],
+    "topics": [],
+    "lessons": []
+  },
+  {
+    "id": "rn-middle-11",
+    "track": "rn",
+    "level": "middle",
+    "area": "data",
+    "title": {"vi": "Gọi API và các trạng thái loading, error", "en": "Calling APIs with loading and error states"},
+    "know": {
+      "vi": "`fetch` chỉ reject khi lỗi mạng; status 4xx hoặc 5xx vẫn resolve, nên bạn phải kiểm tra `response.ok`. Mỗi màn hình gọi API cần đủ ba trạng thái loading, error có nút thử lại, và empty. Bạn đặt timeout, xử lý khi mất mạng, và không tin dữ liệu server trả về đúng kiểu nếu chưa kiểm tra.",
+      "en": "`fetch` only rejects on network failure; a 4xx or 5xx status still resolves, so you must check `response.ok`. Every screen that calls an API needs loading, error with a retry button, and empty states. You set a timeout, handle being offline, and do not trust that server data has the right shape until you check it."
+    },
+    "check": [
+      {"vi": "Server trả 500 nhưng app không vào nhánh `catch`. Vì sao?", "en": "The server returns 500 but the app never reaches `catch`. Why?"},
+      {"vi": "Bạn thêm timeout cho `fetch` bằng cách nào?", "en": "How do you add a timeout to `fetch`?"},
+      {"vi": "Khi token hết hạn giữa chừng, nhiều request cùng nhận 401. Bạn xử lý ra sao để chỉ refresh một lần?", "en": "When a token expires, several requests get 401 at once. How do you make sure you refresh only once?"}
+    ],
+    "topics": ["state/async"],
+    "lessons": []
+  },
+  {
+    "id": "rn-middle-12",
+    "track": "rn",
+    "level": "middle",
+    "area": "data",
+    "title": {"vi": "Cache dữ liệu server với thư viện data-fetching", "en": "Caching server data with a data-fetching library"},
+    "know": {
+      "vi": "Thư viện như TanStack Query hay RTK Query lưu kết quả theo query key, khử trùng request giống nhau, và tự tải lại khi dữ liệu cũ. Bạn cần hiểu khái niệm stale time, invalidate sau khi mutation, và vì sao query key phải chứa mọi tham số ảnh hưởng tới kết quả. Biết điều này giúp bạn bỏ phần lớn code `useEffect` + `useState` tự viết để gọi API.",
+      "en": "Libraries such as TanStack Query or RTK Query cache results by query key, deduplicate identical requests and refetch when data goes stale. You need to understand stale time, invalidating after a mutation, and why the query key must include every parameter that affects the result. This lets you drop most hand-written `useEffect` + `useState` API code."
+    },
+    "check": [
+      {"vi": "Sau khi sửa một item, danh sách vẫn hiện dữ liệu cũ. Bạn làm gì?", "en": "After editing an item, the list still shows old data. What do you do?"},
+      {"vi": "Vì sao query key thiếu tham số `page` làm các trang hiển thị cùng dữ liệu?", "en": "Why does a query key missing the `page` parameter make every page show the same data?"},
+      {"vi": "Dữ liệu nào bạn lưu xuống AsyncStorage, dữ liệu nào không được lưu ở đó?", "en": "What data do you persist to AsyncStorage, and what must never go there?"}
+    ],
+    "topics": [],
+    "lessons": []
+  },
+  {
+    "id": "rn-middle-13",
+    "track": "rn",
+    "level": "middle",
+    "area": "native",
+    "title": {"vi": "Dùng native module có sẵn", "en": "Using existing native modules"},
+    "know": {
+      "vi": "Khi cài thư viện có code native, autolinking nối nó vào project, nhưng bạn phải chạy `pod install` trên iOS và build lại app; reload Metro là không đủ. Trước khi chọn thư viện, bạn kiểm tra nó còn được bảo trì và có hỗ trợ New Architecture không, vì từ RN 0.76 kiến trúc mới bật mặc định. Với Expo, thư viện native cần một development build thay vì Expo Go.",
+      "en": "When you install a library with native code, autolinking wires it into the project, but you must run `pod install` on iOS and rebuild the app; reloading Metro is not enough. Before choosing a library, you check that it is maintained and supports the New Architecture, since it is on by default from RN 0.76. With Expo, a native library needs a development build instead of Expo Go."
+    },
+    "check": [
+      {"vi": "Sau khi `npm install` một thư viện, app báo không tìm thấy native module. Bạn làm gì?", "en": "After installing a library, the app says the native module cannot be found. What do you do?"},
+      {"vi": "Bạn đánh giá một thư viện native bằng những tiêu chí nào trước khi thêm vào app?", "en": "Which criteria do you use to judge a native library before adding it?"},
+      {"vi": "Khi nào thay đổi chỉ cần reload JS, khi nào phải build lại app?", "en": "When does a change need only a JS reload, and when must you rebuild the app?"}
+    ],
+    "topics": ["native/build", "architecture/new-arch"],
+    "lessons": ["native-build-core"]
+  },
+  {
+    "id": "rn-middle-14",
+    "track": "rn",
+    "level": "middle",
+    "area": "native",
+    "title": {"vi": "Quyền truy cập trên iOS và Android", "en": "Permissions on iOS and Android"},
+    "know": {
+      "vi": "iOS bắt buộc khai báo lý do dùng quyền trong `Info.plist` (ví dụ `NSCameraUsageDescription`), thiếu thì app crash khi xin quyền. Android khai báo trong `AndroidManifest.xml` và xin quyền nguy hiểm lúc chạy, RN có sẵn `PermissionsAndroid` cho việc này. Bạn xử lý đủ các trường hợp: được cấp, bị từ chối, bị từ chối vĩnh viễn thì hướng người dùng vào Settings.",
+      "en": "iOS requires a usage reason in `Info.plist` (for example `NSCameraUsageDescription`); without it the app crashes when it requests the permission. Android declares permissions in `AndroidManifest.xml` and requests dangerous ones at runtime; RN ships `PermissionsAndroid` for this. You handle every outcome: granted, denied, and permanently denied, where you send the user to Settings."
+    },
+    "check": [
+      {"vi": "App crash ngay khi mở camera trên iOS nhưng chạy bình thường trên Android. Bạn kiểm tra gì đầu tiên?", "en": "The app crashes when opening the camera on iOS but works on Android. What do you check first?"},
+      {"vi": "Người dùng đã từ chối vĩnh viễn. Gọi xin quyền lần nữa sẽ ra sao, và bạn làm gì?", "en": "The user has permanently denied a permission. What happens if you request it again, and what do you do?"},
+      {"vi": "Vì sao nên xin quyền đúng lúc người dùng cần tính năng, không phải lúc mở app?", "en": "Why ask for a permission when the user needs the feature rather than at app launch?"}
+    ],
+    "topics": ["native"],
+    "lessons": []
+  },
+  {
+    "id": "rn-middle-15",
+    "track": "rn",
+    "level": "middle",
+    "area": "quality",
+    "title": {"vi": "Debug JavaScript với React Native DevTools", "en": "Debugging JavaScript with React Native DevTools"},
+    "know": {
+      "vi": "Từ RN 0.76, React Native DevTools là công cụ debug mặc định, mở từ Dev Menu hoặc phím `j` trong Metro. Bạn dùng được breakpoint, Console, và React Components để xem props và state. Bạn đọc được red box và stack trace, và tách được lỗi JS khỏi lỗi native trước khi đi sâu.",
+      "en": "From RN 0.76, React Native DevTools is the default debugger, opened from the Dev Menu or by pressing `j` in Metro. You can use breakpoints, the Console and React Components to inspect props and state. You can read a red box and its stack trace, and tell a JS error from a native one before digging deeper."
+    },
+    "check": [
+      {"vi": "Một nút bấm không làm gì cả. Bạn dùng DevTools theo các bước nào để tìm nguyên nhân?", "en": "A button does nothing when tapped. What steps do you take in DevTools to find out why?"},
+      {"vi": "Làm sao biết một crash đến từ JS hay từ native?", "en": "How do you tell whether a crash comes from JS or from native code?"},
+      {"vi": "Vì sao `console.log` một object có thể hiện giá trị khác lúc bạn mở nó ra xem?", "en": "Why can a logged object show a different value when you expand it later?"}
+    ],
+    "topics": ["debug/js"],
+    "lessons": ["debug-js-core", "debug-js-lab"]
+  },
+  {
+    "id": "rn-middle-16",
+    "track": "rn",
+    "level": "middle",
+    "area": "quality",
+    "title": {"vi": "Unit test và component test", "en": "Unit and component tests"},
+    "know": {
+      "vi": "Bạn viết unit test bằng Jest cho logic thuần như format, validate, reducer, và mock module bằng `jest.mock`. Với component, bạn dùng React Native Testing Library để render, tìm phần tử như người dùng thấy (`getByText`, `getByRole`) và mô phỏng thao tác. Code bất đồng bộ cần `findBy…` hoặc `waitFor`, không dùng `setTimeout` để chờ.",
+      "en": "You write Jest unit tests for pure logic such as formatting, validation and reducers, and mock modules with `jest.mock`. For components, you use React Native Testing Library to render, find elements the way a user sees them (`getByText`, `getByRole`) and simulate interactions. Async code needs `findBy…` or `waitFor`, not a `setTimeout` to wait."
+    },
+    "check": [
+      {"vi": "Vì sao tìm phần tử theo text hay role tốt hơn theo `testID` hay cấu trúc cây?", "en": "Why is finding elements by text or role better than by `testID` or tree structure?"},
+      {"vi": "Test pass dù UI chưa cập nhật sau khi gọi API. Bạn sửa test thế nào?", "en": "A test passes even though the UI has not updated after an API call. How do you fix the test?"},
+      {"vi": "Bạn mock một native module mà Jest không chạy được bằng cách nào?", "en": "How do you mock a native module that Jest cannot run?"}
+    ],
+    "topics": ["testing/unit", "testing/components"],
+    "lessons": ["testing-unit-core", "testing-unit-lab", "testing-components-core"]
+  },
+  {
+    "id": "rn-middle-17",
+    "track": "rn",
+    "level": "middle",
+    "area": "release",
+    "title": {"vi": "Build và phát hành một bản release", "en": "Building and shipping a release"},
+    "know": {
+      "vi": "Bạn tự làm được một bản release trên cả hai nền tảng. Android cần keystore để ký, tăng `versionCode` và build file `.aab` để lên Google Play. iOS cần signing đúng, tăng build number, archive trong Xcode rồi đưa lên TestFlight. Bạn biết bản release khác bản debug: không có Dev Menu, JS được bundle sẵn, và một số lỗi chỉ xuất hiện ở release.",
+      "en": "You can ship a release on both platforms yourself. Android needs a keystore for signing, a higher `versionCode` and an `.aab` build for Google Play. iOS needs correct signing, a higher build number, and an archive in Xcode uploaded to TestFlight. You know a release build differs from debug: no Dev Menu, the JS is pre-bundled, and some bugs appear only in release."
+    },
+    "check": [
+      {"vi": "Store từ chối bản upload vì trùng số build. Bạn sửa ở đâu trên mỗi nền tảng?", "en": "The store rejects an upload because the build number is reused. Where do you fix it on each platform?"},
+      {"vi": "App chạy tốt ở debug nhưng crash ngay khi mở ở release. Bạn kiểm tra những gì?", "en": "The app works in debug but crashes on launch in release. What do you check?"},
+      {"vi": "Vì sao mất keystore Android là chuyện nghiêm trọng, và bạn cất nó ở đâu?", "en": "Why is losing the Android keystore serious, and where do you keep it?"}
+    ],
+    "topics": ["release/android", "release/ios"],
+    "lessons": ["release-android-core", "release-ios-core"]
+  },
+  {
+    "id": "rn-middle-18",
+    "track": "rn",
+    "level": "middle",
+    "area": "teamwork",
+    "title": {"vi": "Git, pull request và dùng AI trong tính năng", "en": "Git, pull requests and AI in your feature work"},
+    "know": {
+      "vi": "Bạn chia tính năng thành các commit và PR nhỏ, có mô tả rõ thay đổi gì, vì sao, và cách kiểm tra. Bạn xử lý được conflict khi rebase hoặc merge mà không làm mất code của người khác. Khi dùng AI để viết code, bạn đọc và hiểu từng dòng, kiểm tra API nó dùng có thật không, và tự chịu trách nhiệm như code của mình.",
+      "en": "You split a feature into small commits and PRs with a clear description of what changed, why, and how to test it. You can resolve conflicts during a rebase or merge without losing other people's work. When you use AI to write code, you read and understand every line, check that the APIs it uses exist, and own it as your own code."
+    },
+    "check": [
+      {"vi": "Một PR tốt cho reviewer cần những gì trong phần mô tả?", "en": "What does a good PR description give the reviewer?"},
+      {"vi": "AI gợi ý một prop không có trong tài liệu. Bạn kiểm tra thế nào trước khi dùng?", "en": "AI suggests a prop that is not in the docs. How do you check it before using it?"},
+      {"vi": "Khi nào bạn chọn rebase, khi nào chọn merge?", "en": "When do you rebase, and when do you merge?"}
+    ],
+    "topics": ["workflow/git-agile", "ai/workflow"],
+    "lessons": ["workflow-git-agile-core", "ai-workflow-core"]
+  }
+]

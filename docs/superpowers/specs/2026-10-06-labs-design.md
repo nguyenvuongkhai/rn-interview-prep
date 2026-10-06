@@ -10,6 +10,8 @@ Người học chưa có nhiều kinh nghiệm với các khái niệm lớn (re
 
 Hai kỹ năng đi kèm cũng còn thiếu: viết test để chứng minh bản sửa, và debug để tìm nguyên nhân. Vì vậy P7 thêm hai nhóm chủ đề mới, `testing` và `debug` (§4), mỗi nhóm có câu hỏi, bài học và lab.
 
+Interviewer giờ cũng hay hỏi "bạn dùng AI assistant thế nào trong công việc?" và muốn nghe ca thật. P7 thêm nhóm thứ ba, `ai` (§4), dạy cách làm việc với AI assistant và cách viết prompt, kèm một lab.
+
 ### Ngoài phạm vi
 - Chạy code của lab trong trình duyệt. React Native không chạy được ở đó; lab là hướng dẫn để làm trên app của người học.
 - Ảnh chụp màn hình hay video: renderer Markdown không hỗ trợ ảnh.
@@ -37,7 +39,7 @@ Lab là một bài học với `kind: 'lab'`, nằm cùng chỗ với bài học
 - Các bước dùng bullet `-`, không dùng danh sách đánh số (parser không hỗ trợ).
 - Con số trong "Đọc tín hiệu" và "Đo lại" là ví dụ minh hoạ; phải ghi rõ là ví dụ, và nói người học sẽ thấy con số khác trên máy của họ.
 
-## 3. Sáu lab đầu tiên
+## 3. Bảy lab đầu tiên
 
 | Lab id | Chủ đề | Ca thật | Công cụ |
 |---|---|---|---|
@@ -53,7 +55,7 @@ Các câu `open` (và câu `spot-bug` liên quan) của mỗi chủ đề thêm 
 - Luôn đo trên release hoặc profile build; dev build chậm hơn nhiều và cho kết luận sai.
 - Không chắc một chi tiết giao diện thì mô tả theo chức năng ("mở tab Memory, chụp heap snapshot") thay vì đường dẫn menu chính xác.
 
-## 4. Hai nhóm chủ đề mới: testing và debug
+## 4. Ba nhóm chủ đề mới: testing, debug và ai
 
 Thêm vào `content/topics.json`, mỗi chủ đề 12 câu và một bài `core`, theo đúng cơ cấu trong content guide:
 
@@ -65,16 +67,24 @@ Thêm vào `content/topics.json`, mỗi chủ đề 12 câu và một bài `core
 | `debug/js` | Debug phía JS / Debugging JavaScript | React Native DevTools (breakpoint, console, tab Network và Memory theo phiên bản), React DevTools, đọc red box và LogBox, log có cấu trúc, tái hiện lỗi |
 | `debug/native` | Debug phía native / Debugging native code | `adb logcat`, Console.app và Xcode console, đọc native crash và stack, debug build release, lỗi chỉ xảy ra trên một loại máy |
 
-Nhóm `testing` có weight 3 cho `unit` và `components`, 2 cho `e2e`; nhóm `debug` weight 3 cho `js`, 2 cho `native`.
+| `ai/workflow` | Làm việc với AI assistant / Working with AI assistants | dùng AI ở đâu trong quy trình (đọc code lạ, debug, viết test, migrate, review), kiểm chứng output (đọc diff, chạy test, đối chiếu docs), rủi ro thật (API bịa, kiến thức cũ so với phiên bản RN đang dùng, lộ secret và code nội bộ, license), khi nào không nên dùng, trách nhiệm của người commit |
+| `ai/prompting` | Viết prompt cho việc lập trình / Prompting for coding work | đưa đủ ngữ cảnh (phiên bản, file, lỗi, log, ràng buộc), nói rõ kết quả mong muốn và tiêu chí xong, chia việc lớn thành bước, yêu cầu test và giải thích, cho ví dụ, lặp lại khi output sai thay vì chấp nhận, prompt để review và để debug |
+
+Nhóm `testing` có weight 3 cho `unit` và `components`, 2 cho `e2e`; nhóm `debug` weight 3 cho `js`, 2 cho `native`; nhóm `ai` weight 2 cho cả hai chủ đề.
+
+Nội dung nhóm `ai` viết theo cách làm, không gắn với một sản phẩm cụ thể (Copilot, Cursor, Claude Code…), vì tính năng của các công cụ đổi rất nhanh. Câu `open` của nhóm này viết như interviewer hỏi "kể một lần bạn dùng AI để…", và `modelAnswer` là một ca thật có bối cảnh, prompt, cách kiểm chứng và kết quả.
 
 Challenge chạy được trong trình duyệt vì chỉ là TypeScript thuần, nên thêm một challenge cho testing: người học viết các test bằng harness có sẵn để bắt lỗi trong một hàm cho trước. Chi tiết challenge này chốt ở plan; nếu harness hiện tại không hỗ trợ được thì bỏ challenge, không đổi harness trong P7.
 
-Hai lab thêm vào danh sách ở §3:
+Ba lab thêm vào danh sách ở §3:
 
 | Lab id | Chủ đề | Ca thật | Công cụ |
 |---|---|---|---|
 | `testing-unit-lab` | `testing/unit` | Một bug thật trong reducer giỏ hàng: viết test đỏ trước, sửa, test xanh, rồi giữ test để chặn regression | Jest, `describe`/`it`/`expect`, mock, chạy một test bằng `-t`, đọc diff của assertion |
 | `debug-js-lab` | `debug/js` | Màn hình hiện sai dữ liệu: đi từ triệu chứng tới dòng code gây lỗi | React Native DevTools (breakpoint, call stack, scope, tab Network), React DevTools (props và state), log có request id |
+| `ai-prompting-lab` | `ai/prompting` | Dùng AI assistant để sửa một memory leak trong màn hình có subscription: prompt mơ hồ cho ra bản sửa sai, prompt đủ ngữ cảnh cho ra bản sửa đúng, rồi kiểm chứng bằng test và heap snapshot | Một AI assistant bất kỳ; so sánh prompt trước và sau, cách đọc và kiểm tra diff, test chứng minh bản sửa |
+
+Lab `ai-prompting-lab` dùng khung chung ở §2, với nghĩa: "Dựng lại lỗi" gồm code lỗi và prompt mơ hồ, "Đo" là kiểm tra output của AI, "Sửa" là prompt tốt hơn cùng bản sửa, "Đo lại" là test và heap snapshot.
 
 ## 5. Thay đổi code
 
@@ -96,6 +106,6 @@ Kiểm tra tay: mở từng lab ở Thư viện, kiểm tra tiêu đề và khun
 ## 7. Thứ tự triển khai
 
 1. Code: schema, chuỗi, `lessonTitle`, Lesson, Library, link cạnh đáp án, content guide.
-2. Hai nhóm chủ đề `testing` và `debug`: topics, câu hỏi, bài học, challenge testing.
-3. Sáu lab, viết song song, mỗi lab một agent; sau đó gắn lab id vào các câu liên quan.
+2. Ba nhóm chủ đề `testing`, `debug` và `ai`: topics, câu hỏi, bài học, challenge testing.
+3. Bảy lab, viết song song, mỗi lab một agent; sau đó gắn lab id vào các câu liên quan.
 4. Review độ chính xác của công cụ trong từng lab.

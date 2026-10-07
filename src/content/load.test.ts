@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ContentError, loadContent, type RawContent } from './load';
+import { ContentError, EMPTY_MAP, loadContent, type RawContent } from './load';
 
 const L = (s: string) => ({ vi: s, en: s });
 const topics = [
@@ -161,5 +161,50 @@ describe('loadContent', () => {
 
   it('treats a missing roadmap as empty', () => {
     expect(loadContent(raw()).roadmap).toEqual({ areas: [], items: [] });
+  });
+
+  const mapLevel = (id: string, checkIds: string[]) => ({
+    id, name: L(id), tag: L('t'), rn: [L('a')], ios: [L('b')], android: [L('c')],
+    checks: checkIds.map((c) => ({ id: c, text: L('q') })),
+  });
+  const checkIds = (level: string) => [1, 2, 3, 4].map((n) => `map-${level}-${n}`);
+  const knowledgeMap = (levels: object[]) => ({
+    layers: [{ id: 'js', title: L('JS'), body: L('b') }],
+    rows: [{ concept: L('Text'), rn: '<Text>', ios: 'UILabel', android: 'TextView' }],
+    levels, arch: [], trace: [], habits: [],
+  });
+  const goodMap = knowledgeMap([
+    mapLevel('junior', checkIds('junior')),
+    mapLevel('middle', checkIds('middle')),
+    mapLevel('senior', checkIds('senior')),
+  ]);
+
+  it('loads the knowledge map', () => {
+    const ok = loadContent(raw({ map: goodMap }));
+    expect(ok.map.levels.map((l) => l.id)).toEqual(['junior', 'middle', 'senior']);
+    expect(ok.map.layers[0].parts).toEqual([]);
+  });
+
+  it('reports map levels out of order and bad check ids', () => {
+    const broken = knowledgeMap([
+      mapLevel('middle', checkIds('middle')),
+      mapLevel('junior', ['map-junior-1', 'map-junior-1', 'map-middle-9', 'map-junior-4']),
+      mapLevel('senior', checkIds('senior')),
+    ]);
+    expect(issuesOf(raw({ map: broken }))).toEqual([
+      'map levels must be junior, middle, senior in that order',
+      'duplicate map check "map-junior-1"',
+      'map check "map-middle-9": id must start with "map-junior-"',
+    ]);
+  });
+
+  it('rejects a map file that breaks the schema', () => {
+    const issues = issuesOf(raw({ map: { ...goodMap, rows: [{ concept: L('x'), rn: '', ios: 'a', android: 'b' }] } }));
+    expect(issues).toHaveLength(1);
+    expect(issues[0]).toMatch(/^\/content\/map\/map\.json: rows\.0\.rn: /);
+  });
+
+  it('treats a missing map as empty', () => {
+    expect(loadContent(raw()).map).toEqual(EMPTY_MAP);
   });
 });

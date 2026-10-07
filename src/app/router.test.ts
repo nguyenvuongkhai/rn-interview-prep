@@ -20,6 +20,7 @@ describe('router', () => {
     expect(parseRoute('#/lesson/render-memo-pitfalls')).toEqual({ name: 'lesson', lessonId: 'render-memo-pitfalls' });
     expect(parseRoute('#/lesson')).toEqual({ name: 'today' });
     expect(parseRoute('#/roadmap')).toEqual({ name: 'roadmap' });
+    expect(parseRoute('#/map')).toEqual({ name: 'map' });
     expect(parseRoute('#/progress')).toEqual({ name: 'progress' });
     expect(parseRoute('#/settings')).toEqual({ name: 'settings' });
   });
@@ -32,6 +33,7 @@ describe('router', () => {
       { name: 'library' },
       { name: 'lesson', lessonId: 'l-1' },
       { name: 'roadmap' },
+      { name: 'map' },
       { name: 'progress' },
       { name: 'settings' },
     ];

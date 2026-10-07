@@ -119,6 +119,43 @@ export const roadmapItem = z.strictObject({
 });
 export const roadmapFile = z.array(roadmapItem);
 
+export const mapLayerId = z.enum(['js', 'runtime', 'ios', 'android']);
+export const mapLevelId = z.enum(['junior', 'middle', 'senior']);
+export const mapLayer = z.strictObject({
+  id: mapLayerId,
+  title: localized,
+  body: localized,
+  parts: z.array(localized).default([]),
+});
+/** one concept; the platform cells are API and tool names, so they are not translated */
+export const mapRow = z.strictObject({
+  concept: localized,
+  rn: z.string().min(1),
+  ios: z.string().min(1),
+  android: z.string().min(1),
+});
+export const mapCheck = z.strictObject({ id, text: localized });
+export const mapLevel = z.strictObject({
+  id: mapLevelId,
+  name: localized,
+  tag: localized,
+  rn: z.array(localized).min(1),
+  ios: z.array(localized).min(1),
+  android: z.array(localized).min(1),
+  checks: z.array(mapCheck).length(4),
+});
+export const mapArch = z.strictObject({ old: z.string().min(1), new: z.string().min(1), change: localized });
+export const mapStep = z.strictObject({ step: localized, where: z.string().min(1) });
+export const mapHabit = z.strictObject({ title: localized, body: localized });
+export const mapFile = z.strictObject({
+  layers: z.array(mapLayer),
+  rows: z.array(mapRow),
+  levels: z.array(mapLevel),
+  arch: z.array(mapArch),
+  trace: z.array(mapStep),
+  habits: z.array(mapHabit),
+});
+
 export type Localized = z.infer<typeof localized>;
 export type Option = z.infer<typeof option>;
 export type Kind = z.infer<typeof kind>;
@@ -137,3 +174,9 @@ export type RoadmapTrack = z.infer<typeof roadmapTrack>;
 export type RoadmapLevel = z.infer<typeof roadmapLevel>;
 export type RoadmapArea = z.infer<typeof roadmapArea>;
 export type RoadmapItem = z.infer<typeof roadmapItem>;
+export type MapLayerId = z.infer<typeof mapLayerId>;
+export type MapLevelId = z.infer<typeof mapLevelId>;
+export type MapLayer = z.infer<typeof mapLayer>;
+export type MapRow = z.infer<typeof mapRow>;
+export type MapLevel = z.infer<typeof mapLevel>;
+export type KnowledgeMap = z.infer<typeof mapFile>;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Content } from '../content/load';
+import { EMPTY_MAP, type Content } from '../content/load';
 import { NOW, challenge, mcq, open, topic } from '../core/testFixtures';
 import { DAY_MS } from '../core/types';
 import { createMemoryRepo } from '../storage/repo';
@@ -12,6 +12,7 @@ const content: Content = {
   lessons: [],
   challenges: {},
   roadmap: { areas: [], items: [] },
+  map: EMPTY_MAP,
 };
 
 function setup() {

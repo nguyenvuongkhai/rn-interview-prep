@@ -2,11 +2,13 @@ import { z } from 'zod';
 import {
   challengeMeta,
   lessonMeta,
+  mapFile,
   questionFile,
   roadmapAreasFile,
   roadmapFile,
   topicsFile,
   type Item,
+  type KnowledgeMap,
   type Lesson,
   type LessonMeta,
   type Localized,
@@ -16,7 +18,7 @@ import {
 } from '../core/schema';
 import type { Lang } from '../core/types';
 import { parseFrontmatter } from './frontmatter';
-import { checkIntegrity, checkRoadmap } from './integrity';
+import { checkIntegrity, checkMap, checkRoadmap } from './integrity';
 
 export interface RawContent {
   topics: unknown;
@@ -32,6 +34,8 @@ export interface RawContent {
   roadmapAreas?: unknown;
   /** path → parsed roadmap item array */
   roadmapFiles?: Record<string, unknown>;
+  /** parsed content/map/map.json; absent when there is no map */
+  map?: unknown;
 }
 
 export interface Content {
@@ -40,6 +44,7 @@ export interface Content {
   lessons: Lesson[];
   challenges: Record<string, ChallengeFiles>;
   roadmap: { areas: RoadmapArea[]; items: RoadmapItem[] };
+  map: KnowledgeMap;
 }
 
 export interface ChallengeFiles {
@@ -48,6 +53,8 @@ export interface ChallengeFiles {
   tests: string;
   solution: string;
 }
+
+export const EMPTY_MAP: KnowledgeMap = { layers: [], rows: [], levels: [], arch: [], trace: [], habits: [] };
 
 export class ContentError extends Error {
   constructor(public readonly issues: string[]) {
@@ -148,8 +155,12 @@ export function loadContent(raw: RawContent): Content {
     roadmapItems.push(...parsed);
   }
 
+  const map: KnowledgeMap =
+    raw.map === undefined ? EMPTY_MAP : (parse(mapFile, raw.map, '/content/map/map.json') ?? EMPTY_MAP);
+
   issues.push(...checkIntegrity(topics, items, lessons));
   issues.push(...checkRoadmap(areas, roadmapItems, topics, lessons));
+  issues.push(...checkMap(map));
   if (issues.length > 0) throw new ContentError(issues);
-  return { topics, items, lessons, challenges, roadmap: { areas, items: roadmapItems } };
+  return { topics, items, lessons, challenges, roadmap: { areas, items: roadmapItems }, map };
 }

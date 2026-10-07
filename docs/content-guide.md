@@ -183,3 +183,15 @@ Roadmap trả lời câu hỏi "ở mức Middle hay Senior tôi phải biết n
   - Senior là chịu trách nhiệm cả app và đội: trade-off, kiến trúc, hiệu năng đo được, phát hành an toàn, review, dẫn dắt. Không lặp lại mục của Middle ở Senior; Senior nói về chiều sâu và quyết định.
 - **Độ chính xác:** như content khác. Không bịa API, ghi rõ phiên bản khi phụ thuộc phiên bản, viết theo cơ chế.
 - **Văn phong:** câu ngắn, thẳng; không chữ đậm hay nghiêng; bản vi giữ thuật ngữ tiếng Anh.
+
+## Bản đồ kiến thức
+
+Bản đồ (`#/map`) cho người học một mô hình để xếp thuật ngữ: nó thuộc tầng nào (JS, runtime RN, native), và cùng một khái niệm được gọi là gì trên React Native, iOS và Android.
+
+- **File:** `content/map/map.json`, một object với `layers`, `rows`, `levels`, `arch`, `trace`, `habits`. Schema là `mapFile` trong `src/core/schema.ts`.
+- **Tầng:** id là `js`, `runtime`, `ios`, `android`, mỗi id một lần. `parts` (tuỳ chọn) là các phần của tầng, ví dụ "Hermes: JS engine".
+- **Bảng đối chiếu:** `concept` song ngữ; `rn`, `ios`, `android` là tên API hoặc công cụ, để nguyên tiếng Anh. Không có tương đương thì ghi `—`.
+- **Cấp độ:** đúng ba cấp theo thứ tự `junior`, `middle`, `senior`. Mỗi cấp có đúng 4 câu tự kiểm tra, id `map-<level>-<n>`. Ô tick của người học lưu theo id này, nên đã phát hành thì không đổi id; bỏ một câu thì dùng id mới cho câu thay thế.
+- **Kiến trúc và trace:** `old`, `new`, `where` là chuỗi đơn tiếng Anh; câu giải thích song ngữ.
+- **Khác Roadmap:** Roadmap liệt kê khối kiến thức theo track. Bản đồ là mô hình tổng quan và bảng tra; đừng chép mục Roadmap sang đây.
+- **Độ chính xác và văn phong:** như content khác. Ghi rõ phiên bản khi phụ thuộc phiên bản (ví dụ "mặc định từ RN 0.76"); bản vi giữ thuật ngữ tiếng Anh.

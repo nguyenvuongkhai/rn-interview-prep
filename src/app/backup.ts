@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import type { Snapshot } from '../storage/repo';
 import { localDate } from './dates';
+import { MAP_SETTING } from './map';
 import { ROADMAP_SETTING, isStringArray } from './roadmap';
 
 export const BACKUP_APP = 'rn-interview-prep';
@@ -35,6 +36,7 @@ const KNOWN_SETTINGS: Record<string, (value: unknown) => boolean> = {
   lang: (v) => v === 'vi' || v === 'en',
   theme: (v) => v === 'dark' || v === 'light' || v === 'system',
   [ROADMAP_SETTING]: isStringArray,
+  [MAP_SETTING]: isStringArray,
 };
 const setting = z
   .object({ key: z.string(), value: z.unknown() })

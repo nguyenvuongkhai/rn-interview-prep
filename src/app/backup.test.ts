@@ -41,6 +41,13 @@ describe('backup', () => {
     expect(() => parseBackup(JSON.stringify(bad))).toThrow('settings.0.value');
   });
 
+  it('keeps knowledge map ticks and rejects a value that is not a list of ids', () => {
+    const withMap: Snapshot = { ...snapshot, settings: [...snapshot.settings, { key: 'map', value: ['map-junior-1'] }] };
+    expect(parseBackup(JSON.stringify(toBackup(withMap, NOW)))).toEqual(withMap);
+    const bad = toBackup({ ...snapshot, settings: [{ key: 'map', value: { 'map-junior-1': true } }] }, NOW);
+    expect(() => parseBackup(JSON.stringify(bad))).toThrow('settings.0.value');
+  });
+
   it('names the file after the local date', () => {
     expect(backupFileName(new Date(2026, 9, 1, 9).getTime())).toBe('rn-interview-prep-2026-10-01.json');
   });

@@ -1,0 +1,191 @@
+{
+  "layers": [
+    {
+      "id": "js",
+      "title": {"vi": "Code của bạn: JS / TS + React", "en": "Your code: JS / TS + React"},
+      "body": {
+        "vi": "Component, hook, navigation, state, gọi API. Đây là nơi bạn dành phần lớn thời gian.",
+        "en": "Components, hooks, navigation, state, API calls. This is where you spend most of your time."
+      }
+    },
+    {
+      "id": "runtime",
+      "title": {"vi": "React Native runtime", "en": "React Native runtime"},
+      "body": {
+        "vi": "Phần lớn viết bằng C++. Nó nối JS của bạn với nền tảng.",
+        "en": "Mostly C++. It connects your JS to the platform."
+      },
+      "parts": [
+        {"vi": "Hermes: engine JS", "en": "Hermes: JS engine"},
+        {"vi": "JSI: gọi qua lại JS↔C++", "en": "JSI: JS↔C++ calls"},
+        {"vi": "Fabric: renderer", "en": "Fabric: renderer"},
+        {"vi": "TurboModules: API native", "en": "TurboModules: native APIs"},
+        {"vi": "Yoga: layout flexbox", "en": "Yoga: flexbox layout"},
+        {"vi": "Metro: bundler (chạy trên máy dev, không nằm trong app)", "en": "Metro: bundler (runs on your dev machine, not in the app)"}
+      ]
+    },
+    {
+      "id": "ios",
+      "title": {"vi": "App iOS (Swift / Obj-C)", "en": "iOS app (Swift / Obj-C)"},
+      "body": {
+        "vi": "UIKit · Xcode · CocoaPods · `Info.plist` · signing bằng certificate + provisioning profile",
+        "en": "UIKit · Xcode · CocoaPods · `Info.plist` · signing with certificate + provisioning profile"
+      }
+    },
+    {
+      "id": "android",
+      "title": {"vi": "App Android (Kotlin / Java)", "en": "Android app (Kotlin / Java)"},
+      "body": {
+        "vi": "Android SDK · Gradle · `AndroidManifest.xml` · signing bằng keystore",
+        "en": "Android SDK · Gradle · `AndroidManifest.xml` · signing with a keystore"
+      }
+    }
+  ],
+  "rows": [
+    {"concept": {"vi": "Điểm vào của app", "en": "App entry point"}, "rn": "index.js → AppRegistry", "ios": "AppDelegate / SceneDelegate", "android": "Application / MainActivity"},
+    {"concept": {"vi": "Một màn hình", "en": "A screen"}, "rn": "Screen component (React Navigation / Expo Router)", "ios": "UIViewController", "android": "Activity / Fragment"},
+    {"concept": {"vi": "View cơ bản", "en": "Basic view"}, "rn": "<View>", "ios": "UIView", "android": "android.view.View"},
+    {"concept": {"vi": "Chữ", "en": "Text"}, "rn": "<Text>", "ios": "UILabel", "android": "TextView"},
+    {"concept": {"vi": "Danh sách dài", "en": "Long list"}, "rn": "FlatList / FlashList", "ios": "UITableView / UICollectionView", "android": "RecyclerView"},
+    {"concept": {"vi": "UI native hiện đại", "en": "Modern native UI"}, "rn": "—", "ios": "SwiftUI", "android": "Jetpack Compose"},
+    {"concept": {"vi": "Ngôn ngữ", "en": "Language"}, "rn": "JavaScript / TypeScript", "ios": "Swift (Obj-C legacy)", "android": "Kotlin (Java legacy)"},
+    {"concept": {"vi": "Thư viện phụ thuộc", "en": "Dependencies"}, "rn": "npm / yarn · package.json", "ios": "CocoaPods · Podfile / SPM", "android": "Gradle · build.gradle"},
+    {"concept": {"vi": "Công cụ build", "en": "Build tool"}, "rn": "Metro (bundles JS)", "ios": "Xcode / xcodebuild", "android": "Gradle / Android Studio"},
+    {"concept": {"vi": "Nơi chạy app", "en": "Run target"}, "rn": "Simulator / Emulator / device (Expo Go or a dev client)", "ios": "Simulator", "android": "Emulator (AVD)"},
+    {"concept": {"vi": "Cấu hình app", "en": "App config"}, "rn": "app.json / app.config.js", "ios": "Info.plist", "android": "AndroidManifest.xml"},
+    {"concept": {"vi": "Định danh app", "en": "App identity"}, "rn": "app.json (Expo): ios.bundleIdentifier / android.package", "ios": "Bundle ID", "android": "applicationId"},
+    {"concept": {"vi": "Quyền truy cập", "en": "Permissions"}, "rn": "react-native-permissions / expo modules", "ios": "Info.plist usage strings + runtime prompt", "android": "Manifest entry + runtime request"},
+    {"concept": {"vi": "Vòng đời app", "en": "App lifecycle"}, "rn": "AppState (active / background)", "ios": "sceneDidBecomeActive, sceneWillResignActive…", "android": "onCreate, onResume, onPause…"},
+    {"concept": {"vi": "Lưu trữ đơn giản", "en": "Simple storage"}, "rn": "AsyncStorage / MMKV", "ios": "UserDefaults", "android": "SharedPreferences / DataStore"},
+    {"concept": {"vi": "Lưu trữ bảo mật", "en": "Secure storage"}, "rn": "react-native-keychain / expo-secure-store", "ios": "Keychain", "android": "Android Keystore (EncryptedSharedPreferences deprecated)"},
+    {"concept": {"vi": "Push notification", "en": "Push notifications"}, "rn": "@react-native-firebase/messaging / expo-notifications", "ios": "APNs", "android": "FCM"},
+    {"concept": {"vi": "Deep link", "en": "Deep links"}, "rn": "Linking", "ios": "URL schemes / Universal Links", "android": "Intent filters / App Links"},
+    {"concept": {"vi": "Thread", "en": "Threads"}, "rn": "JS thread + UI thread", "ios": "Main thread · GCD · async/await", "android": "Main (Looper) thread · Coroutines"},
+    {"concept": {"vi": "Animation", "en": "Animation"}, "rn": "Animated / Reanimated", "ios": "Core Animation / UIView.animate", "android": "ValueAnimator / Compose animation"},
+    {"concept": {"vi": "Log", "en": "Logs"}, "rn": "console.log · React Native DevTools", "ios": "Xcode console · Console.app", "android": "adb logcat · Logcat"},
+    {"concept": {"vi": "Profiling", "en": "Profiling"}, "rn": "Hermes profiler · React Profiler", "ios": "Instruments", "android": "Android Studio Profiler"},
+    {"concept": {"vi": "Thu gọn code", "en": "Code shrinking"}, "rn": "Metro minify (+ Hermes bytecode)", "ios": "Dead code stripping · symbol stripping · -Osize", "android": "R8 / ProGuard"},
+    {"concept": {"vi": "Signing", "en": "Signing"}, "rn": "EAS credentials (Expo)", "ios": "Certificate + Provisioning Profile", "android": "Keystore (.jks)"},
+    {"concept": {"vi": "File phát hành", "en": "Release file"}, "rn": "JS bundle (inside the app)", "ios": ".ipa", "android": ".apk / .aab"},
+    {"concept": {"vi": "Thử nghiệm beta", "en": "Beta testing"}, "rn": "EAS / internal distribution", "ios": "TestFlight", "android": "Play Console internal testing"},
+    {"concept": {"vi": "Store", "en": "Store"}, "rn": "—", "ios": "App Store Connect", "android": "Google Play Console"},
+    {"concept": {"vi": "Phát hành không qua store review", "en": "Ship without store review"}, "rn": "OTA updates (EAS Update), JS + assets only", "ios": "—", "android": "—"}
+  ],
+  "levels": [
+    {
+      "id": "junior",
+      "name": {"vi": "Junior", "en": "Junior"},
+      "tag": {"vi": "Tôi dựng được màn hình", "en": "I can build screens"},
+      "rn": [
+        {"vi": "Nền tảng React: component, props, state, `useState`, `useEffect`, `useMemo`, `useCallback`", "en": "React basics: components, props, state, `useState`, `useEffect`, `useMemo`, `useCallback`"},
+        {"vi": "Core component: `View`, `Text`, `Image`, `ScrollView`, `FlatList`, `Pressable`, `TextInput`", "en": "Core components: `View`, `Text`, `Image`, `ScrollView`, `FlatList`, `Pressable`, `TextInput`"},
+        {"vi": "Style bằng flexbox (hướng mặc định là column, và style không cascade)", "en": "Flexbox styling (the default direction is column, and styles don't cascade)"},
+        {"vi": "Navigation: stack, tab và drawer", "en": "Navigation: stack, tab and drawer"},
+        {"vi": "Lấy dữ liệu bằng `fetch` hoặc axios, sau đó là React Query", "en": "Data fetching with `fetch` or axios, then React Query"},
+        {"vi": "Metro, Fast Refresh, đọc lỗi red box", "en": "Metro, Fast Refresh, reading a red-box error"}
+      ],
+      "ios": [
+        {"vi": "`ios/` là một project Xcode thật", "en": "`ios/` is a real Xcode project"},
+        {"vi": "Chạy `pod install` sau khi thêm thư viện native", "en": "Run `pod install` after adding a native library"},
+        {"vi": "Dùng Simulator, và biết Xcode console nằm ở đâu", "en": "Use the Simulator, and know where the Xcode console is"}
+      ],
+      "android": [
+        {"vi": "`android/` là một project Gradle thật", "en": "`android/` is a real Gradle project"},
+        {"vi": "Clean bản build Gradle khi mọi thứ chạy lạ", "en": "Clean the Gradle build when things act strange"},
+        {"vi": "Dùng Emulator (AVD) và `adb devices`", "en": "Use the Emulator (AVD) and `adb devices`"}
+      ],
+      "checks": [
+        {"id": "map-junior-1", "text": {"vi": "Vì sao `FlatList` cần `keyExtractor`?", "en": "Why does a `FlatList` need a `keyExtractor`?"}},
+        {"id": "map-junior-2", "text": {"vi": "Vì sao style không cascade như trong CSS?", "en": "Why don't styles cascade like they do in CSS?"}},
+        {"id": "map-junior-3", "text": {"vi": "Simulator và Emulator khác nhau thế nào?", "en": "What's the difference between a Simulator and an Emulator?"}},
+        {"id": "map-junior-4", "text": {"vi": "Khi nào phải build lại app native thay vì chỉ reload JS?", "en": "When do I need to rebuild the native app instead of reloading JS?"}}
+      ]
+    },
+    {
+      "id": "middle",
+      "name": {"vi": "Middle", "en": "Middle"},
+      "tag": {"vi": "Tôi hiểu app chạy thế nào và tự ship được", "en": "I understand how it runs and can ship it"},
+      "rn": [
+        {"vi": "Thread: JS thread chạy logic, UI thread vẽ, Yoga lo layout", "en": "Threads: the JS thread runs logic, the UI thread draws, and Yoga handles layout"},
+        {"vi": "Hiệu năng: `React.memo`, virtualization, tránh re-render, FlashList", "en": "Performance: `React.memo`, virtualization, avoiding re-renders, FlashList"},
+        {"vi": "Reanimated: animation chạy trên UI thread", "en": "Reanimated: animations that run on the UI thread"},
+        {"vi": "State: Context so với Zustand/Redux, và server state với React Query", "en": "State: Context vs. Zustand/Redux, and server state with React Query"},
+        {"vi": "Expo so với bare: prebuild, config plugin, EAS Build", "en": "Expo vs. bare: prebuild, config plugins, EAS Build"},
+        {"vi": "Debug bằng React Native DevTools và log native", "en": "Debugging with React Native DevTools and native logs"}
+      ],
+      "ios": [
+        {"vi": "Vòng đời app và quyền truy cập trong `Info.plist`", "en": "App lifecycle and permissions in `Info.plist`"},
+        {"vi": "Signing: certificate, provisioning profile và bundle ID", "en": "Signing: certificate, provisioning profile and bundle ID"},
+        {"vi": "Scheme và build configuration (Debug/Release)", "en": "Schemes and build configurations (Debug/Release)"},
+        {"vi": "Upload lên TestFlight", "en": "Uploading to TestFlight"}
+      ],
+      "android": [
+        {"vi": "Vòng đời Activity và `AndroidManifest.xml`", "en": "Activity lifecycle and `AndroidManifest.xml`"},
+        {"vi": "Runtime permission", "en": "Runtime permissions"},
+        {"vi": "Signing bằng keystore và file `.aab` cho Play Store", "en": "Keystore signing and `.aab` files for the Play Store"},
+        {"vi": "Build variant và flavor; `minSdk`, `targetSdk` và `compileSdk`", "en": "Build variants and flavors; `minSdk`, `targetSdk` and `compileSdk`"}
+      ],
+      "checks": [
+        {"id": "map-middle-1", "text": {"vi": "Vì sao animation bị giật khi đang parse một response API lớn?", "en": "Why does my animation stutter while a big API response is parsing?"}},
+        {"id": "map-middle-2", "text": {"vi": "Vì sao build chạy được ở máy local nhưng lỗi ở bước signing trên CI?", "en": "Why does the build work locally but fail at signing in CI?"}},
+        {"id": "map-middle-3", "text": {"vi": "Khi nào nên chuyển từ Expo Go sang dev client?", "en": "When would I switch from Expo Go to a dev client?"}},
+        {"id": "map-middle-4", "text": {"vi": "`pod install` thật ra thay đổi những gì?", "en": "What does `pod install` actually change?"}}
+      ]
+    },
+    {
+      "id": "senior",
+      "name": {"vi": "Senior", "en": "Senior"},
+      "tag": {"vi": "Tôi làm chủ phần bên trong và kiến trúc", "en": "I own the internals and the architecture"},
+      "rn": [
+        {"vi": "Kiến trúc mới: JSI, Fabric, TurboModules, Codegen, bridgeless mode; cùng với engine Hermes", "en": "New architecture: JSI, Fabric, TurboModules, Codegen, bridgeless mode; plus the Hermes engine"},
+        {"vi": "Viết native module và native view với Codegen spec", "en": "Writing native modules and native views with a Codegen spec"},
+        {"vi": "Kiến trúc: feature module, monorepo, design system, offline-first", "en": "Architecture: feature modules, monorepos, design systems, offline-first"},
+        {"vi": "Release engineering: CI/CD, OTA update và giới hạn chính sách của nó, versioning", "en": "Release engineering: CI/CD, OTA updates and their policy limits, versioning"},
+        {"vi": "Nâng cấp phiên bản RN và đánh giá độ khỏe của thư viện", "en": "Upgrading RN versions and judging the health of libraries"},
+        {"vi": "Bảo mật: certificate pinning, lưu trữ bảo mật, obfuscation", "en": "Security: certificate pinning, secure storage, obfuscation"}
+      ],
+      "ios": [
+        {"vi": "ARC và memory leak; profiling bằng Instruments", "en": "ARC and memory leaks; profiling with Instruments"},
+        {"vi": "Background mode và cách APNs hoạt động bên trong", "en": "Background modes and the internals of APNs"},
+        {"vi": "GCD so với Swift concurrency", "en": "GCD vs. Swift concurrency"},
+        {"vi": "Review guidelines và privacy manifest", "en": "Review guidelines and privacy manifests"}
+      ],
+      "android": [
+        {"vi": "Garbage collection, leak và Android Studio Profiler", "en": "Garbage collection, leaks and the Android Studio Profiler"},
+        {"vi": "WorkManager, foreground service và FCM", "en": "WorkManager, foreground services and FCM"},
+        {"vi": "Coroutines và Flow", "en": "Coroutines and Flow"},
+        {"vi": "Rule R8 và chính sách của Play", "en": "R8 rules and Play policies"}
+      ],
+      "checks": [
+        {"id": "map-senior-1", "text": {"vi": "Từ `setState` tới pixel trên màn hình, từng bước diễn ra những gì?", "en": "What happens, step by step, from `setState` to pixels on screen?"}},
+        {"id": "map-senior-2", "text": {"vi": "Khi nào nên viết TurboModule thay vì dùng một thư viện JS?", "en": "When would I write a TurboModule instead of using a JS library?"}},
+        {"id": "map-senior-3", "text": {"vi": "OTA update thay đổi được gì, và không thay đổi được gì?", "en": "What can an OTA update change, and what can't it change?"}},
+        {"id": "map-senior-4", "text": {"vi": "Bạn tìm và sửa cold start chậm trên Android thế nào?", "en": "How would I find and fix a slow cold start on Android?"}}
+      ]
+    }
+  ],
+  "arch": [
+    {"old": "Bridge", "new": "JSI", "change": {"vi": "JS gọi thẳng C++ và có thể gọi đồng bộ. Message không còn bị serialize thành JSON.", "en": "JS calls C++ directly and can do so synchronously. Messages are no longer serialized as JSON."}},
+    {"old": "Native Modules", "new": "TurboModules", "change": {"vi": "Load lazy và type-safe, xây trên JSI.", "en": "Loaded lazily and type-safe, built on JSI."}},
+    {"old": "Paper renderer", "new": "Fabric", "change": {"vi": "Renderer C++ dùng chung, hỗ trợ concurrent React và đọc layout đồng bộ.", "en": "A shared C++ renderer that supports concurrent React and synchronous layout reads."}},
+    {"old": "Hand-written glue", "new": "Codegen", "change": {"vi": "Sinh interface native từ spec TypeScript của bạn.", "en": "Generates the native interfaces from your TypeScript spec."}},
+    {"old": "JavaScriptCore", "new": "Hermes", "change": {"vi": "Không thuộc kiến trúc mới nhưng hay được nhắc cùng; Hermes là engine mặc định từ RN 0.70. JS được compile thành bytecode lúc build, nên khởi động nhanh hơn và tốn ít bộ nhớ hơn.", "en": "Not part of the new architecture, but often mentioned with it; Hermes has been the default engine since RN 0.70. JS is compiled to bytecode at build time, so startup is faster and memory use is lower."}},
+    {"old": "Bridge running", "new": "Bridgeless mode", "change": {"vi": "Bridge không còn được khởi động; native module kiểu cũ chạy qua một interop layer.", "en": "The bridge is no longer started; old-style native modules run through an interop layer."}}
+  ],
+  "trace": [
+    {"step": {"vi": "Người dùng chạm vào một `Pressable`. OS chuyển sự kiện chạm tới native view.", "en": "The user taps a `Pressable`. The OS delivers the touch event to the native view."}, "where": "UI thread · native"},
+    {"step": {"vi": "Fabric chuyển sự kiện sang JS, và handler `onPress` của bạn chạy.", "en": "Fabric forwards the event to JS, and your `onPress` handler runs."}, "where": "JS thread · Hermes"},
+    {"step": {"vi": "Handler gọi `fetch`. Request mạng chạy ở phía native, rồi kết quả quay về JS.", "en": "The handler calls `fetch`. The network request runs natively, and the result comes back to JS."}, "where": "native → JS"},
+    {"step": {"vi": "Bạn gọi `setState`, React re-render và diff cây component.", "en": "You call `setState`, and React re-renders and diffs the component tree."}, "where": "JS thread · React"},
+    {"step": {"vi": "Fabric dựng shadow tree mới, và Yoga tính layout flexbox.", "en": "Fabric builds a new shadow tree, and Yoga calculates the flexbox layout."}, "where": "C++ · Fabric + Yoga"},
+    {"step": {"vi": "Thay đổi được commit và mount thành cập nhật thật trên `UIView` hoặc `android.view.View`.", "en": "The changes are committed and mounted as real `UIView` or `android.view.View` updates."}, "where": "UI thread · native"},
+    {"step": {"vi": "Nền tảng vẽ frame. Mỗi frame có khoảng 16 ms ở 60 fps (khoảng 8 ms ở 120 Hz). UI thread lỡ ngân sách này thì rớt frame; JS thread bận thì update và animation chạy bằng JS bị đứng, còn scroll native vẫn mượt.", "en": "The platform draws the frame. Each frame has about 16 ms at 60 fps (about 8 ms at 120 Hz). If the UI thread misses that budget, frames drop; if the JS thread is busy, JS-driven updates and animations stall while native scrolling stays smooth."}, "where": "OS compositor"}
+  ],
+  "habits": [
+    {"title": {"vi": "Học theo tầng", "en": "Learn by layer"}, "body": {"vi": "Gắn mỗi thuật ngữ mới vào một tầng: JS, RN runtime hay native, rồi tìm hàng của nó trong bảng ở trên.", "en": "Tag every new term as JS, RN runtime, or native, and find its row in the table above."}},
+    {"title": {"vi": "Lần theo một tính năng", "en": "Trace one feature"}, "body": {"vi": "Đi qua một tính năng thật trong app của bạn theo bảy bước ở trên, và gọi tên chuyện gì xảy ra ở mỗi bước.", "en": "Walk a real feature from your app through the seven steps above and name what happens at each one."}},
+    {"title": {"vi": "Mở các thư mục native", "en": "Open the native folders"}, "body": {"vi": "Dành 30 phút đọc `AppDelegate`, `Info.plist`, `MainActivity` và `AndroidManifest.xml`.", "en": "Spend 30 minutes reading `AppDelegate`, `Info.plist`, `MainActivity` and `AndroidManifest.xml`."}},
+    {"title": {"vi": "Viết một module nhỏ", "en": "Build one tiny module"}, "body": {"vi": "Đọc mức pin bằng Swift và Kotlin qua một TurboModule. Việc này làm JSI và Codegen trở nên cụ thể.", "en": "Read the battery level in Swift and Kotlin through a TurboModule. This makes JSI and Codegen concrete."}},
+    {"title": {"vi": "Giải thích cho một junior", "en": "Explain it to a junior"}, "body": {"vi": "Nếu bạn không giải thích được một thuật ngữ trong một câu và chỉ ra tầng của nó, hãy thêm nó vào danh sách cần ôn.", "en": "If you can't explain a term in one sentence and name its layer, add it to your review list."}}
+  ]
+}

@@ -49,4 +49,11 @@ describe('repository content', () => {
       expect(out.results.some((r) => !r.pass), id).toBe(true);
     }
   });
+
+  it('has a full knowledge map', () => {
+    expect(content.map.layers.map((l) => l.id)).toEqual(['js', 'runtime', 'ios', 'android']);
+    expect(content.map.levels.map((l) => l.id)).toEqual(['junior', 'middle', 'senior']);
+    expect(content.map.rows.length).toBeGreaterThanOrEqual(20);
+    expect(content.map.trace.length).toBeGreaterThan(0);
+  });
 });

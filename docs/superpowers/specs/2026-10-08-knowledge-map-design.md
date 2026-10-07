@@ -39,12 +39,12 @@ Một file `content/map/map.json`, có dạng:
 
 ```json
 {
-  "layers": {
-    "js":      {"title": {"vi": "…", "en": "…"}, "body": {"vi": "…", "en": "…"}},
-    "runtime": {"title": {…}, "body": {…}, "parts": [{"vi": "Hermes: engine JS", "en": "Hermes: JS engine"}]},
-    "ios":     {"title": {…}, "body": {…}},
-    "android": {"title": {…}, "body": {…}}
-  },
+  "layers": [
+    {"id": "js", "title": {"vi": "…", "en": "…"}, "body": {"vi": "…", "en": "…"}},
+    {"id": "runtime", "title": {…}, "body": {…}, "parts": [{"vi": "Hermes: engine JS", "en": "Hermes: JS engine"}]},
+    {"id": "ios", "title": {…}, "body": {…}},
+    {"id": "android", "title": {…}, "body": {…}}
+  ],
   "rows": [
     {"concept": {"vi": "Điểm vào của app", "en": "App entry point"},
      "rn": "index.js → AppRegistry", "ios": "AppDelegate / SceneDelegate", "android": "Application / MainActivity"}
@@ -62,25 +62,26 @@ Một file `content/map/map.json`, có dạng:
 
 - **Song ngữ:** câu văn là `{vi, en}`. Tên API, công cụ và file (`FlatList`, `Info.plist`, `Gradle`) để nguyên tiếng Anh, nên ba ô thuật ngữ của bảng, cột cũ/mới của bảng kiến trúc và nhãn `where` của trace là chuỗi đơn.
 - **Inline code:** câu văn được dùng backtick, hiển thị bằng component `Rich` có sẵn.
+- **Tầng:** `layers` là mảng, id thuộc `js`, `runtime`, `ios`, `android`, không trùng. `parts` tuỳ chọn.
 - **Cấp độ:** đúng ba cấp, theo thứ tự `junior`, `middle`, `senior`. Mỗi cấp có đúng 4 câu tự kiểm tra, id dạng `map-<level>-<n>`.
 - **Số lượng:** lấy từ trang gốc: 28 hàng, 6 hàng kiến trúc, 7 bước, 5 thói quen. Schema không khoá các con số này, trừ ba cấp độ.
 - **Bản tiếng Việt:** dịch theo văn phong các file roadmap hiện có, giữ thuật ngữ tiếng Anh khi người làm nghề vẫn dùng tiếng Anh.
 
 ## 4. Kiến trúc
 
-- **Schema:** `mapSchema` bằng zod trong `src/core/schema.ts`, export kiểu `KnowledgeMap`, `MapRow`, `MapLevel`.
-- **Loader:** `loadContent` nhận thêm `map` (tuỳ chọn, để test cũ không phải đổi; thiếu thì là bản đồ rỗng). `src/content/index.ts` đọc `/content/map/map.json` bằng `import.meta.glob`. File sai schema làm `npm run check` và build thất bại, như content khác.
-- **Kiểm tra chéo:** `integrity.ts` báo lỗi khi id câu tự kiểm tra bị trùng, hoặc ba cấp độ không đúng thứ tự `junior`, `middle`, `senior`.
+- **Schema:** `mapSchema` bằng zod trong `src/core/schema.ts`, export kiểu `KnowledgeMap`, `MapLayer`, `MapLayerId`, `MapRow`, `MapLevel`, `MapLevelId`.
+- **Loader:** `loadContent` nhận thêm `map` (tuỳ chọn, để test cũ không phải đổi; thiếu thì là `EMPTY_MAP`, mọi mảng đều rỗng). `src/content/index.ts` đọc `/content/map/map.json` bằng `import.meta.glob`. File sai schema làm `npm run check` và build thất bại, như content khác.
+- **Kiểm tra chéo:** `checkMap` trong `integrity.ts` báo lỗi khi id tầng bị trùng, khi có cấp độ mà không đúng ba cấp theo thứ tự `junior`, `middle`, `senior`, khi id câu tự kiểm tra không bắt đầu bằng `map-<level>-`, hoặc bị trùng.
 - **Hàm thuần** `src/app/map.ts`:
   - `MAP_SETTING = 'map'`.
   - `filterRows(rows, query, lang)` trả các hàng khớp; query rỗng thì trả hết.
   - `levelProgress(level, checked)` trả `{done, total}`.
   - Ô tick dùng lại `toggleChecked`, `readChecked`, `isStringArray` của `roadmap.ts`.
-- **App:** `App.tsx` đọc setting `map` lúc boot cùng `lang`, `theme`, `roadmap`, và truyền `checked` cùng `onChecked` vào `MapScreen`.
+- **App:** gộp `toggleRoadmap` thành `toggleTicks(list, id)` dùng chung cho `roadmap` và `map`. `App.tsx` đọc setting `map` lúc boot cùng `lang`, `theme`, `roadmap`, và truyền `checked` cùng `onChecked` vào `MapScreen`.
 - **Backup:** thêm `map` vào `KNOWN_SETTINGS`, giá trị phải là mảng chuỗi.
 - **Router và TopBar:** thêm `{ name: 'map' }` vào `Route`, `parseRoute`, và `NAV`.
-- **Chuỗi UI:** thêm vào `src/i18n/strings.ts` (tên tab, tiêu đề và câu dẫn của từng phần, placeholder tìm kiếm, đếm kết quả, không có kết quả, tiến độ cấp độ).
-- **CSS:** thêm ít class cho chồng ba tầng, bảng và danh sách trace, dùng token màu có sẵn.
+- **Chuỗi UI:** key `map` cho tab, các key còn lại có tiền tố `km` vì `mapTitle` đã là "Bản đồ chủ đề" của màn Tiến độ. Thêm vào `src/i18n/strings.ts` (tên tab, tiêu đề và câu dẫn của từng phần, placeholder tìm kiếm, đếm kết quả, không có kết quả, tiến độ cấp độ).
+- **CSS:** thêm ít class tiền tố `km-` (vì `.map-grid` đã có) cho chồng ba tầng, bảng và danh sách trace, dùng token màu có sẵn.
 
 ## 5. Test
 
@@ -88,14 +89,14 @@ Chủ project tự chạy test; agent chỉ viết.
 
 - `src/app/map.test.ts`: lọc theo thuật ngữ, theo tên khái niệm ở cả hai ngôn ngữ, không phân biệt hoa thường, query rỗng; đếm tiến độ bỏ qua id không thuộc cấp đó.
 - `src/content/load.test.ts`: file bản đồ sai schema bị từ chối; thiếu `map` vẫn load được.
-- Test integrity: id câu tự kiểm tra trùng, và cấp độ sai thứ tự, đều bị báo lỗi.
+- Test integrity (trong `load.test.ts`): cấp độ sai thứ tự, id câu tự kiểm tra trùng hoặc sai tiền tố, đều bị báo lỗi.
 - `src/app/backup.test.ts`: setting `map` hợp lệ được nhận, giá trị không phải mảng chuỗi bị từ chối.
 - `src/app/router.test.ts`: `#/map` parse đúng, `href({ name: 'map' })` ra `#/map`.
 - `src/content/content.test.ts` (đã chạy trên content thật) sẽ bắt lỗi trong `map.json`.
 
 ## 6. Chia việc
 
-1. **Code:** schema, loader, integrity, `map.ts`, router, TopBar, backup, chuỗi UI, `MapScreen`, CSS, kèm test, và một `map.json` tối thiểu hợp lệ để app chạy được.
+1. **Code:** schema, loader, integrity, `map.ts`, router, TopBar, backup, chuỗi UI, `MapScreen`, CSS, kèm test. Chưa cần `map.json`: thiếu file thì màn chạy với bản đồ rỗng.
 2. **Nội dung:** `map.json` đầy đủ, song ngữ, chuyển từ trang HTML gốc.
 3. **Tài liệu và rà soát:** thêm mục Bản đồ vào `docs/content-guide.md`, rà độ chính xác của nội dung.
 

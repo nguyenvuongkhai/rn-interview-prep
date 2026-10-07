@@ -18,6 +18,7 @@ const roadmapFiles = import.meta.glob(['/content/roadmap/*.json', '!/content/roa
   eager: true,
   import: 'default',
 });
+const mapFiles = import.meta.glob('/content/map/map.json', { eager: true, import: 'default' });
 
 /** Validated at import time: a broken content file fails `npm run check` and the build. */
 export const content = loadContent({
@@ -28,4 +29,5 @@ export const content = loadContent({
   lessonFiles,
   roadmapAreas: roadmapAreas['/content/roadmap/areas.json'],
   roadmapFiles,
+  map: mapFiles['/content/map/map.json'],
 });

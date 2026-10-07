@@ -1,4 +1,4 @@
-import type { Item, Lesson, RoadmapArea, RoadmapItem, Topic } from '../core/schema';
+import type { Item, KnowledgeMap, Lesson, MapLevelId, RoadmapArea, RoadmapItem, Topic } from '../core/schema';
 
 /** Cross-file checks the per-file schemas cannot see. Returns human-readable issues. */
 export function checkIntegrity(topics: Topic[], items: Item[], lessons: Lesson[]): string[] {
@@ -62,6 +62,32 @@ export function checkRoadmap(areas: RoadmapArea[], items: RoadmapItem[], topics:
     if (!areaIds.has(item.area)) issues.push(`roadmap item "${item.id}": unknown area "${item.area}"`);
     for (const t of item.topics) if (!topicIds.has(t)) issues.push(`roadmap item "${item.id}": unknown topic "${t}"`);
     for (const l of item.lessons) if (!lessonIds.has(l)) issues.push(`roadmap item "${item.id}": unknown lesson "${l}"`);
+  }
+  return issues;
+}
+
+const MAP_LEVELS: MapLevelId[] = ['junior', 'middle', 'senior'];
+
+/** The level tabs and the stored ticks rely on these: three levels in order, and stable unique check ids. */
+export function checkMap(map: KnowledgeMap): string[] {
+  const issues: string[] = [];
+  const layerIds = new Set<string>();
+  for (const layer of map.layers) {
+    if (layerIds.has(layer.id)) issues.push(`duplicate map layer "${layer.id}"`);
+    layerIds.add(layer.id);
+  }
+  const levelIds = map.levels.map((l) => l.id);
+  if (levelIds.length > 0 && levelIds.join() !== MAP_LEVELS.join()) {
+    issues.push(`map levels must be ${MAP_LEVELS.join(', ')} in that order`);
+  }
+  const seen = new Set<string>();
+  for (const level of map.levels) {
+    for (const check of level.checks) {
+      const prefix = `map-${level.id}-`;
+      if (!check.id.startsWith(prefix)) issues.push(`map check "${check.id}": id must start with "${prefix}"`);
+      if (seen.has(check.id)) issues.push(`duplicate map check "${check.id}"`);
+      seen.add(check.id);
+    }
   }
   return issues;
 }

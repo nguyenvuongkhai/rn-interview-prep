@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Content } from '../content/load';
+import { EMPTY_MAP, type Content } from '../content/load';
 import { NOW, attempt, mcq, topic } from '../core/testFixtures';
 import { DAY_MS } from '../core/types';
 import { buildReport, misconceptionText } from './report';
@@ -10,6 +10,7 @@ const content: Content = {
   lessons: [],
   challenges: {},
   roadmap: { areas: [], items: [] },
+  map: EMPTY_MAP,
 };
 
 describe('buildReport', () => {

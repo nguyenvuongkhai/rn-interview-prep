@@ -201,6 +201,42 @@ export const UI = {
   noPractice: { vi: 'Chưa có bài luyện trong app cho mục này.', en: 'No practice for this item in the app yet.' },
   roadmapEmpty: { vi: 'Chưa có mục nào cho nền tảng và cấp độ này.', en: 'No roadmap items for this track and level yet.' },
   markKnown: { vi: 'Đã nắm', en: 'I know this' },
+  map: { vi: 'Bản đồ', en: 'Map' },
+  kmTitle: { vi: 'Bản đồ kiến thức', en: 'Knowledge map' },
+  kmSub: {
+    vi: 'Mỗi thuật ngữ bạn gặp đều thuộc một trong ba tầng. Tìm tầng của nó, tìm hàng của nó trong bảng đối chiếu, rồi tự kiểm tra ở cấp độ của bạn.',
+    en: 'Every term you meet lives in one of three layers. Find its layer, find its row in the translation table, then check yourself at your level.',
+  },
+  kmLayersTitle: { vi: 'Một app RN là hai app native chứa một JS engine', en: 'An RN app is two native apps hosting a JS engine' },
+  kmLayersSub: {
+    vi: 'JavaScript của bạn mô tả UI. Runtime React Native biến mô tả đó thành view native thật trên từng nền tảng.',
+    en: 'Your JavaScript describes the UI. The React Native runtime turns that description into real native views on each platform.',
+  },
+  kmRowsTitle: { vi: 'Một khái niệm, ba tên gọi', en: 'One concept, three names' },
+  kmRowsSub: {
+    vi: 'Học theo hàng, đừng học từng từ riêng lẻ. Gặp thuật ngữ mới thì tìm nó ở đây để biết nó thuộc hàng nào.',
+    en: 'Learn these as rows, not as separate words. When a new term shows up, search for it and see which row it belongs to.',
+  },
+  kmSearch: { vi: 'Tìm thuật ngữ, ví dụ Gradle, Activity, plist…', en: 'Search a term, e.g. Gradle, Activity, plist…' },
+  kmRowsCount: { vi: '{n}/{total} khái niệm', en: '{n} of {total} concepts' },
+  kmNoMatch: { vi: 'Không có khái niệm nào khớp "{q}". Thử một từ ngắn hơn.', en: 'No concept matches "{q}". Try a shorter word.' },
+  kmConcept: { vi: 'Khái niệm', en: 'Concept' },
+  kmLevelsTitle: { vi: 'Cần biết gì, và tự kiểm tra thế nào', en: 'What to know, and how to check yourself' },
+  kmChecksTitle: { vi: 'Bạn trả lời được không?', en: 'Can you answer these?' },
+  kmArchTitle: { vi: 'Kiến trúc cũ và kiến trúc mới', en: 'Old architecture vs. new architecture' },
+  kmArchSub: {
+    vi: 'Kiến trúc mới là mặc định từ RN 0.76 và là lựa chọn duy nhất từ RN 0.82. Bài blog và câu trả lời Stack Overflow cũ vẫn dùng tên cũ, nên rất dễ nhầm.',
+    en: 'The new architecture has been the default since RN 0.76 and the only option since RN 0.82. Older blog posts and Stack Overflow answers use the old names, which is a common source of confusion.',
+  },
+  kmOld: { vi: 'Cũ', en: 'Old' },
+  kmNew: { vi: 'Mới', en: 'New' },
+  kmChange: { vi: 'Điều gì thay đổi', en: 'What changed' },
+  kmTraceTitle: { vi: 'Từ một cú chạm tới pixel trên màn hình', en: 'From a tap to pixels on screen' },
+  kmTraceSub: {
+    vi: 'Nếu bạn tự giải thích được từng bước, bạn đã hiểu phần lớn kiến thức từ Middle tới Senior.',
+    en: 'If you can explain each step in your own words, you understand most of the mid-to-senior material.',
+  },
+  kmHabitsTitle: { vi: 'Năm thói quen', en: 'Five habits' },
 } satisfies Record<string, Localized>;
 
 export type UiKey = keyof typeof UI;

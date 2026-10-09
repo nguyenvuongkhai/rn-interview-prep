@@ -139,10 +139,16 @@ export function MapScreen({ content, checked, onChecked }: {
             </div>
             <span className="label">{t('kmChecksTitle')}</span>
             {level.checks.map((c) => (
-              <label key={c.id} className="check">
-                <input type="checkbox" checked={ticked.has(c.id)} onChange={() => onChecked(c.id)} />
-                <span><Rich text={pick(c.text)} /></span>
-              </label>
+              <div key={c.id} className="stack" style={{ gap: 'var(--space-1)' }}>
+                <label className="check">
+                  <input type="checkbox" checked={ticked.has(c.id)} onChange={() => onChecked(c.id)} />
+                  <span><Rich text={pick(c.text)} /></span>
+                </label>
+                <details className="km-answer">
+                  <summary className="muted">{t('reveal')}</summary>
+                  <p style={{ margin: 0 }}><Rich text={pick(c.answer)} /></p>
+                </details>
+              </div>
             ))}
           </div>
         </section>

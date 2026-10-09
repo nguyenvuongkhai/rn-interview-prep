@@ -30,7 +30,7 @@ describe('filterRows', () => {
 describe('levelProgress', () => {
   const level: MapLevel = {
     id: 'junior', name: L('Junior'), tag: L('t'), rn: [L('a')], ios: [L('b')], android: [L('c')],
-    checks: [1, 2, 3, 4].map((n) => ({ id: `map-junior-${n}`, text: L(`q${n}`) })),
+    checks: [1, 2, 3, 4].map((n) => ({ id: `map-junior-${n}`, text: L(`q${n}`), answer: L(`a${n}`) })),
   };
 
   it('counts the ticked checks of this level and ignores other ids', () => {

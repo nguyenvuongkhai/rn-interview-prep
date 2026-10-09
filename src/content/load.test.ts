@@ -165,7 +165,7 @@ describe('loadContent', () => {
 
   const mapLevel = (id: string, checkIds: string[]) => ({
     id, name: L(id), tag: L('t'), rn: [L('a')], ios: [L('b')], android: [L('c')],
-    checks: checkIds.map((c) => ({ id: c, text: L('q') })),
+    checks: checkIds.map((c) => ({ id: c, text: L('q'), answer: L('a') })),
   });
   const checkIds = (level: string) => [1, 2, 3, 4].map((n) => `map-${level}-${n}`);
   const knowledgeMap = (levels: object[]) => ({

@@ -63,7 +63,7 @@ Một file `content/map/map.json`, có dạng:
 - **Song ngữ:** câu văn là `{vi, en}`. Tên API, công cụ và file (`FlatList`, `Info.plist`, `Gradle`) để nguyên tiếng Anh, nên ba ô thuật ngữ của bảng, cột cũ/mới của bảng kiến trúc và nhãn `where` của trace là chuỗi đơn.
 - **Inline code:** câu văn được dùng backtick, hiển thị bằng component `Rich` có sẵn.
 - **Tầng:** `layers` là mảng, id thuộc `js`, `runtime`, `ios`, `android`, không trùng. `parts` tuỳ chọn.
-- **Cấp độ:** đúng ba cấp, theo thứ tự `junior`, `middle`, `senior`. Mỗi cấp có đúng 4 câu tự kiểm tra, id dạng `map-<level>-<n>`.
+- **Cấp độ:** đúng ba cấp, theo thứ tự `junior`, `middle`, `senior`. Mỗi cấp có đúng 4 câu tự kiểm tra, id dạng `map-<level>-<n>`. Mỗi câu có `answer` song ngữ (đáp án mẫu 2–4 câu), ẩn sau nút "Xem đáp án mẫu" (bổ sung ngày 2026-10-09).
 - **Số lượng:** lấy từ trang gốc: 28 hàng, 6 hàng kiến trúc, 7 bước, 5 thói quen. Schema không khoá các con số này, trừ ba cấp độ.
 - **Bản tiếng Việt:** dịch theo văn phong các file roadmap hiện có, giữ thuật ngữ tiếng Anh khi người làm nghề vẫn dùng tiếng Anh.
 

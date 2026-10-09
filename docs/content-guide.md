@@ -191,7 +191,7 @@ Bản đồ (`#/map`) cho người học một mô hình để xếp thuật ng�
 - **File:** `content/map/map.json`, một object với `layers`, `rows`, `levels`, `arch`, `trace`, `habits`. Schema là `mapFile` trong `src/core/schema.ts`.
 - **Tầng:** id là `js`, `runtime`, `ios`, `android`, mỗi id một lần. `parts` (tuỳ chọn) là các phần của tầng, ví dụ "Hermes: JS engine".
 - **Bảng đối chiếu:** `concept` song ngữ; `rn`, `ios`, `android` là tên API hoặc công cụ, để nguyên tiếng Anh. Không có tương đương thì ghi `—`.
-- **Cấp độ:** đúng ba cấp theo thứ tự `junior`, `middle`, `senior`. Mỗi cấp có đúng 4 câu tự kiểm tra, id `map-<level>-<n>`. Ô tick của người học lưu theo id này, nên đã phát hành thì không đổi id; bỏ một câu thì dùng id mới cho câu thay thế.
+- **Cấp độ:** đúng ba cấp theo thứ tự `junior`, `middle`, `senior`. Mỗi cấp có đúng 4 câu tự kiểm tra, id `map-<level>-<n>`. Mỗi câu có `answer`: đáp án mẫu 2–4 câu, nói đúng cơ chế, đủ để người học so với câu trả lời của mình; app ẩn đáp án cho tới khi người học bấm xem. Ô tick của người học lưu theo id này, nên đã phát hành thì không đổi id; bỏ một câu thì dùng id mới cho câu thay thế.
 - **Kiến trúc và trace:** `old`, `new`, `where` là chuỗi đơn tiếng Anh; câu giải thích song ngữ.
 - **Khác Roadmap:** Roadmap liệt kê khối kiến thức theo track. Bản đồ là mô hình tổng quan và bảng tra; đừng chép mục Roadmap sang đây.
 - **Độ chính xác và văn phong:** như content khác. Ghi rõ phiên bản khi phụ thuộc phiên bản (ví dụ "mặc định từ RN 0.76"); bản vi giữ thuật ngữ tiếng Anh.

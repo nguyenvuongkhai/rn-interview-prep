@@ -134,7 +134,8 @@ export const mapRow = z.strictObject({
   ios: z.string().min(1),
   android: z.string().min(1),
 });
-export const mapCheck = z.strictObject({ id, text: localized });
+/** a self-check question with a short model answer, shown on demand */
+export const mapCheck = z.strictObject({ id, text: localized, answer: localized });
 export const mapLevel = z.strictObject({
   id: mapLevelId,
   name: localized,

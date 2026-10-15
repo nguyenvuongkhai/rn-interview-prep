@@ -1,0 +1,91 @@
+[
+  {
+    "id": "state-global-001",
+    "type": "mcq",
+    "topics": ["state/global", "render/memo"],
+    "kind": "pitfall",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": ["state-global-choosing-a-tool"],
+    "multi": false,
+    "prompt": {
+      "vi": "Một Context giữ `{ cartCount, theme }`. Component `ThemeLabel` chỉ đọc `theme`. Khi `cartCount` thay đổi, điều gì xảy ra với `ThemeLabel`?",
+      "en": "A Context holds `{ cartCount, theme }`. A `ThemeLabel` component only reads `theme`. When `cartCount` changes, what happens to `ThemeLabel`?"
+    },
+    "options": [
+      { "text": { "vi": "Nó re-render, vì mọi component dùng context đó đều re-render khi giá trị context thay đổi", "en": "It re-renders, because every consumer of that context re-renders when the context value changes" } },
+      {
+        "text": { "vi": "Nó không re-render, vì React chỉ theo dõi những field mà component thực sự đọc", "en": "It doesn't re-render, because React tracks only the fields the component actually reads" },
+        "misconception": { "id": "context-has-selectors", "text": { "vi": "Nghĩ rằng Context có selector như Zustand hay Redux. useContext đăng ký cả giá trị, không đăng ký từng field.", "en": "Believing Context has selectors like Zustand or Redux. useContext subscribes to the whole value, not individual fields." } }
+      },
+      {
+        "text": { "vi": "Nó không re-render nếu `ThemeLabel` được bọc `React.memo`", "en": "It doesn't re-render if `ThemeLabel` is wrapped in `React.memo`" },
+        "misconception": { "id": "memo-blocks-context", "text": { "vi": "React.memo chỉ so sánh prop. Nó không chặn được re-render do context mà component tự đăng ký.", "en": "React.memo only compares props. It cannot block re-renders from a context the component subscribes to." } }
+      },
+      { "text": { "vi": "Nó bị unmount rồi mount lại", "en": "It unmounts and mounts again" } }
+    ],
+    "answer": [0],
+    "explanation": {
+      "vi": "Khi giá trị context đổi, mọi consumer đều re-render, dù chỉ đọc một phần. Cách giảm: tách thành nhiều context nhỏ, memo giá trị của provider, hoặc chuyển state hay thay đổi sang Zustand/Redux, nơi selector chỉ re-render khi phần được chọn thay đổi.",
+      "en": "When the context value changes, every consumer re-renders, even if it reads only part of it. To reduce this: split into smaller contexts, memoize the provider value, or move frequently changing state to Zustand/Redux, where selectors re-render only when the selected slice changes."
+    }
+  },
+  {
+    "id": "state-global-002",
+    "type": "mcq",
+    "topics": ["state/global"],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 45,
+    "lessons": ["state-global-choosing-a-tool"],
+    "multi": false,
+    "prompt": {
+      "vi": "Danh sách sản phẩm lấy từ API (cần cache, refetch, trạng thái loading và error) nên đặt ở đâu?",
+      "en": "Where should a product list fetched from the API (needing caching, refetching, loading and error states) live?"
+    },
+    "options": [
+      { "text": { "vi": "Trong một query cache như TanStack Query hoặc RTK Query", "en": "In a query cache such as TanStack Query or RTK Query" } },
+      {
+        "text": { "vi": "Trong Context ở gốc app", "en": "In a Context at the app root" },
+        "misconception": { "id": "server-state-in-context", "text": { "vi": "Context không có cache, refetch hay xử lý loading/error, và mọi consumer re-render khi dữ liệu đổi.", "en": "Context has no caching, refetching or loading/error handling, and every consumer re-renders when the data changes." } }
+      },
+      {
+        "text": { "vi": "Trong `useState` của từng màn hình, fetch lại mỗi lần màn hình mount", "en": "In each screen's `useState`, refetched every time the screen mounts" },
+        "misconception": { "id": "server-state-in-local-state", "text": { "vi": "Cách này fetch trùng lặp, không có cache, và các màn hình dễ hiển thị dữ liệu lệch nhau.", "en": "This duplicates fetches, has no cache, and screens can easily show inconsistent data." } }
+      },
+      { "text": { "vi": "Trong AsyncStorage, đọc ra mỗi lần render", "en": "In AsyncStorage, read on every render" } }
+    ],
+    "answer": [0],
+    "explanation": {
+      "vi": "Dữ liệu từ server là \"server state\": nó cần cache, refetch, loại bỏ dữ liệu cũ và trạng thái loading/error. Query cache làm sẵn những việc đó. Redux Toolkit/Zustand dành cho global client state như giỏ hàng hay phiên đăng nhập.",
+      "en": "Data from the server is \"server state\": it needs caching, refetching, invalidation and loading/error states. A query cache does that for you. Redux Toolkit/Zustand are for global client state like the cart or auth session."
+    }
+  },
+  {
+    "id": "state-global-003",
+    "type": "open",
+    "topics": ["state/global"],
+    "kind": "core",
+    "difficulty": 2,
+    "estSeconds": 180,
+    "lessons": ["state-global-choosing-a-tool"],
+    "prompt": {
+      "vi": "Bạn thích cách quản lý state nào hơn: Redux Toolkit, Zustand hay Context API? Vì sao?",
+      "en": "Which state management approach do you prefer: Redux Toolkit, Zustand, or Context API? Why?"
+    },
+    "keyPoints": [
+      { "vi": "Chia state theo loại: server state → query cache; global client state → Redux Toolkit/Zustand; giá trị ít đổi → Context; UI cục bộ → useState", "en": "Split state by type: server state → query cache; global client state → Redux Toolkit/Zustand; rarely changing values → Context; local UI → useState" },
+      { "vi": "Redux Toolkit: quy ước rõ, DevTools, middleware, hợp team lớn, kết hợp Redux-Saga cho luồng async phức tạp; đổi lại nhiều code hơn", "en": "Redux Toolkit: clear conventions, DevTools, middleware, suits large teams, pairs with Redux-Saga for complex async; more code" },
+      { "vi": "Zustand: gần như không boilerplate, selector giúp chỉ re-render khi phần được chọn đổi; ít quy ước hơn cho team lớn", "en": "Zustand: almost no boilerplate, selectors re-render only when the selected slice changes; fewer conventions for big teams" },
+      { "vi": "Context: mọi consumer re-render khi giá trị đổi, nên chỉ dùng cho giá trị ít thay đổi", "en": "Context: every consumer re-renders when the value changes, so use it only for rarely changing values" }
+    ],
+    "modelAnswer": {
+      "vi": "Mình chọn theo loại state chứ không dùng một công cụ cho mọi thứ. Dữ liệu từ server như sản phẩm hay đơn hàng mình đặt trong query cache, như RTK Query hoặc TanStack Query, vì nó lo cache, refetch và trạng thái loading cho mình. State UI cục bộ thì để trong useState. Với global client state như giỏ hàng hay phiên đăng nhập, mình đã dùng Redux Toolkit ở các app lớn vì quy ước và DevTools giúp ích cho team, và dùng Redux-Saga khi luồng async phức tạp, như huỷ một lượt tìm kiếm hay thử lại thanh toán. Ở app nhỏ hơn, Zustand cho kết quả tương tự với ít boilerplate hơn nhiều, và selector giữ số lần re-render ở mức tối thiểu. Mình chỉ dùng Context cho giá trị ít đổi như theme hay ngôn ngữ, vì mọi consumer đều re-render khi giá trị thay đổi.",
+      "en": "I choose based on the type of state rather than one tool for everything. Server data like products or orders goes in a query cache, such as RTK Query or TanStack Query, because it handles caching, refetching and loading states for me. Local UI state stays in useState. For global client state like the cart or auth session, I've used Redux Toolkit in larger apps because the conventions and DevTools help teams, and Redux-Saga when async flows got complex, like cancelling a search or retrying a payment. On smaller apps, Zustand gives the same result with much less boilerplate, and selectors keep re-renders minimal. I use Context only for values that rarely change, like theme or locale, because every consumer re-renders when the value changes."
+    },
+    "followUps": [
+      { "vi": "Khi nào bạn chọn Redux-Saga thay vì RTK Query hay createAsyncThunk?", "en": "When would you pick Redux-Saga over RTK Query or createAsyncThunk?" },
+      { "vi": "Nếu buộc phải dùng Context cho state hay thay đổi, bạn giảm re-render bằng cách nào?", "en": "If you had to use Context for frequently changing state, how would you reduce re-renders?" }
+    ]
+  }
+]

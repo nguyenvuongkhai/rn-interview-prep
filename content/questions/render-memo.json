@@ -124,5 +124,32 @@
       { "vi": "Nếu đã làm hết những việc trên mà vẫn giật thì bạn kiểm tra tiếp những gì?", "en": "If it still stutters after all of that, what do you check next?" },
       { "vi": "Khi nào nên dùng FlashList thay cho FlatList?", "en": "When would you switch from FlatList to FlashList?" }
     ]
+  },
+  {
+    "id": "render-memo-005",
+    "type": "open",
+    "topics": ["render/memo"],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 150,
+    "lessons": ["render-memo-pitfalls"],
+    "prompt": {
+      "vi": "Hãy giải thích sự khác nhau giữa `useMemo`, `useCallback` và `React.memo`. Cho một ví dụ thực tế trong app React Native, và một trường hợp dùng chúng là không cần thiết.",
+      "en": "Can you explain the difference between `useMemo`, `useCallback`, and `React.memo`? Give a real example from a React Native app, and a case where using them would be unnecessary."
+    },
+    "keyPoints": [
+      { "vi": "Mỗi cái một câu: React.memo bọc component và bỏ qua render khi prop không đổi; useMemo cache một giá trị tính toán; useCallback cache tham chiếu hàm", "en": "One sentence each: React.memo wraps a component and skips renders when props are unchanged; useMemo caches a computed value; useCallback caches a function reference" },
+      { "vi": "React.memo so sánh prop theo tham chiếu, nên hàm inline mới ở mỗi lần render làm memo mất tác dụng nếu không có useCallback", "en": "React.memo compares props by reference, so an inline function that is new on every render defeats it without useCallback" },
+      { "vi": "Ví dụ thực tế: danh sách sản phẩm với Row bọc memo, handler và renderItem dùng useCallback, kết quả lọc dùng useMemo", "en": "A real example: a product list with a memoized Row, useCallback for the handler and renderItem, useMemo for the filtered results" },
+      { "vi": "Không cần thiết khi: phép tính rẻ, component con không bọc memo, hoặc deps đổi ở mọi lần render; React Compiler có thể tự memo", "en": "Unnecessary when: the calculation is cheap, the child isn't memoized, or deps change every render; the React Compiler can memoize automatically" }
+    ],
+    "modelAnswer": {
+      "vi": "React.memo bọc một component và bỏ qua re-render nếu prop không đổi. useMemo cache một giá trị tính toán, còn useCallback cache một tham chiếu hàm. Chúng đi cùng nhau vì React.memo so sánh prop theo tham chiếu, mà hàm inline được tạo mới ở mỗi lần render, nên thiếu useCallback thì memo vô dụng. Trong một app danh sách sản phẩm, mình bọc memo cho Row, dùng useCallback cho handler khi nhấn và cho renderItem, và useMemo cho kết quả tìm kiếm đã lọc. Nhờ vậy các dòng không còn re-render ở mỗi lần gõ phím. Nhưng chúng không miễn phí. Với phép tính rẻ, hoặc hàm truyền cho component không bọc memo, chúng chỉ thêm chi phí. Mình sẽ đo bằng Profiler trước, và với React Compiler thì phần lớn việc này được làm tự động.",
+      "en": "React.memo wraps a component and skips re-rendering if its props haven't changed. useMemo caches a computed value, and useCallback caches a function reference. They work together because React.memo compares props by reference, and inline functions are recreated every render, so without useCallback the memo is useless. In a product list app, I memoized the row component, used useCallback for the press handler and renderItem, and useMemo for the filtered search results. That stopped every row re-rendering on each keystroke. But they're not free. For cheap calculations, or functions passed to non-memoized components, they just add overhead. I'd measure with the Profiler first, and with the React Compiler much of this happens automatically."
+    },
+    "followUps": [
+      { "vi": "Một component đã bọc React.memo vẫn re-render khi nào, dù prop không đổi?", "en": "When does a React.memo component still re-render even though its props are unchanged?" },
+      { "vi": "React Compiler thay đổi cách bạn dùng các hook này thế nào?", "en": "How does the React Compiler change how you use these hooks?" }
+    ]
   }
 ]

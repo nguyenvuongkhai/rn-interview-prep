@@ -1,0 +1,93 @@
+[
+  {
+    "id": "perf-lists-001",
+    "type": "mcq",
+    "topics": ["performance/lists"],
+    "kind": "pitfall",
+    "difficulty": 1,
+    "estSeconds": 45,
+    "lessons": ["perf-lists-flatlist-tuning"],
+    "multi": false,
+    "prompt": {
+      "vi": "Bạn đang đo độ giật khi cuộn một `FlatList`. Vì sao phải đo trên bản release thay vì bản debug?",
+      "en": "You are measuring scroll jank in a `FlatList`. Why must you measure in a release build rather than a debug build?"
+    },
+    "options": [
+      { "text": { "vi": "Bản debug chạy thêm nhiều kiểm tra và cảnh báo trong lúc phát triển nên chậm hơn hẳn; số đo ở đó không phản ánh người dùng thật", "en": "Debug builds run extra dev-time checks and warnings and are much slower, so their numbers don't reflect real users" } },
+      {
+        "text": { "vi": "FlatList chỉ virtualize ở bản release", "en": "FlatList only virtualizes in release builds" },
+        "misconception": { "id": "flatlist-virtualizes-release-only", "text": { "vi": "FlatList virtualize ở cả hai bản. Khác biệt nằm ở chi phí của chế độ phát triển.", "en": "FlatList virtualizes in both builds. The difference is the cost of dev mode." } }
+      },
+      {
+        "text": { "vi": "React DevTools Profiler không chạy được ở bản debug", "en": "The React DevTools Profiler doesn't work in debug builds" },
+        "misconception": { "id": "profiler-release-only", "text": { "vi": "Profiler dùng được khi phát triển; dùng nó để tìm re-render, còn số đo độ mượt cuối cùng thì kiểm tra trên bản release.", "en": "The Profiler works in development; use it to find re-renders, then confirm smoothness numbers in a release build." } }
+      },
+      { "text": { "vi": "Bản release tự động thêm `getItemLayout`", "en": "Release builds add `getItemLayout` automatically" } }
+    ],
+    "answer": [0],
+    "explanation": {
+      "vi": "Chế độ phát triển thêm kiểm tra prop, cảnh báo và không tối ưu bundle, nên app chậm hơn đáng kể. Hãy dùng Profiler để tìm nguyên nhân, nhưng xác nhận độ mượt trên bản release.",
+      "en": "Dev mode adds prop checks, warnings and an unoptimised bundle, so the app is noticeably slower. Use the Profiler to find causes, but confirm smoothness in a release build."
+    }
+  },
+  {
+    "id": "perf-lists-002",
+    "type": "mcq",
+    "topics": ["performance/lists"],
+    "kind": "advanced",
+    "difficulty": 2,
+    "estSeconds": 60,
+    "lessons": ["perf-lists-flatlist-tuning"],
+    "multi": true,
+    "prompt": {
+      "vi": "Một `FlatList` dài hiện vùng trắng khi cuộn nhanh. Những thay đổi nào có khả năng giúp ích? (chọn tất cả đáp án đúng)",
+      "en": "A long `FlatList` shows blank areas when scrolling fast. Which changes are likely to help? (select all that apply)"
+    },
+    "options": [
+      { "text": { "vi": "Làm cho mỗi dòng rẻ hơn: bọc `React.memo`, ảnh đúng kích thước và có cache", "en": "Make each row cheaper: `React.memo`, properly sized and cached images" } },
+      { "text": { "vi": "Thêm `getItemLayout` khi các dòng có chiều cao cố định", "en": "Add `getItemLayout` when rows have a fixed height" } },
+      { "text": { "vi": "Tăng `windowSize` để render sẵn nhiều nội dung hơn ngoài màn hình, đổi lại tốn bộ nhớ hơn", "en": "Increase `windowSize` to render more content off-screen, at the cost of more memory" } },
+      {
+        "text": { "vi": "Thay `FlatList` bằng `ScrollView` và `map` toàn bộ dữ liệu", "en": "Replace `FlatList` with a `ScrollView` that maps over all the data" },
+        "misconception": { "id": "scrollview-for-long-lists", "text": { "vi": "ScrollView render mọi phần tử cùng lúc, nên với danh sách dài nó tệ hơn nhiều về bộ nhớ và thời gian render.", "en": "ScrollView renders every element at once, so for long lists it is far worse for memory and render time." } }
+      },
+      {
+        "text": { "vi": "Bật `removeClippedSubviews` như một mặc định an toàn trên mọi nền tảng", "en": "Turn on `removeClippedSubviews` as a safe default on every platform" },
+        "misconception": { "id": "remove-clipped-safe-default", "text": { "vi": "removeClippedSubviews có thể làm mất nội dung trên iOS ở một số layout. Chỉ bật sau khi đã test.", "en": "removeClippedSubviews can cause missing content on iOS in some layouts. Only enable it after testing." } }
+      }
+    ],
+    "answer": [0, 1, 2],
+    "explanation": {
+      "vi": "Vùng trắng nghĩa là dòng không render kịp tốc độ cuộn. Làm dòng rẻ hơn, cho FlatList biết trước chiều cao bằng `getItemLayout`, và cân bằng `windowSize` giữa bộ nhớ và vùng trắng. Nếu vẫn chưa đủ, cân nhắc FlashList, thư viện tái sử dụng view của các dòng.",
+      "en": "Blank areas mean rows can't render as fast as the user scrolls. Make rows cheaper, tell FlatList the heights up front with `getItemLayout`, and balance `windowSize` between memory and blank areas. If that's not enough, consider FlashList, which recycles row views."
+    }
+  },
+  {
+    "id": "perf-lists-003",
+    "type": "open",
+    "topics": ["performance/lists", "render/memo"],
+    "kind": "hard-issue",
+    "difficulty": 2,
+    "estSeconds": 240,
+    "lessons": ["perf-lists-flatlist-tuning"],
+    "prompt": {
+      "vi": "App của khách hàng có một `FlatList` với hàng nghìn item. Cuộn bị giật và đôi khi hiện vùng trắng. Bạn sẽ điều tra và sửa như thế nào?",
+      "en": "Our client's app has a `FlatList` with thousands of items. Scrolling is laggy and sometimes shows blank areas. How would you investigate and fix it?"
+    },
+    "keyPoints": [
+      { "vi": "Ba nguyên nhân chính: dòng render tốn kém, re-render không cần thiết, hoặc làm quá nhiều việc cùng lúc", "en": "The three main causes: expensive rows, unnecessary re-renders, or too much work at once" },
+      { "vi": "Đo trước: bản release, Profiler, xem JS thread hay UI thread bị rớt frame", "en": "Measure first: release build, the Profiler, and whether the JS or UI thread drops frames" },
+      { "vi": "Sửa dòng: React.memo, renderItem và handler ổn định, keyExtractor theo id, ảnh đúng kích thước và có cache", "en": "Fix rows: React.memo, stable renderItem and handlers, ID-based keyExtractor, properly sized and cached images" },
+      { "vi": "Tinh chỉnh list: getItemLayout, initialNumToRender, maxToRenderPerBatch, windowSize; phân trang bằng onEndReached", "en": "Tune the list: getItemLayout, initialNumToRender, maxToRenderPerBatch, windowSize; paginate with onEndReached" },
+      { "vi": "Nếu vẫn chưa mượt: FlashList tái sử dụng view của dòng", "en": "If still not smooth: FlashList recycles row views" }
+    ],
+    "modelAnswer": {
+      "vi": "Đầu tiên mình tái hiện lỗi trên bản release và dùng Profiler để xem các dòng có re-render không cần thiết hay render quá tốn kém. Sau đó mình sửa dòng: React.memo, renderItem và handler ổn định nhờ useCallback, key theo id, và ảnh đúng kích thước với một thư viện cache, vì ảnh là nguyên nhân rất phổ biến. Tiếp theo mình tinh chỉnh list: getItemLayout cho dòng có chiều cao cố định, và điều chỉnh initialNumToRender, maxToRenderPerBatch và windowSize, cân bằng giữa bộ nhớ và vùng trắng. Mình sẽ phân trang thay vì tải hàng nghìn item một lúc. Nếu vẫn chưa mượt, mình chuyển sang FlashList, thư viện tái sử dụng view. Và mình đo trước và sau mỗi thay đổi để cho khách hàng thấy cải thiện thật.",
+      "en": "First I'd reproduce it in a release build and use the Profiler to find whether rows re-render unnecessarily or are expensive to render. Then I'd fix the rows: React.memo, stable renderItem and handlers with useCallback, ID-based keys, and properly sized images with a caching library, since images are a very common cause. Next I'd tune the list: getItemLayout for fixed heights, and adjust initialNumToRender, maxToRenderPerBatch and windowSize, balancing memory against blank areas. I'd paginate instead of loading thousands of items. If it's still not smooth, I'd migrate to FlashList, which recycles views. And I'd measure before and after each change to show the client real improvement."
+    },
+    "followUps": [
+      { "vi": "FlashList khác FlatList ở điểm nào về cách render dòng?", "en": "How does FlashList render rows differently from FlatList?" },
+      { "vi": "Làm sao tránh gọi onEndReached hai lần và tải trùng một trang?", "en": "How do you stop onEndReached firing twice and loading the same page twice?" }
+    ]
+  }
+]

@@ -1,0 +1,93 @@
+[
+  {
+    "id": "arch-threading-001",
+    "type": "mcq",
+    "topics": ["architecture/threading"],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": ["arch-threading-blocked-js"],
+    "multi": true,
+    "prompt": {
+      "vi": "JS thread bị chặn khoảng 1 giây vì parse một JSON lớn. Trong lúc đó, những thứ nào VẪN chạy mượt? (chọn tất cả đáp án đúng)",
+      "en": "The JS thread is blocked for about a second while parsing a big JSON response. During that time, which of these STILL run smoothly? (select all that apply)"
+    },
+    "options": [
+      { "text": { "vi": "Một `ActivityIndicator` native", "en": "A native `ActivityIndicator`" } },
+      { "text": { "vi": "Một animation `Animated` với `useNativeDriver: true`", "en": "An `Animated` animation with `useNativeDriver: true`" } },
+      {
+        "text": { "vi": "Một animation `Animated` với `useNativeDriver: false`", "en": "An `Animated` animation with `useNativeDriver: false`" },
+        "misconception": { "id": "js-animation-independent", "text": { "vi": "Animation điều khiển bằng JS cần JS thread tính giá trị cho từng frame, nên nó đứng khi JS bị chặn.", "en": "A JS-driven animation needs the JS thread to compute every frame, so it freezes when JS is blocked." } }
+      },
+      {
+        "text": { "vi": "Handler `onPress` của một nút được bấm trong lúc đó", "en": "The `onPress` handler of a button tapped during that time" },
+        "misconception": { "id": "onpress-runs-natively", "text": { "vi": "Native nhận được thao tác chạm, nhưng onPress là code JavaScript nên phải chờ trong hàng đợi của JS thread.", "en": "Native receives the touch, but onPress is JavaScript, so it waits in the JS thread's queue." } }
+      }
+    ],
+    "answer": [0, 1],
+    "explanation": {
+      "vi": "Những gì chạy trên UI thread (component native, animation dùng native driver) vẫn tiếp tục. Những gì cần JavaScript (animation điều khiển bằng JS, handler onPress, setState) phải chờ JS thread rảnh.",
+      "en": "Anything on the UI thread (native components, native-driver animations) keeps going. Anything that needs JavaScript (JS-driven animations, onPress handlers, setState) waits for the JS thread to be free."
+    }
+  },
+  {
+    "id": "arch-threading-002",
+    "type": "spot-bug",
+    "topics": ["architecture/threading"],
+    "kind": "pitfall",
+    "difficulty": 2,
+    "estSeconds": 90,
+    "lessons": ["arch-threading-blocked-js"],
+    "prompt": {
+      "vi": "Spinner tự vẽ này đứng hình trong lúc phản hồi lớn đang được xử lý. Dòng nào khiến spinner bị ảnh hưởng, và vì sao?",
+      "en": "This custom spinner freezes while the big response is being processed. Which line makes the spinner vulnerable, and why?"
+    },
+    "code": "function ProductsScreen() {\n  const spin = useRef(new Animated.Value(0)).current;\n  const [items, setItems] = useState<Summary[]>([]);\n\n  useEffect(() => {\n    Animated.loop(\n      Animated.timing(spin, { toValue: 1, duration: 1000, useNativeDriver: false })\n    ).start();\n    fetch(PRODUCTS_URL)\n      .then((res) => res.text())\n      .then((text) => setItems(JSON.parse(text).map(toSummary)));\n  }, []);\n\n  return <Spinner rotation={spin} items={items} />;\n}",
+    "answerLine": 7,
+    "causeOptions": [
+      { "text": { "vi": "`useNativeDriver: false` khiến JS phải tính giá trị cho từng frame; khi JSON.parse chặn JS thread thì không có frame mới", "en": "`useNativeDriver: false` makes JS compute every frame; when JSON.parse blocks the JS thread, no new frames arrive" } },
+      {
+        "text": { "vi": "`Animated.loop` không dùng được với `Animated.timing`", "en": "`Animated.loop` doesn't work with `Animated.timing`" },
+        "misconception": { "id": "loop-timing-incompatible", "text": { "vi": "Animated.loop bọc Animated.timing là cách dùng chuẩn.", "en": "Wrapping Animated.timing in Animated.loop is the standard pattern." } }
+      },
+      {
+        "text": { "vi": "`fetch` chạy trên UI thread nên chặn việc vẽ", "en": "`fetch` runs on the UI thread and blocks drawing" },
+        "misconception": { "id": "fetch-blocks-ui", "text": { "vi": "Request mạng chạy bất đồng bộ ở native. Thứ chặn là JSON.parse và map chạy đồng bộ trên JS thread.", "en": "The network request runs asynchronously in native. What blocks is the synchronous JSON.parse and map on the JS thread." } }
+      },
+      { "text": { "vi": "`duration: 1000` quá ngắn với một vòng lặp", "en": "`duration: 1000` is too short for a loop" } }
+    ],
+    "answerCause": 0,
+    "explanation": {
+      "vi": "Dòng 7 dùng `useNativeDriver: false`, nên mỗi frame của spinner cần JS thread. Dòng 11 parse và map một JSON lớn một cách đồng bộ, chặn JS thread, nên spinner đứng. Đặt `useNativeDriver: true` (hoặc dùng Reanimated hay `ActivityIndicator`) để animation chạy trên UI thread, và giảm hoặc chia nhỏ việc ở dòng 11.",
+      "en": "Line 7 uses `useNativeDriver: false`, so every spinner frame needs the JS thread. Line 11 parses and maps a big JSON synchronously, blocking the JS thread, so the spinner freezes. Set `useNativeDriver: true` (or use Reanimated or `ActivityIndicator`) to run the animation on the UI thread, and shrink or chunk the work on line 11."
+    }
+  },
+  {
+    "id": "arch-threading-003",
+    "type": "open",
+    "topics": ["architecture/threading", "performance/lists"],
+    "kind": "hard-issue",
+    "difficulty": 2,
+    "estSeconds": 240,
+    "lessons": ["arch-threading-blocked-js"],
+    "prompt": {
+      "vi": "Khách hàng báo rằng khi app tải một phản hồi JSON lớn, spinner loading đứng hình khoảng một giây và các nút bấm phản hồi chậm. Hãy giải thích mô hình luồng của React Native và vì sao điều này xảy ra. Bạn sẽ sửa thế nào?",
+      "en": "A client reports that when their app loads a big JSON response, the loading spinner animation freezes for a second, and button taps feel delayed. Explain React Native's threading model and why this happens. How would you fix it?"
+    },
+    "keyPoints": [
+      { "vi": "Ba luồng: JS thread (toàn bộ JavaScript), UI/main thread (vẽ, chạm, animation native), background thread (layout)", "en": "Three threads: JS thread (all JavaScript), UI/main thread (drawing, touches, native animations), background thread (layout)" },
+      { "vi": "JS đơn luồng: parse và xử lý JSON lớn chặn JS thread, nên onPress phải chờ và animation điều khiển bằng JS đứng hình", "en": "JS is single-threaded: parsing and processing a big JSON blocks it, so onPress waits and JS-driven animation freezes" },
+      { "vi": "Không phải lỗi bridge: vẫn xảy ra trên kiến trúc mới", "en": "Not a bridge problem: it happens on the New Architecture too" },
+      { "vi": "Xác nhận bằng Perf Monitor trên bản release: JS FPS tụt trong khi UI FPS giữ gần 60", "en": "Confirm with the Perf Monitor in a release build: JS FPS drops while UI FPS stays near 60" },
+      { "vi": "Cách sửa: giảm việc (phân trang, chỉ lấy field cần), chia nhỏ hoặc hoãn việc, animation trên UI thread, chuyển việc nặng khỏi JS", "en": "Fixes: do less (pagination, only needed fields), chunk or defer work, animation on the UI thread, move heavy work off JS" }
+    ],
+    "modelAnswer": {
+      "vi": "React Native có JS thread chạy toàn bộ JavaScript của mình, UI thread vẽ giao diện và xử lý thao tác chạm, và một background thread cho layout. JavaScript là đơn luồng, nên khi mình parse và xử lý một phản hồi JSON lớn, JS thread bị chặn. Đó là lý do nút bấm phản hồi chậm: thao tác chạm đã tới, nhưng handler onPress phải chờ trong hàng đợi của JS. Và spinner đứng vì nó được điều khiển bằng JS, mà JS không gửi được frame mới khi đang bận. Đây không phải lỗi bridge, kiến trúc mới cũng bị. Đầu tiên mình xác nhận bằng Perf Monitor trên bản release: JS FPS tụt trong khi UI FPS vẫn ở 60. Sau đó mình giảm lượng việc, bằng phân trang phía server và chỉ lấy các field cần thiết. Phần còn lại mình chia nhỏ thành từng phần hoặc hoãn lại bằng requestIdleCallback hay startTransition, và render bằng danh sách virtualize. Mình chuyển animation sang UI thread bằng useNativeDriver hoặc Reanimated, hoặc dùng ActivityIndicator native. Nếu phần xử lý vẫn nặng, mình chuyển nó vào native module hoặc một luồng nền.",
+      "en": "React Native has a JS thread that runs all my JavaScript, a UI thread that draws and handles touches, and a background thread for layout. JavaScript is single-threaded, so when I parse and process a huge JSON response, the JS thread is blocked. That's why taps feel delayed: the touch arrives, but the onPress handler waits in the JS queue. And the spinner freezes because it's driven from JS, which can't send new frames while it's busy. This isn't a bridge problem, it happens on the New Architecture too. First I'd confirm it with the Perf Monitor in a release build: JS FPS drops while UI FPS stays at 60. Then I'd reduce the work, with server pagination and only the fields we need. I'd split what's left into chunks or defer it with requestIdleCallback or startTransition, and render it in a virtualized list. I'd move the animation to the UI thread with useNativeDriver or Reanimated, or use the native ActivityIndicator. If the processing is still heavy, I'd move it into a native module or a background thread."
+    },
+    "followUps": [
+      { "vi": "JSON.parse không chia nhỏ được. Vậy bạn xử lý phần đó thế nào?", "en": "JSON.parse can't be chunked. How do you deal with that part?" },
+      { "vi": "Reanimated worklet chạy ở đâu, và vì sao nó không bị ảnh hưởng khi JS thread bận?", "en": "Where do Reanimated worklets run, and why aren't they affected when the JS thread is busy?" }
+    ]
+  }
+]

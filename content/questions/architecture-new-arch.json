@@ -1,0 +1,96 @@
+[
+  {
+    "id": "arch-new-arch-001",
+    "type": "mcq",
+    "topics": ["architecture/new-arch"],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 45,
+    "lessons": ["arch-new-arch-bridge-vs-jsi"],
+    "multi": false,
+    "prompt": {
+      "vi": "Trong kiến trúc mới, điều gì thay thế cho bridge giữa JavaScript và native?",
+      "en": "In the New Architecture, what replaces the bridge between JavaScript and native?"
+    },
+    "options": [
+      { "text": { "vi": "JSI: một lớp C++ cho phép JavaScript giữ tham chiếu tới object native và gọi trực tiếp, không qua JSON", "en": "JSI: a C++ layer that lets JavaScript hold references to native objects and call them directly, with no JSON" } },
+      {
+        "text": { "vi": "Một bộ serialize JSON nhanh hơn chạy trên bridge cũ", "en": "A faster JSON serializer running on the old bridge" },
+        "misconception": { "id": "new-arch-faster-json", "text": { "vi": "Nghĩ rằng kiến trúc mới chỉ tối ưu bridge. Thực tế nó bỏ hẳn bước serialize sang JSON.", "en": "Believing the New Architecture just optimises the bridge. It removes the JSON serialization step entirely." } }
+      },
+      {
+        "text": { "vi": "JavaScript chạy trực tiếp trên UI thread", "en": "JavaScript runs directly on the UI thread" },
+        "misconception": { "id": "new-arch-js-on-ui-thread", "text": { "vi": "Nghĩ rằng kiến trúc mới gộp JS vào UI thread. JS vẫn chạy trên JS thread riêng; JSI chỉ cho phép gọi native trực tiếp.", "en": "Believing the New Architecture moves JS onto the UI thread. JS still has its own thread; JSI just allows direct calls into native." } }
+      },
+      {
+        "text": { "vi": "Hermes", "en": "Hermes" },
+        "misconception": { "id": "hermes-is-new-arch", "text": { "vi": "Nhầm Hermes là một phần của kiến trúc mới. Hermes là JavaScript engine; nó dùng được với cả kiến trúc cũ lẫn mới.", "en": "Confusing Hermes with the New Architecture. Hermes is a JavaScript engine and works with both the old and new architecture." } }
+      }
+    ],
+    "answer": [0],
+    "explanation": {
+      "vi": "Bridge cũ gửi message JSON bất đồng bộ theo lô (batch), nên dễ nghẽn khi lưu lượng lớn và không thể gọi đồng bộ. JSI cho phép JavaScript giữ tham chiếu tới object C++/native và gọi thẳng vào chúng.",
+      "en": "The old bridge sent asynchronous, batched JSON messages, so it bottlenecked under heavy traffic and could never call synchronously. JSI lets JavaScript hold references to C++/native objects and call them directly."
+    }
+  },
+  {
+    "id": "arch-new-arch-002",
+    "type": "mcq",
+    "topics": ["architecture/new-arch"],
+    "kind": "core",
+    "difficulty": 1,
+    "estSeconds": 60,
+    "lessons": ["arch-new-arch-bridge-vs-jsi"],
+    "multi": true,
+    "prompt": {
+      "vi": "Ghép đúng vai trò: những phát biểu nào dưới đây là ĐÚNG? (chọn tất cả đáp án đúng)",
+      "en": "Match the roles: which of these statements are TRUE? (select all that apply)"
+    },
+    "options": [
+      { "text": { "vi": "TurboModules nạp native module theo kiểu lazy, giúp app khởi động nhanh hơn", "en": "TurboModules load native modules lazily, which speeds up startup" } },
+      { "text": { "vi": "Codegen sinh code native type-safe từ spec TypeScript", "en": "Codegen generates type-safe native code from TypeScript specs" } },
+      { "text": { "vi": "Fabric là renderer mới, hỗ trợ layout đồng bộ và các tính năng concurrent của React", "en": "Fabric is the new renderer, with synchronous layout and support for React's concurrent features" } },
+      {
+        "text": { "vi": "Fabric là một thư viện điều hướng (navigation) thay cho React Navigation", "en": "Fabric is a navigation library that replaces React Navigation" },
+        "misconception": { "id": "fabric-is-navigation", "text": { "vi": "Nhầm Fabric với thư viện điều hướng. Fabric là hệ thống render của React Native.", "en": "Confusing Fabric with a navigation library. Fabric is React Native's rendering system." } }
+      },
+      {
+        "text": { "vi": "TurboModules nạp tất cả native module ngay lúc app khởi động", "en": "TurboModules load every native module eagerly at startup" },
+        "misconception": { "id": "turbomodules-eager", "text": { "vi": "Hiểu ngược: kiến trúc cũ mới là nơi các module được khởi tạo sớm. TurboModules chỉ nạp khi được dùng lần đầu.", "en": "Getting it backwards: the old architecture initialised modules eagerly. TurboModules load on first use." } }
+      }
+    ],
+    "answer": [0, 1, 2],
+    "explanation": {
+      "vi": "Ba mảnh chính: JSI (gọi trực tiếp), TurboModules (native module nạp lazy, type-safe nhờ Codegen) và Fabric (renderer mới, layout đồng bộ, hỗ trợ `useTransition` và Suspense).",
+      "en": "The three main parts: JSI (direct calls), TurboModules (lazily loaded native modules, type-safe thanks to Codegen) and Fabric (the new renderer, with synchronous layout and support for `useTransition` and Suspense)."
+    }
+  },
+  {
+    "id": "arch-new-arch-003",
+    "type": "open",
+    "topics": ["architecture/new-arch"],
+    "kind": "core",
+    "difficulty": 2,
+    "estSeconds": 180,
+    "lessons": ["arch-new-arch-bridge-vs-jsi"],
+    "prompt": {
+      "vi": "App của khách hàng vẫn đang dùng một phiên bản React Native cũ, và họ hỏi việc nâng cấp lên kiến trúc mới có đáng không. Kiến trúc mới khác kiến trúc cũ thế nào, và khách hàng sẽ thấy lợi ích thực tế gì?",
+      "en": "Our client's app is still on an older React Native version and they're asking whether upgrading to the New Architecture is worth it. How does it differ from the old one, and what real benefits would the client see?"
+    },
+    "keyPoints": [
+      { "vi": "Bridge cũ: bất đồng bộ, serialize mọi thứ sang JSON theo lô, nghẽn khi lưu lượng lớn", "en": "Old bridge: asynchronous, batched JSON serialization, bottlenecks under heavy traffic" },
+      { "vi": "Ba mảnh mới: JSI, TurboModules (kèm Codegen), Fabric", "en": "The three new parts: JSI, TurboModules (with Codegen), Fabric" },
+      { "vi": "Lợi ích: khởi động nhanh hơn, UI mượt hơn, đi kịp phiên bản (mặc định từ 0.76, thư viện như Reanimated 4 bắt buộc)", "en": "Benefits: faster startup, smoother UI, staying current (default since 0.76; libraries like Reanimated 4 require it)" },
+      { "vi": "Đánh đổi: chi phí migrate; kiểm tra thư viện bên thứ ba trước, nâng cấp từng bước, test cả hai nền tảng", "en": "Trade-off: migration cost; audit third-party libraries first, upgrade in steps, test both platforms" }
+    ],
+    "modelAnswer": {
+      "vi": "Ở kiến trúc cũ, JavaScript và native giao tiếp qua một bridge bất đồng bộ, mọi thứ đều được serialize sang JSON. Khi lưu lượng lớn, bridge thành nút thắt cổ chai và không gì chạy đồng bộ được. Kiến trúc mới thay bridge bằng JSI, một interface C++ cho phép JavaScript gọi thẳng vào native. TurboModules nạp native module theo kiểu lazy nên app khởi động nhanh hơn, và Codegen sinh code native type-safe từ spec TypeScript. Fabric hỗ trợ layout đồng bộ và các tính năng concurrent của React. Với khách hàng, điều đó nghĩa là khởi động nhanh hơn, UI mượt hơn và đi kịp hệ sinh thái: kiến trúc mới là mặc định từ 0.76, các bản gần đây chỉ hỗ trợ nó, và nhiều thư viện quan trọng đã bắt buộc. Cái giá là chi phí migrate. Mình sẽ kiểm tra thư viện bên thứ ba trước, rồi nâng cấp từng bước và test kỹ trên cả hai nền tảng.",
+      "en": "In the old architecture, JavaScript and native code communicated through an asynchronous bridge, serializing everything to JSON. Under heavy traffic that bridge became a bottleneck, and nothing could run synchronously. The New Architecture replaces the bridge with JSI, a C++ interface that lets JavaScript call native code directly. TurboModules load native modules lazily, which improves startup, and Codegen generates type-safe native code from TypeScript specs. Fabric supports synchronous layout and React's concurrent features. For the client, that means faster startup, smoother UI, and staying current: it's been the default since 0.76, recent versions only support it, and key libraries now require it. The cost is the migration. I'd audit third-party libraries first, then upgrade in steps with thorough testing on both platforms."
+    },
+    "followUps": [
+      { "vi": "Cụ thể thì JSI cho phép JavaScript giữ cái gì?", "en": "What exactly does JSI let JavaScript hold?" },
+      { "vi": "Bạn kiểm tra một thư viện bên thứ ba có hỗ trợ kiến trúc mới hay không bằng cách nào?", "en": "How would you check whether a third-party library supports the New Architecture?" },
+      { "vi": "Một custom native module viết cho kiến trúc cũ cần làm gì để chạy trên kiến trúc mới?", "en": "What does a custom native module written for the old architecture need in order to run on the new one?" }
+    ]
+  }
+]
